@@ -76,6 +76,12 @@
   .prog-bad{background:var(--danger);}
   .target-line{position:absolute; top:0; bottom:0; left:75%; width:2px; background:var(--ink); z-index:2; opacity:0.7;}
 
+/* Calendar Weekend Styling */
+.calendar-day.weekend {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
   /* Compact Bottom Navigation */
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
   nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
@@ -509,20 +515,27 @@ async function renderDayAttendanceForm(){
   const dateStr = document.getElementById('att-date').value;
   const container = document.getElementById('att-classes-container');
   
-  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
-    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
-    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
+  const isWeekend = (dateString) => {
+    const day = new Date(dateString).getDay();
+    return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+  };
+
+  const holiday = Object.entries(fixedHolidays).find(([d]) => d === dateStr);
+  const weekend = isWeekend(dateStr);
+
+  if (weekend || holiday || fixedMSTDates[dateStr]) {
+    const label = fixedMSTDates[dateStr] || (holiday ? holiday[1] : '(Weekend)');
+    container.innerHTML = `
+      <div class="holiday-banner" style="text-align: center; padding: 20px; font-weight: bold; color: var(--danger);">
+        HOLIDAYYY!!! ${holiday || fixedMSTDates[dateStr] ? `- ${label}` : '(Weekend)'}
+      </div>
+    `;
     return;
   }
 
   const dObj = new Date(dateStr);
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const dayName = dayNames[dObj.getDay()];
-  
-  if(dayName === 'Sun' || dayName === 'Sat'){
-    container.innerHTML = `<div style="font-size:13px; opacity:.7; text-align:center; padding:10px;">Weekend! No scheduled classes on ${dayName}.</div>`;
-    return;
-  }
 
   const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
   onSnapshot(planSnap, async (pSnap)=>{
@@ -647,18 +660,18 @@ async function renderAttendanceStats(){
           const att = attended[subj] || 0;
           totalClassesAll += tot;
           totalAttendedAll += att;
-          const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
-          const badge = getBadgeClass(pct);
+          const percentage = tot > 0 ? Math.round((att / tot) * 100) : 0;
+          const colorClass = percentage >= 75 ? 'prog-good' : percentage >= 65 ? 'prog-mid' : 'prog-bad';
           
           statsHtml += `
             <div style="margin-bottom:12px; font-size:12px;">
               <div style="display:flex; justify-content:space-between; font-weight:700;">
                 <span>${subj}</span>
-                <span>${att} / ${tot} (${pct}%)</span>
+                <span>${att} / ${tot} (${percentage}%)</span>
               </div>
               <div class="prog-container">
                 <div class="target-line"></div>
-                <div class="prog-fill ${badge}" style="width:${pct}%;"></div>
+                <div class="prog-fill ${colorClass}" style="width:${percentage}%;"></div>
               </div>
             </div>`;
         });
