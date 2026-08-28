@@ -485,7 +485,7 @@ function loadAttendance(){
   el.innerHTML = `
     <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
-      <h3>📈 Semester Attendance Overview</h3>
+      <h3>📈 Semester Attendance Overview (Max Working Days: 75)</h3>
       <div id="att-semester-summary"></div>
     </div>
     <div class="card" style="max-width:100%;">
@@ -494,9 +494,10 @@ function loadAttendance(){
       <div id="att-classes-container" style="margin-top:12px;"></div>
     </div>
     <div class="card" style="max-width:100%;">
-      <h3>📚 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026). Black marker line indicates the 75% target.</p>
+      <h3>📚 Subject-wise Attendance</h3>
+      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Enter the number of classes attended manually for each subject out of 75 working days, then click Submit to calculate.</p>
       <div id="att-stats-container"></div>
+      <button class="btn-primary" id="submit-manual-att" style="margin-top:10px;">Submit & Calculate Attendance</button>
     </div>`;
 
   const dateInp = document.getElementById('att-date');
@@ -583,8 +584,6 @@ async function renderDayAttendanceForm(){
             await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
               date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
             }, { merge: true });
-            
-            renderAttendanceStats();
           };
         });
       });
@@ -595,100 +594,105 @@ async function renderDayAttendanceForm(){
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
   const semesterSummaryContainer = document.getElementById('att-semester-summary');
-  const startDate = new Date('2026-08-05');
-  const today = new Date();
   
   const ttRef = doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ttRef, async (tSnap)=>{
     const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-    const totals = {};
-    const attended = {};
-    let curr = new Date(startDate);
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    
-    const planRef = collection(db, 'users', user.uid, 'calendar_plans');
-    onSnapshot(planRef, async (planSnapShot)=>{
-      const plans = {};
-      planSnapShot.forEach(d => plans[d.id] = d.data().type);
-      
-      const attLogRef = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attLogRef, async (logSnap)=>{
-        const logs = {};
-        logSnap.forEach(d => logs[d.id] = d.data().status);
-
-        curr = new Date(startDate);
-        while(curr <= today){
-          const dStr = curr.toISOString().split('T')[0];
-          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
-            const dName = dayNames[curr.getDay()];
-            const slots = tData[dName] || [];
-            const plan = plans[dStr];
-            
-            slots.forEach((slot, idx)=>{
-              const subj = slot.subject;
-              totals[subj] = (totals[subj] || 0) + 1;
-              
-              const logKey = `${dStr}_${idx}`;
-              let stat = logs[logKey];
-              if(!stat){
-                if(plan === 'leave' || plan === 'skip') stat = 'Absent';
-                else stat = 'Present';
-              }
-              if(stat === 'Present'){
-                attended[subj] = (attended[subj] || 0) + 1;
-              }
-            });
-          }
-          curr.setDate(curr.getDate() + 1);
-        }
-
-        let totalClassesAll = 0;
-        let totalAttendedAll = 0;
-        let statsHtml = '';
-        const subjects = Object.keys(totals);
-        if(!subjects.length){
-          statsContainer.innerHTML = `<div style="font-size:12px; opacity:.6;">No subjects found.</div>`;
-          return;
-        }
-
-        subjects.forEach(subj => {
-          const tot = totals[subj];
-          const att = attended[subj] || 0;
-          totalClassesAll += tot;
-          totalAttendedAll += att;
-          const percentage = tot > 0 ? Math.round((att / tot) * 100) : 0;
-          const colorClass = percentage >= 75 ? 'prog-good' : percentage >= 65 ? 'prog-mid' : 'prog-bad';
-          
-          statsHtml += `
-            <div style="margin-bottom:12px; font-size:12px;">
-              <div style="display:flex; justify-content:space-between; font-weight:700;">
-                <span>${subj}</span>
-                <span>${att} / ${tot} (${percentage}%)</span>
-              </div>
-              <div class="prog-container">
-                <div class="target-line"></div>
-                <div class="prog-fill ${colorClass}" style="width:${percentage}%;"></div>
-              </div>
-            </div>`;
-        });
-
-        const semPct = totalClassesAll > 0 ? Math.round((totalAttendedAll / totalClassesAll) * 100) : 100;
-        const semBadge = getBadgeClass(semPct);
-        
-        semesterSummaryContainer.innerHTML = `
-          <div style="font-size:13px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Overall Semester Attendance</span>
-            <span>${totalAttendedAll} / ${totalClassesAll} (${semPct}%)</span>
-          </div>
-          <div class="prog-container" style="height:16px;">
-            <div class="target-line" title="75% Target"></div>
-            <div class="prog-fill ${semBadge}" style="width:${semPct}%;"></div>
-          </div>
-          <div style="font-size:11px; opacity:.7; margin-top:4px;">Target threshold line is marked at 75% range. Green = &ge;75%, Orange = 65-74%, Red = &lt;65%.</div>`;
-
-        statsContainer.innerHTML = statsHtml;
-      });
+    const subjectsSet = new Set();
+    Object.values(tData).forEach(dayList => {
+      dayList.forEach(slot => subjectsSet.add(slot.subject));
     });
+    const subjects = Array.from(subjectsSet);
+
+    const manualRef = collection(db, 'users', user.uid, 'manual_attendance');
+    onSnapshot(manualRef, (manSnap) => {
+      const manualData = {};
+      manSnap.forEach(d => manualData[d.id] = d.data().attended);
+
+      let statsHtml = '';
+      subjects.forEach(subj => {
+        const savedVal = manualData[subj] !== undefined ? manualData[subj] : '';
+        statsHtml += `
+          <div style="margin-bottom:12px; font-size:12px;" data-subject="${subj}">
+            <div style="font-weight:700; margin-bottom:4px;">${subj} (Max Working Days: 75)</div>
+            <input type="number" class="manual-subj-input" data-subject="${subj}" value="${savedVal}" min="0" max="75" placeholder="Enter classes attended (0 - 75)">
+            <div class="subject-result-box" style="font-weight:700; margin-top:4px;"></div>
+          </div>`;
+      });
+
+      statsContainer.innerHTML = statsHtml;
+
+      const submitBtn = document.getElementById('submit-manual-att');
+      submitBtn.onclick = async () => {
+        let totalAttendedSum = 0;
+        let allValid = true;
+
+        const inputs = statsContainer.querySelectorAll('.manual-subj-input');
+        for(let inp of inputs) {
+          const subj = inp.dataset.subject;
+          const val = Number(inp.value);
+          if(isNaN(val) || val < 0 || val > 75) {
+            alert(`Please enter a valid number between 0 and 75 for ${subj}`);
+            allValid = false;
+            break;
+          }
+          await setDoc(doc(db, 'users', user.uid, 'manual_attendance', subj), { attended: val });
+          totalAttendedSum += val;
+        }
+
+        if(!allValid) return;
+
+        alert("Attendance submitted successfully!");
+        updateCalculatedUI(inputs, totalAttendedSum);
+      };
+
+      // Initial calculation display if already saved
+      const inputs = statsContainer.querySelectorAll('.manual-subj-input');
+      let initialSum = 0;
+      let hasValues = false;
+      inputs.forEach(inp => {
+        if(manualData[inp.dataset.subject] !== undefined) {
+          initialSum += Number(manualData[inp.dataset.subject]);
+          hasValues = true;
+        }
+      });
+      if(hasValues) {
+        updateCalculatedUI(inputs, initialSum);
+      } else {
+        semesterSummaryContainer.innerHTML = `<div style="font-size:12px; opacity:.7;">Enter values below and submit to calculate overall attendance.</div>`;
+      }
+    });
+  });
+}
+
+function updateCalculatedUI(inputs, totalAttendedSum) {
+  const semesterSummaryContainer = document.getElementById('att-semester-summary');
+  const totalPossibleDays = 75 * inputs.length;
+  const overallPct = totalPossibleDays > 0 ? Math.round((totalAttendedSum / totalPossibleDays) * 100) : 0;
+  const semBadge = getBadgeClass(overallPct);
+
+  semesterSummaryContainer.innerHTML = `
+    <div style="font-size:13px; font-weight:700; margin-bottom:4px;">
+      Overall Semester Percentage: ${overallPct}%
+    </div>
+    <div class="prog-container" style="height:16px;">
+      <div class="target-line" title="75% Target"></div>
+      <div class="prog-fill ${semBadge}" style="width:${overallPct}%;"></div>
+    </div>
+    <div style="font-size:11px; opacity:.7; margin-top:4px;">Calculated successfully based on your manual inputs.</div>`;
+
+  inputs.forEach(inp => {
+    const val = Number(inp.value) || 0;
+    const subjPct = Math.round((val / 75) * 100);
+    const box = inp.parentElement.querySelector('.subject-result-box');
+    const colorClass = subjPct >= 75 ? 'prog-good' : subjPct >= 65 ? 'prog-mid' : 'prog-bad';
+    
+    box.innerHTML = `
+      <div>Calculated Percentage: ${subjPct}%</div>
+      <div class="prog-container">
+        <div class="target-line"></div>
+        <div class="prog-fill ${colorClass}" style="width:${subjPct}%;"></div>
+      </div>`;
   });
 }
 
