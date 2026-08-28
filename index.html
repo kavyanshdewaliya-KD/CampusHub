@@ -33,7 +33,7 @@
   #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
   .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px;}
   .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit;}
+  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:var(--ink);}
   
   header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
   main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
@@ -42,7 +42,7 @@
   .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px;}
   
   .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
-  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
+  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:var(--ink);}
   .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700;}
 
   .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px;}
@@ -52,7 +52,7 @@
   .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px;}
   .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
-  .chat-input-row input{flex:1; margin:0;}
+  .chat-input-row input{flex:1; margin:0; background:#fff;}
   .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700;}
 
   .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -60,9 +60,9 @@
 
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between;}
-  .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700;}
-  .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700;}
+  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink);}
+  .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700; color:#5C0000;}
+  .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700; color:#422006;}
   .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
   .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
   .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
@@ -76,7 +76,7 @@
 
   /* Compact Bottom Navigation */
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
-  nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
   nav.tabbar button .t-icon{font-size:18px;}
   nav.tabbar button.active{opacity:1; color:var(--primary); background:var(--chip); border-top:3px solid var(--primary);}
   
@@ -652,8 +652,8 @@ function loadCalendar(){
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
     <div class="card" style="max-width:100%;">
       <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
-        <span style="background:#FFD1D1; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
-        <span style="background:#FEF08A; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
+        <span style="background:#FFD1D1; color:#5C0000; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
+        <span style="background:#FEF08A; color:#422006; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
       </p>
       <label style="font-size:12px; font-weight:700;">Select Month:</label>
       <select id="cal-month-sel" style="margin-bottom:10px;">
