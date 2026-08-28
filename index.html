@@ -34,33 +34,39 @@
   main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:110px;}
   
   .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:700;}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; font-size:15px;}
   
-  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
   .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700;}
 
-  .row{border:2px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border);}
+  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border);}
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
-  .row-subject-tag{display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px;}
+  .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px;}
 
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; height:320px; overflow-y:auto; margin-bottom:10px;}
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:340px; overflow-y:auto; margin-bottom:10px;}
   .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
   .chat-input-row input{flex:1; margin:0;}
-  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 14px; font-weight:700;}
+  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700;}
 
+  /* Members Split Layout */
+  .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media(max-width:600px){.members-container{grid-template-columns:1fr;}}
+
+  /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px;}
-  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:8px 4px; text-align:center; font-size:12px; position:relative; cursor:pointer;}
-  .cal-day.has-leave{border-bottom:5px solid var(--danger);}
-  .cal-day.has-half{border-bottom:5px solid var(--accent2);}
-  .cal-day.has-skip{border-bottom:5px solid var(--pink);}
+  .cal-day{background:#fff; border:2px solid var(--border); border-radius:10px; padding:10px 4px; text-align:center; font-size:12px; position:relative; cursor:pointer; user-select:none; transition:transform 0.1s;}
+  .cal-day:active{transform:scale(0.95);}
+  .cal-day.has-leave{border-bottom:6px solid var(--danger);}
+  .cal-day.has-half{border-bottom:6px solid var(--accent2);}
+  .cal-day.has-skip{border-bottom:6px solid var(--pink);}
 
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; overflow-x:auto;}
-  nav.tabbar button{flex:1; min-width:64px; background:none; border:none; padding:99px 2px 8px; font-size:10px; font-weight:700; opacity:.5; white-space:nowrap; padding: 10px 0;}
-  nav.tabbar button.active{opacity:1; color:var(--primary);}
+  nav.tabbar button{flex:1; min-width:64px; background:none; border:none; padding:10px 2px; font-size:11px; font-weight:700; opacity:.5; white-space:nowrap;}
+  nav.tabbar button.active{opacity:1; color:var(--primary); border-top:3px solid var(--primary);}
   
-  footer.dev-footer{text-align:center; opacity:0.6; font-size:11px; margin-top:20px; font-weight:600;}
+  footer.dev-footer{text-align:center; opacity:0.75; font-size:12px; margin-top:24px; font-weight:700;}
   
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
   .modal-body{background:#fff; border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px;}
@@ -70,17 +76,11 @@
 <body data-theme="1">
 
 <div id="login-screen">
-  <div class="card">
+  <div class="card" style="text-align:center;">
     <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
-    <p style="font-size:13px; opacity:.7;">Sign in with Google to sync your class session.</p>
+    <p style="font-size:13px; opacity:.7;">Sign in to access your IET DAVV CSE-B portal.</p>
     <button class="btn-primary" id="google-btn">Continue with Google</button>
     <p id="login-status" style="font-size:12px; opacity:.6; margin-top:10px; margin-bottom:0;"></p>
-  </div>
-  <div class="card hidden" id="join-card">
-    <h2 style="font-size:18px; margin-top:0;">Enter Class Passkey</h2>
-    <input id="in-code" type="password" placeholder="Enter Key (e.g. IETCSEB)" style="text-transform:uppercase;">
-    <select id="in-batch"><option value="B1">Batch 1</option><option value="B2">Batch 2</option></select>
-    <button class="btn-primary" id="join-btn">Enter Classroom 🚀</button>
   </div>
 </div>
 
@@ -92,8 +92,9 @@
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
       <span class="pill" id="admin-pill" style="display:none;">🔑 CR / Admin</span>
+      <button class="icon-btn" id="key-access-btn" title="Unlock Admin Access">🔑</button>
       <button class="icon-btn" id="theme-btn" title="Toggle Theme">🎨</button>
-      <button class="icon-btn" id="settings-btn" title="Admin Settings">⚙️</button>
+      <button class="icon-btn" id="settings-btn" title="Settings">⚙️</button>
       <button class="icon-btn" id="signout-btn" title="Sign out">🚪</button>
     </div>
   </header>
@@ -106,7 +107,7 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">Built by Kavyansh</footer>
+    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
   </main>
 
   <nav class="tabbar">
@@ -120,20 +121,20 @@
   </nav>
 </div>
 
-<!-- Settings Modal -->
-<div id="settings-modal" class="modal-overlay hidden">
+<!-- Admin Key Passcode Modal -->
+<div id="admin-modal" class="modal-overlay hidden">
   <div class="card" style="margin:0;">
-    <h3 style="margin-top:0;">⚙️ Settings & Unlock Admin</h3>
-    <p style="font-size:12px; opacity:.7;">Enter the CR Passcode to elevate your session to CR / Admin without logging out.</p>
-    <input id="admin-unlock-key" type="password" placeholder="Enter CR Key">
+    <h3 style="margin-top:0;">🔑 Enter Admin Key</h3>
+    <p style="font-size:12px; opacity:.7;">Enter the CR Passcode to switch to Admin mode.</p>
+    <input id="admin-unlock-key" type="password" placeholder="Enter Admin Passcode">
     <div style="display:flex; gap:8px;">
-      <button class="btn-primary" id="unlock-submit-btn">Unlock Admin</button>
-      <button class="btn-primary" id="unlock-close-btn" style="background:#ccc; color:#000;">Close</button>
+      <button class="btn-primary" id="unlock-submit-btn">Unlock</button>
+      <button class="btn-primary" id="unlock-close-btn" style="background:#ccc; color:#000;">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- Interactive Timetable Visual Editor Modal -->
+<!-- Timetable Visual Editor Modal -->
 <div id="tt-modal" class="modal-overlay hidden">
   <div class="modal-body">
     <div class="section-title">
@@ -182,7 +183,7 @@ let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
 let currentTimetableData = {};
 
-let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","batch":"B1","isAdmin":false}');
+let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
 let activeTheme = localStorage.getItem('ch_theme') || '1';
 document.body.setAttribute('data-theme', activeTheme);
 
@@ -191,22 +192,21 @@ const defaultTimetable = {
     {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
     {"time": "10:00 - 11:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem (B2) / Basic Elec (B1)", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206", "isLab": true},
+    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem / Basic Elec", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206", "isLab": true},
     {"time": "03:00 - 04:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"}
   ],
   "Tue": [
     {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec (B2) / Mech Engg (B1)", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
+    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec / Mech Engg", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem (B1) / Mech Engg (B2)", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206", "isLab": true}
+    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem / Mech Engg", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206", "isLab": true}
   ],
   "Wed": [
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "Workshop Practice (B2)", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Design Thinking (B1)", "teacher": "VF-1VV", "room": "M-309"},
+    {"time": "01:00 - 03:00", "subject": "Workshop Practice ⚠️verify", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "03:00 - 04:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
   ],
   "Thu": [
@@ -218,7 +218,7 @@ const defaultTimetable = {
   ],
   "Fri": [
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice (B1)", "teacher": "4JS", "room": "Workshop", "isLab": true},
+    {"time": "09:00 - 11:00", "subject": "Workshop Practice ⚠️verify", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
     {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
@@ -233,84 +233,63 @@ function getSubjectColor(str) {
   return `hsl(${h}, 70%, 88%)`;
 }
 
-/* ---------- AUTH & SESSION ---------- */
+/* ---------- AUTH & AUTO ENTER ---------- */
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
 onAuthStateChanged(auth, (u)=>{
   user = u;
   if(u){
-    document.getElementById('login-status').textContent = `Signed in as ${u.displayName}`;
-    if(localStorage.getItem('ch_joined') === 'true'){
-      boot();
-    } else {
-      document.getElementById('join-card').classList.remove('hidden');
-    }
+    syncMemberDoc();
+    boot();
   } else {
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('app-screen').classList.add('hidden');
   }
 });
 
-document.getElementById('join-btn').onclick = ()=>{
-  const inputKey = document.getElementById('in-code').value.trim().toUpperCase();
-  if(!inputKey || !user) return alert("Please enter key and sign in!");
-  
-  if(inputKey === "IETKDPROJECT1") { profile.isAdmin = true; profile.role = "CR / Admin"; }
-  else if(inputKey === "IETCSEB") { profile.isAdmin = false; profile.role = "Student"; }
-  else return alert("Invalid Access Key!");
-
-  profile.batch = document.getElementById('in-batch').value;
-  localStorage.setItem('ch_profile', JSON.stringify(profile));
-  localStorage.setItem('ch_joined', 'true');
-  
-  syncMemberDoc();
-  boot();
-};
-
 async function syncMemberDoc(){
   if(!user) return;
   try {
     await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
       name: user.displayName, email: user.email, role: profile.role,
-      batch: profile.batch, isAdmin: profile.isAdmin, photoURL: user.photoURL,
+      isAdmin: profile.isAdmin, photoURL: user.photoURL,
       updatedAt: serverTimestamp()
     }, { merge: true });
   } catch(e){ console.warn(e); }
 }
 
-document.getElementById('signout-btn').onclick = ()=>{
-  localStorage.removeItem('ch_joined');
-  signOut(auth);
-};
+document.getElementById('signout-btn').onclick = ()=> signOut(auth);
 
-/* ---------- HEADER & THEME ---------- */
+/* ---------- TOPBAR CONTROLS ---------- */
 document.getElementById('theme-btn').onclick = ()=>{
   activeTheme = activeTheme === '1' ? '2' : '1';
   document.body.setAttribute('data-theme', activeTheme);
   localStorage.setItem('ch_theme', activeTheme);
 };
 
-document.getElementById('settings-btn').onclick = ()=> document.getElementById('settings-modal').classList.remove('hidden');
-document.getElementById('unlock-close-btn').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
+document.getElementById('key-access-btn').onclick = ()=> document.getElementById('admin-modal').classList.remove('hidden');
+document.getElementById('settings-btn').onclick = ()=> document.getElementById('admin-modal').classList.remove('hidden');
+document.getElementById('unlock-close-btn').onclick = ()=> document.getElementById('admin-modal').classList.add('hidden');
+
 document.getElementById('unlock-submit-btn').onclick = ()=>{
   const k = document.getElementById('admin-unlock-key').value.trim().toUpperCase();
   if(k === "IETKDPROJECT1"){
     profile.isAdmin = true; profile.role = "CR / Admin";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
+    document.getElementById('admin-modal').classList.add('hidden');
     boot();
-    alert("Admin privileges unlocked!");
+    alert("CR / Admin privileges unlocked!");
   } else alert("Incorrect key!");
 };
 
-/* ---------- BOOT ---------- */
+/* ---------- BOOT & NAVIGATION ---------- */
 function boot(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
   document.getElementById('hdr-name').textContent = user.displayName;
-  document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B · Batch ${profile.batch.slice(1)}`;
+  document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B`;
   document.getElementById('admin-pill').style.display = profile.isAdmin ? 'inline-block' : 'none';
   
   setupPresence();
@@ -340,7 +319,7 @@ function setupPresence(){
   });
 }
 
-/* ---------- TIMETABLE MODULE & VISUAL EDITOR ---------- */
+/* ---------- TIMETABLE MODULE ---------- */
 function loadTimetable(){
   const el = document.getElementById('tab-timetable');
   const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
@@ -365,7 +344,6 @@ function loadTimetable(){
   });
 }
 
-// Visual Timetable Editor Logic
 function openTimetableEditor(){
   document.getElementById('tt-modal').classList.remove('hidden');
   renderEditorDayList();
@@ -478,12 +456,12 @@ function loadAttendance(){
   document.getElementById('att-absent').onclick = () => setAtt('Absent');
 }
 
-/* ---------- CALENDAR MODULE ---------- */
+/* ---------- CLICKABLE CALENDAR PLANNER ---------- */
 function loadCalendar(){
   const el = document.getElementById('tab-calendar');
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
     <div class="card" style="max-width:100%;">
-      <p style="font-size:12px; opacity:.7;">Tap any date to toggle: <b>Leave (Red)</b>, <b>Half Day (Yellow)</b>, or <b>Skip (Pink)</b></p>
+      <p style="font-size:12px; opacity:.7;">Tap any date to cycle plans: <b style="color:var(--danger)">Leave</b> → <b style="color:var(--accent2)">Half Day</b> → <b style="color:var(--pink)">Skip</b> → <b>Clear</b></p>
       <div class="cal-grid" id="cal-grid"></div>
     </div>`;
   
@@ -507,8 +485,7 @@ function loadCalendar(){
         else if(curr === 'half') next = 'skip';
         else if(curr === 'skip') next = null;
         
-        if(next) await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
-        else await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: null });
+        await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
       };
     });
   });
@@ -536,7 +513,7 @@ function loadAssignments(){
         <div class="row">
           <b>${a.title}</b> <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
           <div style="margin:4px 0;">${a.desc}</div>
-          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open Submission Link</a>` : ''}
+          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open file</a>` : ''}
         </div>`;
     });
     if(document.getElementById('asg-post-btn')){
@@ -582,7 +559,7 @@ function loadChat(){
     <div class="section-title"><h2>💬 Chat</h2></div>
     <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
       <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class</button>
-      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private</button>
+      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Mode</button>
     </div>
     <div class="chat-log" id="chat-log"></div>
     <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
@@ -625,7 +602,7 @@ function loadChat(){
   renderLog();
 }
 
-/* ---------- MEMBERS MODULE ---------- */
+/* ---------- MEMBERS MODULE (SPLIT ACTIVE & ALL) ---------- */
 function loadMembers(){
   const el = document.getElementById('tab-members');
   const presenceRef = ref(rtdb, `presence/${classCode}`);
@@ -635,24 +612,20 @@ function loadMembers(){
       const entries = [];
       snap.forEach(d=> entries.push({ uid:d.id, ...d.data() }));
       
-      entries.sort((a,b)=>{
-        const aOnline = presence[a.uid]?.state==='online' ? 1 : 0;
-        const bOnline = presence[b.uid]?.state==='online' ? 1 : 0;
-        if(bOnline !== aOnline) return bOnline - aOnline;
-        return (a.name||'').localeCompare(b.name||'');
-      });
-
-      const active = entries.filter(e=> presence[e.uid]?.state==='online');
-      const inactive = entries.filter(e=> presence[e.uid]?.state!=='online');
+      const active = entries.filter(e=> presence[e.uid]?.state==='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+      const offline = entries.filter(e=> presence[e.uid]?.state!=='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
       
-      el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>`;
-      const row = e => `<div class="row">
-        <span style="color:${presence[e.uid]?.state==='online'?'var(--good)':'#999'}">●</span> 
-        <b>${e.name}</b> — <span class="pill">${e.role||'Student'}</span> · Batch ${String(e.batch||'').slice(1)} ${e.isAdmin?'🔑':''}
-      </div>`;
-      
-      if(active.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;font-weight:700;">ACTIVE NOW</div>` + active.map(row).join('');
-      if(inactive.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;font-weight:700;">OFFLINE</div>` + inactive.map(row).join('');
+      el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>
+        <div class="members-container">
+          <div>
+            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">🟢 ACTIVE NOW (${active.length})</div>
+            ${active.length ? active.map(e => `<div class="row"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div class="empty">No members online</div>'}
+          </div>
+          <div>
+            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
+            ${offline.length ? offline.map(e => `<div class="row"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div class="empty">No offline members</div>'}
+          </div>
+        </div>`;
     });
   });
 }
