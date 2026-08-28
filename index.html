@@ -1,908 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CampusHub · CSE-B</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6C4CE0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root[data-theme="1"] {
-    --bg:#F4F2FC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
-    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF;
-    --lab-bg:#FFE5D9; --lab-border:#FF9E7D; --weekend-bg:#E2DFEE; --weekend-ink:#4A3F6B;
-  }
-  :root[data-theme="2"] {
-    --bg:#FFF9F0; --panel:#ffffff; --ink:#1F1924; --primary:#FF6B6B; --primary-ink:#ffffff;
-    --accent2:#4ECDC4; --pink:#FFE66D; --danger:#FF5A5F; --good:#10B981; --border:#1F1924; --chip:#F7FFF7;
-    --lab-bg:#FFE3E3; --lab-border:#FF6B6B; --weekend-bg:#F0E6D8; --weekend-ink:#4F4552;
-  }
-  :root[data-theme="3"] {
-    --bg:#E8F4F8; --panel:#ffffff; --ink:#0F172A; --primary:#0284C7; --primary-ink:#ffffff;
-    --accent2:#38BDF8; --pink:#F472B6; --danger:#EF4444; --good:#10B981; --border:#0F172A; --chip:#E0F2FE;
-    --lab-bg:#FEF3C7; --lab-border:#F59E0B; --weekend-bg:#D1E2EC; --weekend-ink:#334E68;
-  }
-
-  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
-  body{background:var(--bg); color:var(--ink); font-family:'Poppins',sans-serif; min-height:100vh; transition:background 0.2s, color 0.2s;}
-  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px;}
-  button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
-
-  #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
-  .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
-  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A;}
-  
-  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
-  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
-  
-  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; color:var(--ink);}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000;}
-  
-  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
-  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:#1F1924; box-shadow:2px 2px 0 var(--border);}
-  .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
-
-  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
-  .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
-  .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px; color:#1F1924;}
-
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px; color:#1F1924;}
-  .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
-  .chat-input-row{display:flex; gap:7px;}
-  .chat-input-row input{flex:1; margin:0; background:#fff; color:#1F1924;}
-  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
-
-  .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  @media(max-width:600px){.members-container{grid-template-columns:1fr;}}
-
-  /* Calendar Grid */
-  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
-  .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:600;}
-  .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700; color:#5C0000;}
-  .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700; color:#422006;}
-  .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
-  .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
-  .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
-
-  /* Attendance Progress Bars */
-  .prog-container{background:#eee; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
-  .prog-fill{height:100%; width:0%; transition:width 0.3s;}
-  .prog-good{background:var(--good);}
-  .prog-mid{background:var(--accent2);}
-  .prog-bad{background:var(--danger);}
-
-  /* Compact Bottom Navigation */
-  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
-  nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
-  nav.tabbar button .t-icon{font-size:18px;}
-  nav.tabbar button.active{opacity:1; color:var(--primary); background:var(--chip); border-top:3px solid var(--primary);}
-  
-  footer.dev-footer{text-align:center; opacity:0.75; font-size:11px; margin-top:20px; font-weight:700;}
-  
-  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
-  .modal-body{background:var(--panel); border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px; box-shadow:6px 6px 0 var(--border); color:var(--ink);}
-  .edit-item-box{border:2px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Hub - M-309</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              sunset: { bg: '#fff7ed', card: '#ffedd5', border: '#fed7aa', text: '#9a3412' }
+            }
+          }
+        }
+      }
+    </script>
+    <!-- React & Babel CDNs for single-file deployment -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body data-theme="1">
+<body class="bg-white text-gray-800 transition-colors duration-200">
+    <div id="root"></div>
 
-<div id="login-screen">
-  <div class="card" style="text-align:center;">
-    <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
-    <p style="font-size:13px; opacity:.8;">Sign in to access your IET DAVV CSE-B portal.</p>
-    <button class="btn-primary" id="google-btn">Continue with Google</button>
-    <p id="login-status" style="font-size:12px; opacity:.7; margin-top:10px; margin-bottom:0;"></p>
-  </div>
-</div>
+    <script type="text/babel">
+        function App() {
+            // Role & Auth State
+            const [role, setRole] = React.useState('CR / Admin');
+            const [passcode, setPasscode] = React.useState('');
+            const [showSettings, setShowSettings] = React.useState(false);
+            const [activeTab, setActiveTab] = React.useState('sch');
 
-<div id="app-screen" class="hidden">
-  <header class="topbar">
-    <div>
-      <b id="hdr-name" style="font-size:13px;"></b>
-      <div style="font-size:10px; opacity:.7;" id="hdr-sub"></div>
-    </div>
-    <div style="display:flex; gap:6px; align-items:center;">
-      <button class="icon-btn" id="members-top-btn" title="Members">👥</button>
-      <button class="icon-btn" id="settings-btn" title="Settings & Theme">⚙️</button>
-    </div>
-  </header>
-  
-  <main>
-    <section id="tab-timetable"></section>
-    <section id="tab-attendance" class="hidden"></section>
-    <section id="tab-calendar" class="hidden"></section>
-    <section id="tab-assignments" class="hidden"></section>
-    <section id="tab-announce" class="hidden"></section>
-    <section id="tab-chat" class="hidden"></section>
-    <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
-  </main>
+            // Access Keys
+            const ADMIN_KEY = 'IETKDPROJECT1';
+            const STUDENT_KEY = 'IETCSEB';
 
-  <nav class="tabbar">
-    <button data-tab="timetable" class="active"><span class="t-icon">🗓️</span><span>Sch</span></button>
-    <button data-tab="attendance"><span class="t-icon">📋</span><span>Attend</span></button>
-    <button data-tab="calendar"><span class="t-icon">📅</span><span>Cal</span></button>
-    <button data-tab="assignments"><span class="t-icon">📚</span><span>Tasks</span></button>
-    <button data-tab="announce"><span class="t-icon">📢</span><span>Notice</span></button>
-    <button data-tab="chat"><span class="t-icon">💬</span><span>Chat</span></button>
-  </nav>
-</div>
+            // Tasks State with color support
+            const [tasks, setTasks] = React.useState([
+                { id: 1, title: 'MECHENICAL FILE', type: 'Assignment', link: '#', color: 'bg-green-100 text-green-800 border-green-300', author: 'Kavyansh Dewaliya', details: 'COMPLETE SOON' }
+            ]);
+            const [newTaskTitle, setNewTaskTitle] = React.useState('');
+            const [newTaskLink, setNewTaskLink] = React.useState('');
+            const [newTaskDetails, setNewTaskDetails] = React.useState('');
+            const [newTaskColor, setNewTaskColor] = React.useState('bg-green-100 text-green-800 border-green-300');
 
-<!-- Settings, Theme & Dual Role Key Modal -->
-<div id="settings-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0;">
-    <div class="section-title">
-      <h3 style="margin:0;">⚙️ App Settings</h3>
-      <button id="settings-close" class="del-btn">✕</button>
-    </div>
-    
-    <label style="font-size:12px; font-weight:700;">Select Theme:</label>
-    <select id="theme-select">
-      <option value="1">Purple Dream 💜</option>
-      <option value="2">Sunset Coral 🧡</option>
-      <option value="3">Ocean Blue 💙</option>
-    </select>
+            // Resources State (Subject-wise subparts)
+            const [selectedSubject, setSelectedSubject] = React.useState('Applied Chemistry');
+            const [resources, setResources] = React.useState([
+                { id: 1, title: 'Roll List 2026-27', type: 'Roll List', subject: 'General', link: '#' },
+                { id: 2, title: 'Reaction Mechanisms Notes', type: 'Notes', subject: 'Applied Chemistry', link: '#' }
+            ]);
+            const [newResTitle, setNewResTitle] = React.useState('');
+            const [newResType, setNewResType] = React.useState('Notes');
+            const [newResLink, setNewResLink] = React.useState('');
 
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
-      <input id="admin-unlock-key" type="password" placeholder="Enter Admin or Student Key">
-      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
-    </div>
-  </div>
-</div>
+            // Chat State (Admin-only delete/revoke)
+            const [messages, setMessages] = React.useState([
+                { id: 1, user: 'Kavyansh Dewaliya', text: 'Welcome to the updated Campus Hub chat!', role: 'CR / Admin' }
+            ]);
+            const [newMsg, setNewMsg] = React.useState('');
 
-<!-- Timetable Visual Editor Modal -->
-<div id="tt-modal" class="modal-overlay hidden">
-  <div class="modal-body">
-    <div class="section-title">
-      <h3 style="margin:0;">📝 Edit Timetable Schedule</h3>
-      <button id="tt-modal-close" class="del-btn">✕ Close</button>
-    </div>
-    <label style="font-size:12px; font-weight:700;">Select Day:</label>
-    <select id="tt-edit-day">
-      <option value="Mon">Monday</option>
-      <option value="Tue">Tuesday</option>
-      <option value="Wed">Wednesday</option>
-      <option value="Thu">Thursday</option>
-      <option value="Fri">Friday</option>
-    </select>
-    
-    <div id="tt-editor-list" style="margin:14px 0;"></div>
-    
-    <button class="add-btn" id="tt-add-slot-btn" style="width:100%; margin-bottom:12px;">+ Add Class Slot</button>
-    <button class="btn-primary" id="tt-save-cloud-btn">Save Changes to Cloud ☁️</button>
-  </div>
-</div>
+            const subjects = ['Applied Chemistry', 'Basic Electronics', 'Applied Math-I', 'Mechanical Engineering', 'General'];
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+            const handleRoleUpdate = (e) => {
+                e.preventDefault();
+                if (passcode.trim() === ADMIN_KEY) {
+                    setRole('CR / Admin');
+                    setShowSettings(false);
+                    setPasscode('');
+                    alert('Switched to Admin Role successfully!');
+                } else if (passcode.trim() === STUDENT_KEY) {
+                    setRole('Student');
+                    setShowSettings(false);
+                    setPasscode('');
+                    alert('Switched to Student Role successfully!');
+                } else {
+                    alert('Incorrect key! Use valid admin or student passcode.');
+                }
+            };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
-  authDomain: "ietcse-bb0c9.firebaseapp.com",
-  databaseURL: "https://ietcse-bb0c9-default-rtdb.firebaseio.com",
-  projectId: "ietcse-bb0c9",
-  storageBucket: "ietcse-bb0c9.firebasestorage.app",
-  messagingSenderId: "39297300181",
-  appId: "1:39297300181:web:08b6d3e5bae40b9c19145c",
-};
+            const handleAddTask = (e) => {
+                e.preventDefault();
+                if(!newTaskTitle) return;
+                setTasks([...tasks, {
+                    id: Date.now(),
+                    title: newTaskTitle,
+                    link: newTaskLink || '#',
+                    details: newTaskDetails || 'No details provided',
+                    color: newTaskColor,
+                    author: role === 'CR / Admin' ? 'Kavyansh Dewaliya' : 'Student User'
+                }]);
+                setNewTaskTitle('');
+                setNewTaskLink('');
+                setNewTaskDetails('');
+            };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const rtdb = getDatabase(app);
+            const handleAddResource = (e) => {
+                e.preventDefault();
+                if(!newResTitle) return;
+                setResources([...resources, {
+                    id: Date.now(),
+                    title: newResTitle,
+                    type: newResType,
+                    subject: selectedSubject,
+                    link: newResLink || '#'
+                }]);
+                setNewResTitle('');
+                setNewResLink('');
+            };
 
-let user = null;
-let classCode = 'CSE-B-2026';
-let activeChatTarget = 'ALL';
-let currentTimetableData = {};
+            const handleSendChat = (e) => {
+                e.preventDefault();
+                if(!newMsg.trim()) return;
+                setMessages([...messages, { id: Date.now(), user: 'Kavyansh Dewaliya', text: newMsg, role }]);
+                setNewMsg('');
+            };
 
-let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
-let activeTheme = localStorage.getItem('ch_theme') || '1';
-document.body.setAttribute('data-theme', activeTheme);
+            const deleteMessage = (id) => {
+                if (role !== 'CR / Admin') {
+                    alert('Access denied. Only Admins can revoke/delete chat messages.');
+                    return;
+                }
+                setMessages(messages.filter(m => m.id !== id));
+            };
 
-const fixedMSTDates = {
-  '2026-09-09': 'Class Test-I', '2026-09-10': 'Class Test-I', '2026-09-11': 'Class Test-I',
-  '2026-10-14': 'Class Test-II', '2026-10-15': 'Class Test-II', '2026-10-16': 'Class Test-II',
-  '2026-11-18': 'Class Test-III', '2026-11-19': 'Class Test-III', '2026-11-20': 'Class Test-III'
-};
+            return (
+                <div className="min-h-screen pb-20 border border-gray-200">
+                    {/* Header */}
+                    <header className="p-4 border-b flex justify-between items-center bg-white shadow-sm">
+                        <div>
+                            <h1 className="font-bold text-lg">Kavyansh Dewaliya</h1>
+                            <p className="text-xs text-gray-500">{role} / CSE-B</p>
+                        </div>
+                        <button onClick={() => setShowSettings(!showSettings)} className="p-2 border rounded-full hover:bg-gray-100">
+                            ⚙️
+                        </button>
+                    </header>
 
-const fixedHolidays = {
-  '2026-08-15': 'Independence Day',
-  '2026-09-04': 'Janmashtami',
-  '2026-10-02': 'Gandhi Jayanti',
-  '2026-10-20': 'Dashara',
-  '2026-11-09': 'Govardhan Puja',
-  '2026-11-24': 'Guru Nanak Jayanti',
-  '2026-12-25': 'Christmas'
-};
+                    {/* Settings / Role Modal Overlay */}
+                    {showSettings && (
+                        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+                            <div className="bg-white p-6 rounded-2xl max-w-sm w-full shadow-xl relative border border-gray-200">
+                                <button onClick={() => setShowSettings(false)} className="absolute top-3 right-3 text-gray-400 hover:text-black">✕</button>
+                                <h2 className="font-bold text-lg mb-4">🔑 App Settings & Role Switch</h2>
+                                <form onSubmit={handleRoleUpdate} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Enter Access Key:</label>
+                                        <input 
+                                            type="password" 
+                                            value={passcode} 
+                                            onChange={(e) => setPasscode(e.target.value)} 
+                                            placeholder="Enter passcode..."
+                                            className="w-full p-2 border rounded-md"
+                                            required
+                                        />
+                                    </div>
+                                    <button type="submit" className="w-full bg-black text-white p-2 rounded-md font-medium">Verify & Update Role</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
-const defaultTimetable = {
-  "Mon": [
-    {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem / Basic Elec", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206", "isLab": true},
-    {"time": "03:00 - 04:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"}
-  ],
-  "Tue": [
-    {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec / Mech Engg", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem / Mech Engg", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206", "isLab": true}
-  ],
-  "Wed": [
-    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "03:00 - 04:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
-  ],
-  "Thu": [
-    {"time": "09:00 - 10:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Technical English (Remedial)", "teacher": "2AS", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "01:00 - 02:00", "subject": "Applied Chemistry (Remedial)", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"}
-  ],
-  "Fri": [
-    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "04:00 - 05:00", "subject": "Gen Mech Engg (Remedial)", "teacher": "4JS", "room": "M-309"}
-  ]
-};
+                    {/* Main Content Area */}
+                    <main className="max-w-4xl mx-auto p-4">
+                        {activeTab === 'sch' && (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">📅 Schedule (M-309)</h2>
+                                <div className="space-y-3">
+                                    <div className="p-3 rounded-lg border bg-green-50 border-green-200">
+                                        <div className="font-bold text-green-900">Applied Chemistry</div>
+                                        <div className="text-sm text-green-700">09:00 - 10:00 | Faculty: VF-SB | Venue: M-309</div>
+                                    </div>
+                                    <div className="p-3 rounded-lg border bg-red-50 border-red-200">
+                                        <div className="font-bold text-red-900">Basic Electronics</div>
+                                        <div className="text-sm text-red-700">10:00 - 11:00 | Faculty: VF-1SS | Venue: M-309</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-function getSubjectColor(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 88%)`;
-}
+                        {activeTab === 'tasks' && (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">📚 Tasks & Assignments</h2>
+                                
+                                {role === 'CR / Admin' && (
+                                    <form onSubmit={handleAddTask} className="bg-gray-50 p-4 rounded-xl border mb-6">
+                                        <h3 className="font-semibold mb-3 text-sm">👑 CR / Admin Upload Portal</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                            <input type="text" placeholder="Assignment Title" value={newTaskTitle} onChange={(e) => setNewTaskTitle(e.target.value)} className="p-2 border rounded" required />
+                                            <input type="text" placeholder="Optional Drive/File Link" value={newTaskLink} onChange={(e) => setNewTaskLink(e.target.value)} className="p-2 border rounded" />
+                                        </div>
+                                        <textarea placeholder="Details and instructions..." value={newTaskDetails} onChange={(e) => setNewTaskDetails(e.target.value)} className="w-full p-2 border rounded mb-3"></textarea>
+                                        
+                                        <div className="mb-3">
+                                            <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Select Card Color:</label>
+                                            <select value={newTaskColor} onChange={(e) => setNewTaskColor(e.target.value)} className="w-full p-2 border rounded">
+                                                <option value="bg-green-100 text-green-800 border-green-300">Green</option>
+                                                <option value="bg-blue-100 text-blue-800 border-blue-300">Blue</option>
+                                                <option value="bg-yellow-100 text-yellow-800 border-yellow-300">Yellow</option>
+                                                <option value="bg-orange-100 text-orange-800 border-orange-300">Peach / Orange</option>
+                                                <option value="bg-red-100 text-red-800 border-red-300">Red</option>
+                                                <option value="bg-pink-100 text-pink-800 border-pink-300">Pink</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" className="bg-black text-white px-4 py-2 rounded text-sm font-medium">Publish Assignment</button>
+                                    </form>
+                                )}
 
-function getBadgeClass(pct){
-  if(pct >= 75) return 'prog-good';
-  if(pct >= 65) return 'prog-mid';
-  return 'prog-bad';
-}
+                                <div className="space-y-3">
+                                    {tasks.map((task) => (
+                                        <div key={task.id} className={`p-4 rounded-xl border ${task.color} shadow-sm`}>
+                                            <div className="flex justify-between items-start">
+                                                <span className="font-bold uppercase tracking-wider text-xs px-2 py-0.5 rounded bg-white/60">Assignment</span>
+                                                <span className="text-xs opacity-75">by {task.author}</span>
+                                            </div>
+                                            <h3 className="text-lg font-bold mt-2">{task.title}</h3>
+                                            <p className="text-sm mt-1">{task.details}</p>
+                                            <a href={task.link} target="_blank" rel="noreferrer" className="inline-block mt-3 text-xs font-bold underline">Open file ↗</a>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
-  .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
+                        {activeTab === 'resources' && (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">📁 Resources & Documents Hub</h2>
+                                
+                                {/* Subject Subparts Selector */}
+                                <div className="flex gap-2 overflow-x-auto pb-3 mb-6 border-b">
+                                    {subjects.map((sub) => (
+                                        <button 
+                                            key={sub} 
+                                            onClick={() => setSelectedSubject(sub)}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${selectedSubject === sub ? 'bg-black text-white shadow' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                        >
+                                            {sub}
+                                        </button>
+                                    ))}
+                                </div>
 
-onAuthStateChanged(auth, (u)=>{
-  user = u;
-  if(u){
-    syncMemberDoc();
-    boot();
-  } else {
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('app-screen').classList.add('hidden');
-  }
-});
+                                {role === 'CR / Admin' && (
+                                    <form onSubmit={handleAddResource} className="bg-gray-50 p-4 rounded-xl border mb-6">
+                                        <h3 className="font-semibold mb-3 text-sm">👑 Admin Upload Portal ({selectedSubject})</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                            <input type="text" placeholder="Title (e.g. Unit 1 Notes)" value={newResTitle} onChange={(e) => setNewResTitle(e.target.value)} className="p-2 border rounded" required />
+                                            <select value={newResType} onChange={(e) => setNewResType(e.target.value)} className="p-2 border rounded">
+                                                <option value="Notes">Notes</option>
+                                                <option value="Books">Books</option>
+                                                <option value="Roll List">Roll List</option>
+                                                <option value="Question Paper">Question Paper</option>
+                                            </select>
+                                            <input type="text" placeholder="Drive / File Link" value={newResLink} onChange={(e) => setNewResLink(e.target.value)} className="p-2 border rounded" />
+                                        </div>
+                                        <button type="submit" className="bg-black text-white px-4 py-2 rounded text-sm font-medium">Upload Resource</button>
+                                    </form>
+                                )}
 
-async function syncMemberDoc(){
-  if(!user) return;
-  try {
-    await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
-      name: user.displayName, email: user.email, role: profile.role,
-      isAdmin: profile.isAdmin, photoURL: user.photoURL,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-  } catch(e){ console.warn(e); }
-}
+                                <div className="space-y-3">
+                                    {resources.filter(r => r.subject === selectedSubject || r.subject === 'General').map((res) => (
+                                        <div key={res.id} className="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm">
+                                            <div>
+                                                <span className="text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-bold uppercase mr-2">{res.type}</span>
+                                                <span className="font-medium text-sm">{res.title}</span>
+                                                <span className="text-xs text-gray-400 ml-2">({res.subject})</span>
+                                            </div>
+                                            <a href={res.link} target="_blank" rel="noreferrer" className="text-blue-600 font-medium text-xs underline">Open file</a>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-document.getElementById('settings-btn').onclick = ()=> document.getElementById('settings-modal').classList.remove('hidden');
-document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
-document.getElementById('members-top-btn').onclick = ()=> showTab('members');
+                        {activeTab === 'chat' && (
+                            <div>
+                                <h2 className="text-xl font-bold mb-4">💬 Live Chat & Discussions</h2>
+                                <div className="border rounded-xl p-4 h-80 overflow-y-auto mb-4 bg-gray-50 space-y-3">
+                                    {messages.map((m) => (
+                                        <div key={m.id} className="p-3 bg-white border rounded-lg shadow-sm flex justify-between items-start">
+                                            <div>
+                                                <div className="text-xs font-bold text-gray-600">{m.user} <span className="text-[10px] font-normal text-gray-400">({m.role})</span></div>
+                                                <p className="text-sm mt-1">{m.text}</p>
+                                            </div>
+                                            {role === 'CR / Admin' && (
+                                                <button onClick={() => deleteMessage(m.id)} className="text-red-500 text-xs font-semibold hover:underline ml-2">
+                                                    Revoke
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                                <form onSubmit={handleSendChat} className="flex gap-2">
+                                    <input type="text" value={newMsg} onChange={(e) => setNewMsg(e.target.value)} placeholder="Type a message..." className="flex-1 p-2 border rounded-lg text-sm" required />
+                                    <button type="submit" className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">Send</button>
+                                </form>
+                            </div>
+                        )}
+                    </main>
 
-document.getElementById('theme-select').value = activeTheme;
-document.getElementById('theme-select').onchange = (e)=>{
-  activeTheme = e.target.value;
-  document.body.setAttribute('data-theme', activeTheme);
-  localStorage.setItem('ch_theme', activeTheme);
-};
-
-document.getElementById('unlock-submit-btn').onclick = ()=>{
-  const k = document.getElementById('admin-unlock-key').value.trim();
-  if(k === "IETKDPROJECT1"){
-    profile.isAdmin = true; profile.role = "CR / Admin";
-    localStorage.setItem('ch_profile', JSON.stringify(profile));
-    syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
-    boot();
-    alert("CR / Admin privileges unlocked!");
-  } else if(k === "STUDENT" || k === "IETSTUDENT1") {
-    profile.isAdmin = false; profile.role = "Student";
-    localStorage.setItem('ch_profile', JSON.stringify(profile));
-    syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
-    boot();
-    alert("Switched to Student mode successfully!");
-  } else {
-    alert("Incorrect key! Use valid admin or student passcode.");
-  }
-};
-
-function boot(){
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app-screen').classList.remove('hidden');
-  document.getElementById('hdr-name').textContent = user.displayName;
-  document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B`;
-  
-  setupPresence();
-  loadTimetable();
-  loadAttendance();
-  loadCalendar();
-  loadAssignments();
-  loadAnnouncements();
-  loadChat();
-  loadMembers();
-  showTab('timetable');
-}
-
-document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
-function showTab(t){
-  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
-  ['timetable','attendance','calendar','assignments','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
-}
-
-function setupPresence(){
-  const myStatusRef = ref(rtdb, `presence/${classCode}/${user.uid}`);
-  const connectedRef = ref(rtdb, '.info/connected');
-  onValue(connectedRef, (snap)=>{
-    if(snap.val()===false) return;
-    onDisconnect(myStatusRef).set({ name:user.displayName, state:'offline', last_changed: rtdbServerTs() })
-      .then(()=> rtdbSet(myStatusRef, { name:user.displayName, state:'online', last_changed: rtdbServerTs() }));
-  });
-}
-
-function loadTimetable(){
-  const el = document.getElementById('tab-timetable');
-  const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ref_, (snap)=>{
-    currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
-    el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
-    ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
-      const periods = (currentTimetableData && currentTimetableData[d]) || [];
-      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>{
-        const chipColor = getSubjectColor(p.subject);
-        return `<div class="row ${p.isLab ? 'lab-row' : ''}">
-          <span class="row-subject-tag" style="background:${chipColor};">${p.subject}</span>
-          <b>${p.time}</b>
-          <div style="font-size:11px; opacity:.8;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
-        </div>`;
-      }).join('') : `<div style="font-size:12px; opacity:0.6;">No classes scheduled.</div>`);
-    });
-    
-    if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
-      document.getElementById('tt-open-editor-btn').onclick = openTimetableEditor;
-    }
-  });
-}
-
-function openTimetableEditor(){
-  document.getElementById('tt-modal').classList.remove('hidden');
-  renderEditorDayList();
-}
-
-document.getElementById('tt-modal-close').onclick = ()=> document.getElementById('tt-modal').classList.add('hidden');
-document.getElementById('tt-edit-day').onchange = renderEditorDayList;
-
-function renderEditorDayList(){
-  const selDay = document.getElementById('tt-edit-day').value;
-  const list = document.getElementById('tt-editor-list');
-  const items = currentTimetableData[selDay] || [];
-  list.innerHTML = '';
-  
-  items.forEach((item, idx)=>{
-    list.innerHTML += `
-      <div class="edit-item-box" data-idx="${idx}">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <b>Slot #${idx+1}</b>
-          <button class="del-btn btn-remove-slot">Remove</button>
-        </div>
-        <input class="inp-time" value="${item.time||''}" placeholder="Time (09:00 - 10:00)">
-        <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name">
-        <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher Code">
-        <input class="inp-room" value="${item.room||''}" placeholder="Room No.">
-        <label style="font-size:12px; font-weight:600; color:#0F172A;">
-          <input type="checkbox" class="inp-islab" ${item.isLab ? 'checked':''}> Is Lab (Peach Background)
-        </label>
-      </div>`;
-  });
-  
-  list.querySelectorAll('.btn-remove-slot').forEach(btn=>{
-    btn.onclick = (e)=>{
-      const idx = e.target.closest('.edit-item-box').dataset.idx;
-      currentTimetableData[selDay].splice(idx, 1);
-      renderEditorDayList();
-    };
-  });
-}
-
-document.getElementById('tt-add-slot-btn').onclick = ()=>{
-  const selDay = document.getElementById('tt-edit-day').value;
-  if(!currentTimetableData[selDay]) currentTimetableData[selDay] = [];
-  currentTimetableData[selDay].push({"time": "09:00 - 10:00", "subject": "New Subject", "teacher": "VF-XX", "room": "M-309", "isLab": false});
-  renderEditorDayList();
-};
-
-document.getElementById('tt-save-cloud-btn').onclick = async ()=>{
-  const selDay = document.getElementById('tt-edit-day').value;
-  const boxes = document.querySelectorAll('#tt-editor-list .edit-item-box');
-  const updatedDayList = [];
-  
-  boxes.forEach(box=>{
-    updatedDayList.push({
-      time: box.querySelector('.inp-time').value.trim(),
-      subject: box.querySelector('.inp-subject').value.trim(),
-      teacher: box.querySelector('.inp-teacher').value.trim(),
-      room: box.querySelector('.inp-room').value.trim(),
-      isLab: box.querySelector('.inp-islab').checked
-    });
-  });
-
-  currentTimetableData[selDay] = updatedDayList;
-  
-  try {
-    await setDoc(doc(db, 'classes', classCode, 'meta', 'timetable'), { days: currentTimetableData });
-    document.getElementById('tt-modal').classList.add('hidden');
-    alert('Timetable updated successfully!');
-  } catch(e) {
-    alert('Error saving timetable: ' + e.message);
-  }
-};
-
-function loadAttendance(){
-  const el = document.getElementById('tab-attendance');
-  const todayStr = new Date().toISOString().split('T')[0];
-  
-  el.innerHTML = `
-    <div class="section-title"><h2>📋 Attendance</h2></div>
-    <div class="card" style="max-width:100%;">
-      <label style="font-size:12px; font-weight:700;">Select Date:</label>
-      <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
-      <div id="att-classes-container" style="margin-top:12px;"></div>
-    </div>
-    <div class="card" style="max-width:100%;">
-      <h3>📊 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
-      <div id="att-stats-container"></div>
-    </div>`;
-
-  const dateInp = document.getElementById('att-date');
-  dateInp.onchange = renderDayAttendanceForm;
-  renderDayAttendanceForm();
-  renderAttendanceStats();
-}
-
-async function renderDayAttendanceForm(){
-  const dateStr = document.getElementById('att-date').value;
-  const container = document.getElementById('att-classes-container');
-  
-  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
-    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
-    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
-    return;
-  }
-
-  const dObj = new Date(dateStr);
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dayName = dayNames[dObj.getDay()];
-  
-  if(dayName === 'Sun' || dayName === 'Sat'){
-    container.innerHTML = `<div style="font-size:13px; opacity:.7; text-align:center; padding:10px;">Weekend! No scheduled classes on ${dayName}.</div>`;
-    return;
-  }
-
-  const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
-  onSnapshot(planSnap, async (pSnap)=>{
-    const planType = pSnap.exists() ? pSnap.data().type : null;
-    
-    const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-    onSnapshot(ttSnap, async (tSnap)=>{
-      const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-      const daySlots = (tData && tData[dayName]) || [];
-      
-      if(!daySlots.length){
-        container.innerHTML = `<div style="font-size:12px; opacity:.6;">No periods listed for ${dayName}.</div>`;
-        return;
-      }
-
-      const attCol = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attCol, (logSnap)=>{
-        const logs = {};
-        logSnap.forEach(d => {
-          if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
-        });
-
-        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
-        
-        daySlots.forEach((slot, idx)=>{
-          const logKey = `${dateStr}_${idx}`;
-          const currentStatus = logs[logKey] || (planType === 'leave' || planType === 'skip' ? 'Absent' : 'Present');
-          const isChecked = currentStatus === 'Present';
-          
-          html += `
-            <div class="row" style="flex-direction:row; justify-content:space-between; align-items:center; padding:8px 12px;">
-              <div>
-                <span class="row-subject-tag" style="background:${getSubjectColor(slot.subject)};">${slot.subject}</span>
-                <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room}</div>
-              </div>
-              <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <span>${isChecked ? 'Present ✅' : 'Absent ❌'}</span>
-                <input type="checkbox" class="att-checkbox" data-slotidx="${idx}" data-date="${dateStr}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; margin:0;">
-              </label>
-            </div>`;
-        });
-
-        container.innerHTML = html;
-
-        container.querySelectorAll('.att-checkbox').forEach(chk => {
-          chk.onchange = async (e) => {
-            const sIdx = e.target.dataset.slotidx;
-            const dStr = e.target.dataset.date;
-            const status = e.target.checked ? 'Present' : 'Absent';
-            await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
-              date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
-            });
-            renderAttendanceStats();
-          };
-        });
-      });
-    });
-  });
-}
-
-async function renderAttendanceStats(){
-  const statsContainer = document.getElementById('att-stats-container');
-  const startDate = new Date('2026-08-05');
-  const today = new Date();
-  
-  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ttSnap, async (tSnap)=>{
-    const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-    const totals = {};
-    const attended = {};
-    let curr = new Date(startDate);
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    
-    const planSnap = collection(db, 'users', user.uid, 'calendar_plans');
-    onSnapshot(planSnap, async (planSnapShot)=>{
-      const plans = {};
-      planSnapShot.forEach(d => plans[d.id] = d.data().type);
-      
-      const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attLogSnap, async (logSnap)=>{
-        const logs = {};
-        logSnap.forEach(d => logs[d.id] = d.data().status);
-
-        curr = new Date(startDate);
-        while(curr <= today){
-          const dStr = curr.toISOString().split('T')[0];
-          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
-            const dName = dayNames[curr.getDay()];
-            const slots = tData[dName] || [];
-            const plan = plans[dStr];
-            
-            slots.forEach((slot, idx)=>{
-              const subj = slot.subject;
-              totals[subj] = (totals[subj] || 0) + 1;
-              
-              const logKey = `${dStr}_${idx}`;
-              let stat = logs[logKey];
-              if(!stat){
-                if(plan === 'leave' || plan === 'skip') stat = 'Absent';
-                else stat = 'Present';
-              }
-              if(stat === 'Present'){
-                attended[subj] = (attended[subj] || 0) + 1;
-              }
-            });
-          }
-          curr.setDate(curr.getDate() + 1);
+                    {/* Bottom Navigation */}
+                    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t p-2 flex justify-around text-xs shadow-lg">
+                        <button onClick={() => setActiveTab('sch')} className={`p-2 flex flex-col items-center ${activeTab === 'sch' ? 'text-black font-bold' : 'text-gray-400'}`}>
+                            📅 <span>Sch</span>
+                        </button>
+                        <button onClick={() => setActiveTab('tasks')} className={`p-2 flex flex-col items-center ${activeTab === 'tasks' ? 'text-black font-bold' : 'text-gray-400'}`}>
+                            📝 <span>Tasks</span>
+                        </button>
+                        <button onClick={() => setActiveTab('resources')} className={`p-2 flex flex-col items-center ${activeTab === 'resources' ? 'text-black font-bold' : 'text-gray-400'}`}>
+                            📂 <span>Resources</span>
+                        </button>
+                        <button onClick={() => setActiveTab('chat')} className={`p-2 flex flex-col items-center ${activeTab === 'chat' ? 'text-black font-bold' : 'text-gray-400'}`}>
+                            💬 <span>Chat</span>
+                        </button>
+                    </nav>
+                </div>
+            );
         }
 
-        let statsHtml = '';
-        const subjects = Object.keys(totals);
-        if(!subjects.length){
-          statsContainer.innerHTML = `<div style="font-size:12px; opacity:.6;">No subjects found.</div>`;
-          return;
-        }
-
-        subjects.forEach(subj => {
-          const tot = totals[subj];
-          const att = attended[subj] || 0;
-          const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
-          const badge = getBadgeClass(pct);
-          
-          statsHtml += `
-            <div style="margin-bottom:10px; font-size:12px;">
-              <div style="display:flex; justify-content:space-between; font-weight:700;">
-                <span>${subj}</span>
-                <span>${att} / ${tot} (${pct}%)</span>
-              </div>
-              <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
-            </div>`;
-        });
-
-        statsContainer.innerHTML = statsHtml;
-      });
-    });
-  });
-}
-
-function loadCalendar(){
-  const el = document.getElementById('tab-calendar');
-  el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
-    <div class="card" style="max-width:100%;">
-      <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
-        <span style="background:#FFD1D1; color:#5C0000; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
-        <span style="background:#FEF08A; color:#422006; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
-      </p>
-      <label style="font-size:12px; font-weight:700;">Select Month:</label>
-      <select id="cal-month-sel" style="margin-bottom:10px;">
-        <option value="8">August 2026</option>
-        <option value="9" selected>September 2026</option>
-        <option value="10">October 2026</option>
-        <option value="11">November 2026</option>
-        <option value="12">December 2026</option>
-      </select>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>`;
-  
-  const monthSel = document.getElementById('cal-month-sel');
-  monthSel.onchange = renderCalendarGrid;
-  renderCalendarGrid();
-}
-
-async function renderCalendarGrid(){
-  const grid = document.getElementById('cal-grid');
-  const month = document.getElementById('cal-month-sel').value;
-  
-  const daysInMonth = new Date(2026, month, 0).getDate();
-  const planRef = collection(db, 'users', user.uid, 'calendar_plans');
-  
-  onSnapshot(planRef, (snap)=>{
-    const plans = {};
-    snap.forEach(d => plans[d.id] = d.data().type);
-    grid.innerHTML = '';
-    
-    for(let i = 1; i <= daysInMonth; i++){
-      const mStr = String(month).padStart(2,'0');
-      const dStr = `2026-${mStr}-${String(i).padStart(2,'0')}`;
-      
-      const dateObj = new Date(2026, month - 1, i);
-      const dayOfWeek = dateObj.getDay(); // 0 is Sunday, 6 is Saturday
-      const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-      
-      const isMst = fixedMSTDates[dStr];
-      const isHol = fixedHolidays[dStr];
-      const planVal = plans[dStr];
-      
-      let cls = '';
-      let badgeText = `${i}`;
-      
-      if(isMst){
-        cls = 'mst-day';
-        badgeText = `${i} (MST)`;
-      } else if(isHol){
-        cls = 'hol-day';
-        badgeText = `${i} (Hol)`;
-      } else if(isWeekend) {
-        cls = 'weekend-day';
-      } else if(planVal) {
-        cls = `has-${planVal}`;
-      }
-      
-      grid.innerHTML += `
-        <div class="cal-day ${cls}" data-date="${dStr}" data-fixed="${isMst || isHol ? 'yes':'no'}">
-          <b>${i}</b>
-          <span style="font-size:8.5px; opacity:.9;">${isMst ? 'MST' : (isHol ? 'Hol' : (isWeekend ? 'Off' : (planVal ? planVal.toUpperCase() : '')))}</span>
-        </div>`;
-    }
-    
-    grid.querySelectorAll('.cal-day').forEach(box => {
-      box.onclick = async () => {
-        if(box.dataset.fixed === 'yes'){
-          alert("MST exams and official college holidays are fixed and unchangeable!");
-          return;
-        }
-        const dStr = box.dataset.date;
-        const curr = plans[dStr];
-        let next = 'leave';
-        if(curr === 'leave') next = 'half';
-        else if(curr === 'half') next = 'skip';
-        else if(curr === 'skip') next = null;
-        
-        if(next) {
-          await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
-        } else {
-          await deleteDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr));
-        }
-      };
-    });
-  });
-}
-
-function loadAssignments(){
-  const el = document.getElementById('tab-assignments');
-  const q = query(collection(db,'classes',classCode,'assignments'), orderBy('ts','desc'), limit(50));
-  onSnapshot(q, (snap)=>{
-    el.innerHTML = `<div class="section-title"><h2>📚 Tasks & Assignments</h2></div>`;
-    if(profile.isAdmin){
-      el.innerHTML += `
-        <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
-          <h3 style="margin-top:0; color:var(--primary);">👑 CR / Admin Upload Portal</h3>
-          <input id="asg-title" placeholder="Assignment Title">
-          <input id="asg-link" placeholder="Optional Drive/File Link">
-          <textarea id="asg-desc" placeholder="Details and instructions..." rows="2"></textarea>
-          <button class="add-btn" id="asg-post-btn" style="width:100%; background:var(--primary); color:#fff;">Post Admin Task 🚀</button>
-        </div>`;
-    }
-    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No tasks posted.</div>`;
-    snap.forEach(d=>{
-      const a = d.data();
-      const isAdminPost = a.isAdminPost || false;
-      el.innerHTML += `
-        <div class="row" style="${isAdminPost ? 'border-color:var(--primary); background:var(--chip);' : ''}">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <b>${a.title} ${isAdminPost ? '👑':''}</b>
-            ${profile.isAdmin ? `<button class="del-btn btn-del-asg" data-id="${d.id}">Delete</button>` : ''}
-          </div>
-          <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
-          <div style="margin:4px 0;">${a.desc}</div>
-          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open file</a>` : ''}
-        </div>`;
-    });
-
-    if(profile.isAdmin){
-      if(document.getElementById('asg-post-btn')){
-        document.getElementById('asg-post-btn').onclick = async ()=>{
-          const title = document.getElementById('asg-title').value.trim();
-          const link = document.getElementById('asg-link').value.trim();
-          const desc = document.getElementById('asg-desc').value.trim();
-          if(!title) return alert('Enter a title!');
-          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
-        };
-      }
-      el.querySelectorAll('.btn-del-asg').forEach(btn=>{
-        btn.onclick = async (e)=>{
-          if(confirm("Delete this task?")){
-            await deleteDoc(doc(db,'classes',classCode,'assignments', e.target.dataset.id));
-          }
-        };
-      });
-    }
-  });
-}
-
-function loadAnnouncements(){
-  const el = document.getElementById('tab-announce');
-  const q = query(collection(db,'classes',classCode,'announcements'), orderBy('ts','desc'), limit(50));
-  onSnapshot(q, (snap)=>{
-    el.innerHTML = `<div class="section-title"><h2>📢 Announcements</h2></div>`;
-    if(profile.isAdmin){
-      el.innerHTML += `<div style="display:flex; gap:7px; margin-bottom:12px;"><input id="ann-in" placeholder="Write an announcement…" style="margin:0;"><button class="send-btn" id="ann-send">Post</button></div>`;
-    }
-    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No announcements yet.</div>`;
-    snap.forEach(d=>{
-      const a = d.data();
-      el.innerHTML += `
-        <div class="row">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b>${a.byName||'CR'}</b>
-            ${profile.isAdmin ? `<button class="del-btn btn-del-ann" data-id="${d.id}">Delete</button>` : ''}
-          </div>
-          <span style="font-size:10px; opacity:.6;">${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}</span>
-          <div>${a.text}</div>
-        </div>`;
-    });
-
-    if(profile.isAdmin){
-      if(document.getElementById('ann-send')){
-        document.getElementById('ann-send').onclick = async ()=>{
-          const val = document.getElementById('ann-in').value.trim(); if(!val) return;
-          await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
-          document.getElementById('ann-in').value='';
-        };
-      }
-      el.querySelectorAll('.btn-del-ann').forEach(btn=>{
-        btn.onclick = async (e)=>{
-          if(confirm("Delete this announcement?")){
-            await deleteDoc(doc(db,'classes',classCode,'announcements', e.target.dataset.id));
-          }
-        };
-      });
-    }
-  });
-}
-
-function loadChat(){
-  const el = document.getElementById('tab-chat');
-  el.innerHTML = `
-    <div class="section-title"><h2>💬 Chat</h2></div>
-    <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
-      <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class</button>
-      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Mode</button>
-    </div>
-    <div class="chat-log" id="chat-log"></div>
-    <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
-  
-  const renderLog = () => {
-    const qCol = activeChatTarget === 'ALL' 
-      ? query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200))
-      : query(collection(db,'private_chats', [user.uid, activeChatTarget].sort().join('_'), 'messages'), orderBy('ts','asc'), limit(200));
-    
-    onSnapshot(qCol, (snap)=>{
-      const log = document.getElementById('chat-log'); if(!log) return;
-      log.innerHTML = '';
-      snap.forEach(d=>{
-        const m = d.data();
-        log.innerHTML += `<div class="msg"><b>${m.role||'Student'} · ${m.name}</b><div>${m.text}</div></div>`;
-      });
-      log.scrollTop = log.scrollHeight;
-    });
-  };
-
-  document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
-  document.getElementById('btn-chat-priv').onclick = ()=>{
-    const targetUid = prompt("Enter Member User ID / Name to start 1:1 private chat:");
-    if(targetUid) { activeChatTarget = targetUid; renderLog(); }
-  };
-
-  const sendMsg = async () => {
-    const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
-    if(activeChatTarget === 'ALL'){
-      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
-    } else {
-      const threadId = [user.uid, activeChatTarget].sort().join('_');
-      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
-    }
-    inp.value='';
-  };
-
-  document.getElementById('chat-send').onclick = sendMsg;
-  document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
-  renderLog();
-}
-
-function loadMembers(){
-  const el = document.getElementById('tab-members');
-  const presenceRef = ref(rtdb, `presence/${classCode}`);
-  onSnapshot(collection(db,'classes',classCode,'members'), (snap)=>{
-    onValue(presenceRef, (pSnap)=>{
-      const presence = pSnap.val() || {};
-      const entries = [];
-      snap.forEach(d=> entries.push({ uid:d.id, ...d.data() }));
-      
-      const active = entries.filter(e=> presence[e.uid]?.state==='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      const offline = entries.filter(e=> presence[e.uid]?.state!=='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      
-      el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>
-        <div class="members-container">
-          <div>
-            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">🟢 ACTIVE NOW (${active.length})</div>
-            ${active.length ? active.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No members online</div>'}
-          </div>
-          <div>
-            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
-            ${offline.length ? offline.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
-          </div>
-        </div>`;
-    });
-  });
-}
-</script>
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
 </body>
 </html>
