@@ -27,19 +27,19 @@
 
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
   body{background:var(--bg); color:var(--ink); font-family:'Poppins',sans-serif; min-height:100vh; transition:background 0.2s, color 0.2s;}
-  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px;}
+  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px; color:var(--ink);}
   button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
 
   #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
   .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
   .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A;}
+  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
   
   header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
   main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
   
   .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; color:var(--ink);}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000; box-shadow:2px 2px 0 var(--border);}
   
   .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:#1F1924; box-shadow:2px 2px 0 var(--border);}
@@ -49,10 +49,10 @@
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
   .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px; color:#1F1924;}
 
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px; color:#1F1924;}
-  .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px; color:#0F172A; box-shadow:3px 3px 0 var(--border);}
+  .msg{margin-bottom:10px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:6px;} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
-  .chat-input-row input{flex:1; margin:0; background:#fff; color:#1F1924;}
+  .chat-input-row input{flex:1; margin:0; background:#fff; color:#0F172A;}
   .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
 
   .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
@@ -61,7 +61,7 @@
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
   .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
-  .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:600;}
+  .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:700; opacity:0.85;}
   .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700; color:#5C0000;}
   .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700; color:#422006;}
   .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
@@ -116,6 +116,7 @@
     <section id="tab-attendance" class="hidden"></section>
     <section id="tab-calendar" class="hidden"></section>
     <section id="tab-assignments" class="hidden"></section>
+    <section id="tab-resources" class="hidden"></section>
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
@@ -127,6 +128,7 @@
     <button data-tab="attendance"><span class="t-icon">📋</span><span>Attend</span></button>
     <button data-tab="calendar"><span class="t-icon">📅</span><span>Cal</span></button>
     <button data-tab="assignments"><span class="t-icon">📚</span><span>Tasks</span></button>
+    <button data-tab="resources"><span class="t-icon">📂</span><span>Files</span></button>
     <button data-tab="announce"><span class="t-icon">📢</span><span>Notice</span></button>
     <button data-tab="chat"><span class="t-icon">💬</span><span>Chat</span></button>
   </nav>
@@ -149,7 +151,7 @@
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
-      <input id="admin-unlock-key" type="password" placeholder="Enter Admin or Student Key">
+      <input id="admin-unlock-key" type="password" placeholder="IETKDPROJECT1 or IETCSEB">
       <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
     </div>
   </div>
@@ -203,6 +205,7 @@ let user = null;
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
 let currentTimetableData = {};
+let currentCalMonth = 9; // September 2026 default
 
 let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
 let activeTheme = localStorage.getItem('ch_theme') || '1';
@@ -222,6 +225,16 @@ const fixedHolidays = {
   '2026-11-09': 'Govardhan Puja',
   '2026-11-24': 'Guru Nanak Jayanti',
   '2026-12-25': 'Christmas'
+};
+
+const subjectThemeColors = {
+  'Applied Chemistry': 'background:#d1fae5; border-color:#34d399; color:#065f46;',
+  'Basic Electronics': 'background:#dbeafe; border-color:#60a5fa; color:#1e40af;',
+  'Applied Math-I': 'background:#fef08a; border-color:#facc15; color:#713f12;',
+  'Mechanical Engineering': 'background:#ffedd5; border-color:#fb923c; color:#9a3412;',
+  'Technical English': 'background:#fee2e2; border-color:#f87171; color:#991b1b;',
+  'Workshop Practice': 'background:#fce7f3; border-color:#f472b6; color:#831843;',
+  'General': 'background:#f3f4f6; border-color:#9ca3af; color:#1f2937;'
 };
 
 const defaultTimetable = {
@@ -321,7 +334,7 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
     document.getElementById('settings-modal').classList.add('hidden');
     boot();
     alert("CR / Admin privileges unlocked!");
-  } else if(k === "STUDENT" || k === "IETSTUDENT1") {
+  } else if(k === "IETCSEB") {
     profile.isAdmin = false; profile.role = "Student";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
@@ -329,7 +342,7 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
     boot();
     alert("Switched to Student mode successfully!");
   } else {
-    alert("Incorrect key! Use valid admin or student passcode.");
+    alert("Incorrect key! Use valid admin (IETKDPROJECT1) or student (IETCSEB) passcode.");
   }
 };
 
@@ -344,6 +357,7 @@ function boot(){
   loadAttendance();
   loadCalendar();
   loadAssignments();
+  loadResources();
   loadAnnouncements();
   loadChat();
   loadMembers();
@@ -353,7 +367,7 @@ function boot(){
 document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
 function showTab(t){
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
-  ['timetable','attendance','calendar','assignments','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
+  ['timetable','attendance','calendar','assignments','resources','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
 }
 
 function setupPresence(){
@@ -644,33 +658,39 @@ async function renderAttendanceStats(){
 
 function loadCalendar(){
   const el = document.getElementById('tab-calendar');
+  const monthNames = ["", "August 2026", "September 2026", "October 2026", "November 2026", "December 2026"];
+  
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
     <div class="card" style="max-width:100%;">
       <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
         <span style="background:#FFD1D1; color:#5C0000; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
         <span style="background:#FEF08A; color:#422006; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
       </p>
-      <label style="font-size:12px; font-weight:700;">Select Month:</label>
-      <select id="cal-month-sel" style="margin-bottom:10px;">
-        <option value="8">August 2026</option>
-        <option value="9" selected>September 2026</option>
-        <option value="10">October 2026</option>
-        <option value="11">November 2026</option>
-        <option value="12">December 2026</option>
-      </select>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <button class="icon-btn" id="cal-prev-btn">⟨</button>
+        <b id="cal-month-title" style="font-size:14px;">September 2026</b>
+        <button class="icon-btn" id="cal-next-btn">⟩</button>
+      </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>`;
   
-  const monthSel = document.getElementById('cal-month-sel');
-  monthSel.onchange = renderCalendarGrid;
+  document.getElementById('cal-prev-btn').onclick = () => {
+    if(currentCalMonth > 8) { currentCalMonth--; renderCalendarGrid(); }
+  };
+  document.getElementById('cal-next-btn').onclick = () => {
+    if(currentCalMonth < 12) { currentCalMonth++; renderCalendarGrid(); }
+  };
+  
   renderCalendarGrid();
 }
 
 async function renderCalendarGrid(){
   const grid = document.getElementById('cal-grid');
-  const month = document.getElementById('cal-month-sel').value;
-  
-  const daysInMonth = new Date(2026, month, 0).getDate();
+  const titleEl = document.getElementById('cal-month-title');
+  const monthNames = { 8: "August 2026", 9: "September 2026", 10: "October 2026", 11: "November 2026", 12: "December 2026" };
+  titleEl.textContent = monthNames[currentCalMonth];
+
+  const daysInMonth = new Date(2026, currentCalMonth, 0).getDate();
   const planRef = collection(db, 'users', user.uid, 'calendar_plans');
   
   onSnapshot(planRef, (snap)=>{
@@ -679,10 +699,10 @@ async function renderCalendarGrid(){
     grid.innerHTML = '';
     
     for(let i = 1; i <= daysInMonth; i++){
-      const mStr = String(month).padStart(2,'0');
+      const mStr = String(currentCalMonth).padStart(2,'0');
       const dStr = `2026-${mStr}-${String(i).padStart(2,'0')}`;
       
-      const dateObj = new Date(2026, month - 1, i);
+      const dateObj = new Date(2026, currentCalMonth - 1, i);
       const dayOfWeek = dateObj.getDay();
       const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
       
@@ -747,22 +767,31 @@ function loadAssignments(){
           <input id="asg-title" placeholder="Assignment Title">
           <input id="asg-link" placeholder="Optional Drive/File Link">
           <textarea id="asg-desc" placeholder="Details and instructions..." rows="2"></textarea>
+          <label style="font-size:12px; font-weight:700;">Card Color Theme:</label>
+          <select id="asg-color" style="margin-bottom:10px;">
+            <option value="background:#d1fae5; border-color:#34d399; color:#065f46;">Green 🟢</option>
+            <option value="background:#dbeafe; border-color:#60a5fa; color:#1e40af;">Blue 🔵</option>
+            <option value="background:#fef08a; border-color:#facc15; color:#713f12;">Yellow 🟡</option>
+            <option value="background:#ffedd5; border-color:#fb923c; color:#9a3412;">Peach / Orange 🍑</option>
+            <option value="background:#fee2e2; border-color:#f87171; color:#991b1b;">Red 🔴</option>
+            <option value="background:#fce7f3; border-color:#f472b6; color:#831843;">Pink 🌸</option>
+          </select>
           <button class="add-btn" id="asg-post-btn" style="width:100%; background:var(--primary); color:#fff;">Post Admin Task 🚀</button>
         </div>`;
     }
     if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No tasks posted.</div>`;
     snap.forEach(d=>{
       const a = d.data();
-      const isAdminPost = a.isAdminPost || false;
+      const styleOverride = a.cardStyle || 'background:#d1fae5; border-color:#34d399; color:#065f46;';
       el.innerHTML += `
-        <div class="row" style="${isAdminPost ? 'border-color:var(--primary); background:var(--chip);' : ''}">
+        <div class="row" style="${styleOverride}">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <b>${a.title} ${isAdminPost ? '👑':''}</b>
+            <b>${a.title} 👑</b>
             ${profile.isAdmin ? `<button class="del-btn btn-del-asg" data-id="${d.id}">Delete</button>` : ''}
           </div>
-          <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
-          <div style="margin:4px 0;">${a.desc}</div>
-          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open file</a>` : ''}
+          <span style="font-size:11px; opacity:.8;">by ${a.byName}</span>
+          <div style="margin:4px 0; font-weight:500;">${a.desc}</div>
+          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; text-decoration:underline; font-size:12px;">📎 Open file</a>` : ''}
         </div>`;
     });
 
@@ -772,8 +801,9 @@ function loadAssignments(){
           const title = document.getElementById('asg-title').value.trim();
           const link = document.getElementById('asg-link').value.trim();
           const desc = document.getElementById('asg-desc').value.trim();
+          const cardStyle = document.getElementById('asg-color').value;
           if(!title) return alert('Enter a title!');
-          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
+          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, cardStyle, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
         };
       }
       el.querySelectorAll('.btn-del-asg').forEach(btn=>{
@@ -785,6 +815,105 @@ function loadAssignments(){
       });
     }
   });
+}
+
+function loadResources(){
+  const el = document.getElementById('tab-resources');
+  const subjects = ['Applied Chemistry', 'Basic Electronics', 'Applied Math-I', 'Mechanical Engineering', 'Technical English', 'Workshop Practice', 'General'];
+  let currentSubj = 'Applied Chemistry';
+
+  const renderResView = () => {
+    const q = query(collection(db,'classes',classCode,'resources'), orderBy('ts','desc'), limit(100));
+    onSnapshot(q, (snap)=>{
+      let html = `
+        <div class="section-title"><h2>📂 Resources & Documents Hub</h2></div>
+        <div style="display:flex; gap:5px; overflow-x:auto; padding-bottom:6px; margin-bottom:12px;">
+          ${subjects.map(s => `<button class="add-btn res-subj-btn" data-subj="${s}" style="${currentSubj === s ? 'background:var(--primary); color:#fff;' : 'background:#fff;'}">${s}</button>`).join('')}
+        </div>`;
+
+      if(profile.isAdmin){
+        html += `
+          <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
+            <h3 style="margin-top:0; color:var(--primary);">👑 Admin Upload Portal (${currentSubj})</h3>
+            <input id="res-title" placeholder="Document Title (e.g. Unit 1 Notes / Roll List)">
+            <select id="res-type" style="margin-bottom:10px;">
+              <option value="Notes">Notes</option>
+              <option value="Books">Books</option>
+              <option value="Roll List">Roll List</option>
+              <option value="Question Paper">Question Paper</option>
+            </select>
+            <input id="res-link" placeholder="Drive / File Link">
+            <textarea id="res-desc" placeholder="Upload Bar Description & Details..." rows="2"></textarea>
+            <label style="font-size:12px; font-weight:700;">Subject Theme Color:</label>
+            <select id="res-subj-color" style="margin-bottom:10px;">
+              <option value="Applied Chemistry">Applied Chemistry (Green)</option>
+              <option value="Basic Electronics">Basic Electronics (Blue)</option>
+              <option value="Applied Math-I">Applied Math-I (Yellow)</option>
+              <option value="Mechanical Engineering">Mechanical Engineering (Peach)</option>
+              <option value="Technical English">Technical English (Red)</option>
+              <option value="Workshop Practice">Workshop Practice (Pink)</option>
+              <option value="General">General (Gray)</option>
+            </select>
+            <button class="add-btn" id="res-post-btn" style="width:100%; background:var(--primary); color:#fff;">Upload Resource 🚀</button>
+          </div>`;
+      }
+
+      html += `<div id="res-list-container">`;
+      let count = 0;
+      snap.forEach(d => {
+        const r = d.data();
+        if(r.subject === currentSubj){
+          count++;
+          const themeStyle = subjectThemeColors[r.subjectTheme || r.subject] || subjectThemeColors['General'];
+          html += `
+            <div class="row" style="${themeStyle}">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <span class="pill" style="background:#fff;">${r.type}</span>
+                  <b style="margin-left:6px; font-size:14px;">${r.title}</b>
+                  <span style="font-size:10px; opacity:.7; margin-left:4px;">(${r.subject})</span>
+                </div>
+                ${profile.isAdmin ? `<button class="del-btn btn-del-res" data-id="${d.id}">Delete</button>` : ''}
+              </div>
+              ${r.desc ? `<div style="margin:4px 0; font-size:12px; opacity:0.9;">${r.desc}</div>` : ''}
+              ${r.link ? `<a href="${r.link}" target="_blank" style="font-size:12px; font-weight:700; text-decoration:underline; margin-top:2px; display:inline-block;">📎 Open file</a>` : ''}
+            </div>`;
+        }
+      });
+      if(count === 0) html += `<div style="font-size:12px; opacity:.6;">No resources uploaded for ${currentSubj} yet.</div>`;
+      html += `</div>`;
+
+      el.innerHTML = html;
+
+      el.querySelectorAll('.res-subj-btn').forEach(btn => {
+        btn.onclick = () => {
+          currentSubj = btn.dataset.subj;
+          renderResView();
+        };
+      });
+
+      if(profile.isAdmin && document.getElementById('res-post-btn')){
+        document.getElementById('res-post-btn').onclick = async () => {
+          const title = document.getElementById('res-title').value.trim();
+          const type = document.getElementById('res-type').value;
+          const link = document.getElementById('res-link').value.trim();
+          const desc = document.getElementById('res-desc').value.trim();
+          const subjectTheme = document.getElementById('res-subj-color').value;
+          if(!title) return alert('Enter a resource title!');
+          await addDoc(collection(db,'classes',classCode,'resources'), { title, type, subject: currentSubj, desc, subjectTheme, link, ts: serverTimestamp() });
+        };
+      }
+
+      el.querySelectorAll('.btn-del-res').forEach(btn => {
+        btn.onclick = async (e) => {
+          if(confirm("Delete this resource?")){
+            await deleteDoc(doc(db,'classes',classCode,'resources', e.target.dataset.id));
+          }
+        };
+      });
+    });
+  };
+  renderResView();
 }
 
 function loadAnnouncements(){
@@ -833,13 +962,21 @@ function loadChat(){
   el.innerHTML = `
     <div class="section-title"><h2>💬 Chat</h2></div>
     <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
-      <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class</button>
-      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Mode</button>
+      <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class Chat</button>
+      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Chats</button>
+    </div>
+    <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
+      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Recently Messaged 1:1 Threads:</div>
+      <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
     </div>
     <div class="chat-log" id="chat-log"></div>
     <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
   
   const renderLog = () => {
+    const privBar = document.getElementById('private-recent-bar');
+    if(activeChatTarget !== 'ALL') privBar.classList.remove('hidden');
+    else privBar.classList.add('hidden');
+
     const qCol = activeChatTarget === 'ALL' 
       ? query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200))
       : query(collection(db,'private_chats', [user.uid, activeChatTarget].sort().join('_'), 'messages'), orderBy('ts','asc'), limit(200));
@@ -849,15 +986,54 @@ function loadChat(){
       log.innerHTML = '';
       snap.forEach(d=>{
         const m = d.data();
-        log.innerHTML += `<div class="msg"><b>${m.role||'Student'} · ${m.name}</b><div>${m.text}</div></div>`;
+        log.innerHTML += `
+          <div class="msg">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b>${m.role||'Student'} · ${m.name}</b>
+              ${profile.isAdmin ? `<button class="del-btn btn-del-msg" data-id="${d.id}" style="padding:2px 6px; font-size:10px;">Revoke</button>` : ''}
+            </div>
+            <div>${m.text}</div>
+          </div>`;
       });
       log.scrollTop = log.scrollHeight;
+
+      if(profile.isAdmin){
+        log.querySelectorAll('.btn-del-msg').forEach(btn => {
+          btn.onclick = async (e) => {
+            const msgId = e.target.dataset.id;
+            if(confirm("Revoke/Delete this message?")){
+              const colPath = activeChatTarget === 'ALL' ? `classes/${classCode}/chat` : `private_chats/${[user.uid, activeChatTarget].sort().join('_')}/messages`;
+              await deleteDoc(doc(db, colPath, msgId));
+            }
+          };
+        });
+      }
     });
+
+    // Render recently texted bar
+    const recentList = document.getElementById('recent-threads-list');
+    if(recentList){
+      onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
+        recentList.innerHTML = '';
+        memSnap.forEach(d => {
+          if(d.id !== user.uid){
+            const mem = d.data();
+            recentList.innerHTML += `<button class="add-btn" data-uid="${d.id}" style="padding:4px 8px; font-size:11px; background:${activeChatTarget === d.id ? 'var(--primary); color:#fff;' : '#fff'};">${mem.name}</button>`;
+          }
+        });
+        recentList.querySelectorAll('button').forEach(btn => {
+          btn.onclick = () => {
+            activeChatTarget = btn.dataset.uid;
+            renderLog();
+          };
+        });
+      });
+    }
   };
 
   document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
   document.getElementById('btn-chat-priv').onclick = ()=>{
-    const targetUid = prompt("Enter Member User ID / Name to start 1:1 private chat:");
+    const targetUid = prompt("Enter Member User ID / Name or pick from the recent bar below:");
     if(targetUid) { activeChatTarget = targetUid; renderLog(); }
   };
 
