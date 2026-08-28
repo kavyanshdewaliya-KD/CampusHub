@@ -40,7 +40,7 @@
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
   .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700;}
 
-  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border);}
+  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px;}
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
   .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px;}
 
@@ -50,17 +50,22 @@
   .chat-input-row input{flex:1; margin:0;}
   .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700;}
 
-  /* Members Split Layout */
   .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   @media(max-width:600px){.members-container{grid-template-columns:1fr;}}
 
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px;}
-  .cal-day{background:#fff; border:2px solid var(--border); border-radius:10px; padding:10px 4px; text-align:center; font-size:12px; position:relative; cursor:pointer; user-select:none; transition:transform 0.1s;}
-  .cal-day:active{transform:scale(0.95);}
-  .cal-day.has-leave{border-bottom:6px solid var(--danger);}
-  .cal-day.has-half{border-bottom:6px solid var(--accent2);}
-  .cal-day.has-skip{border-bottom:6px solid var(--pink);}
+  .cal-day{background:#fff; border:2px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:55px; display:flex; flex-direction:column; justify-content:space-between;}
+  .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
+  .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
+  .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
+
+  /* Attendance Progress Bars */
+  .prog-container{background:#eee; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
+  .prog-fill{height:100%; width:0%; transition:width 0.3s;}
+  .prog-good{background:var(--good);}
+  .prog-mid{background:var(--accent2);}
+  .prog-bad{background:var(--danger);}
 
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; overflow-x:auto;}
   nav.tabbar button{flex:1; min-width:64px; background:none; border:none; padding:10px 2px; font-size:11px; font-weight:700; opacity:.5; white-space:nowrap;}
@@ -160,7 +165,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -206,7 +211,7 @@ const defaultTimetable = {
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "Workshop Practice ⚠️verify", "teacher": "4JS", "room": "Workshop", "isLab": true},
+    {"time": "01:00 - 03:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "03:00 - 04:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
   ],
   "Thu": [
@@ -218,7 +223,7 @@ const defaultTimetable = {
   ],
   "Fri": [
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice ⚠️verify", "teacher": "4JS", "room": "Workshop", "isLab": true},
+    {"time": "09:00 - 11:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
     {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
@@ -233,7 +238,13 @@ function getSubjectColor(str) {
   return `hsl(${h}, 70%, 88%)`;
 }
 
-/* ---------- AUTH & AUTO ENTER ---------- */
+function getBadgeClass(pct){
+  if(pct >= 75) return 'prog-good';
+  if(pct >= 65) return 'prog-mid';
+  return 'prog-bad';
+}
+
+/* ---------- AUTH & BOOT ---------- */
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
@@ -261,7 +272,6 @@ async function syncMemberDoc(){
 
 document.getElementById('signout-btn').onclick = ()=> signOut(auth);
 
-/* ---------- TOPBAR CONTROLS ---------- */
 document.getElementById('theme-btn').onclick = ()=>{
   activeTheme = activeTheme === '1' ? '2' : '1';
   document.body.setAttribute('data-theme', activeTheme);
@@ -284,7 +294,6 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
   } else alert("Incorrect key!");
 };
 
-/* ---------- BOOT & NAVIGATION ---------- */
 function boot(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
@@ -333,9 +342,9 @@ function loadTimetable(){
         return `<div class="row ${p.isLab ? 'lab-row' : ''}">
           <span class="row-subject-tag" style="background:${chipColor};">${p.subject}</span>
           <b>${p.time}</b>
-          <div style="font-size:11px; opacity:.8; margin-top:3px;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
+          <div style="font-size:11px; opacity:.8;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
         </div>`;
-      }).join('') : `<div class="empty">No classes scheduled.</div>`);
+      }).join('') : `<div style="font-size:12px; opacity:0.6;">No classes scheduled.</div>`);
     });
     
     if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
@@ -417,51 +426,193 @@ document.getElementById('tt-save-cloud-btn').onclick = async ()=>{
   }
 };
 
-/* ---------- ATTENDANCE MODULE ---------- */
+/* ---------- ATTENDANCE & PERCENTAGE ENGINE ---------- */
 function loadAttendance(){
   const el = document.getElementById('tab-attendance');
   const todayStr = new Date().toISOString().split('T')[0];
+  
   el.innerHTML = `
-    <div class="section-title"><h2>📋 Attendance Tracker</h2></div>
+    <div class="section-title"><h2>📋 Daily Attendance & Analytics</h2></div>
     <div class="card" style="max-width:100%;">
-      <label style="font-size:12px; font-weight:700;">Select Date (from 5 Aug to Today):</label>
-      <input type="date" id="att-date" min="2026-08-05" max="${todayStr}" value="${todayStr}">
-      <div id="att-status-box" style="margin-top:10px;">
-        <p style="font-size:13px;">Log status for selected date:</p>
-        <div style="display:flex; gap:8px;">
-          <button class="add-btn" id="att-present" style="background:var(--good); color:#fff;">Present ✅</button>
-          <button class="add-btn" id="att-absent" style="background:var(--danger); color:#fff;">Absent ❌</button>
-        </div>
-      </div>
-      <div id="att-log-display" style="margin-top:14px; font-size:13px; font-weight:600;"></div>
+      <label style="font-size:12px; font-weight:700;">Select Date:</label>
+      <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
+      <div id="att-classes-container" style="margin-top:12px;"></div>
+    </div>
+    <div class="card" style="max-width:100%;">
+      <h3>📊 Subject-wise Attendance (%)</h3>
+      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026) through semester schedule rules.</p>
+      <div id="att-stats-container"></div>
     </div>`;
 
   const dateInp = document.getElementById('att-date');
-  const updateAttDisplay = async () => {
-    const selDate = dateInp.value;
-    const snap = await doc(db, 'users', user.uid, 'attendance', selDate);
-    onSnapshot(snap, (dSnap)=>{
-      const disp = document.getElementById('att-log-display');
-      if(dSnap.exists()) disp.innerHTML = `Status on ${selDate}: <b>${dSnap.data().status}</b>`;
-      else disp.innerHTML = `Status on ${selDate}: <i>Not recorded yet</i>`;
-    });
-  };
-  dateInp.onchange = updateAttDisplay;
-  updateAttDisplay();
-
-  const setAtt = async (status) => {
-    await setDoc(doc(db, 'users', user.uid, 'attendance', dateInp.value), { status, ts: serverTimestamp() });
-  };
-  document.getElementById('att-present').onclick = () => setAtt('Present');
-  document.getElementById('att-absent').onclick = () => setAtt('Absent');
+  dateInp.onchange = renderDayAttendanceForm;
+  renderDayAttendanceForm();
+  renderAttendanceStats();
 }
 
-/* ---------- CLICKABLE CALENDAR PLANNER ---------- */
+async function renderDayAttendanceForm(){
+  const dateStr = document.getElementById('att-date').value;
+  const container = document.getElementById('att-classes-container');
+  
+  const dObj = new Date(dateStr);
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dayName = dayNames[dObj.getDay()];
+  
+  if(dayName === 'Sun' || dayName === 'Sat'){
+    container.innerHTML = `<div style="font-size:13px; opacity:.7; text-align:center; padding:10px;">Weekend! No scheduled classes on ${dayName}.</div>`;
+    return;
+  }
+
+  // Check if calendar planner marked this date as leave / skip / half
+  const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
+  onSnapshot(planSnap, async (pSnap)=>{
+    const planType = pSnap.exists() ? pSnap.data().type : null;
+    
+    // Fetch slots for this day
+    const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
+    onSnapshot(ttSnap, async (tSnap)=>{
+      const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
+      const daySlots = (tData && tData[dayName]) || [];
+      
+      if(!daySlots.length){
+        container.innerHTML = `<div style="font-size:13px; opacity:.6;">No periods listed for ${dayName}.</div>`;
+        return;
+      }
+
+      // Fetch logged attendance for this specific date
+      const attCol = collection(db, 'users', user.uid, 'attendance_logs');
+      onSnapshot(attCol, (logSnap)=>{
+        const logs = {};
+        logSnap.forEach(d => {
+          if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
+        });
+
+        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Planner Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
+        
+        daySlots.forEach((slot, idx)=>{
+          const logKey = `${dateStr}_${idx}`;
+          const currentStatus = logs[logKey] || (planType === 'leave' || planType === 'skip' ? 'Absent' : 'Present');
+          const isChecked = currentStatus === 'Present';
+          
+          html += `
+            <div class="row" style="flex-direction:row; justify-content:space-between; align-items:center; padding:8px 12px;">
+              <div>
+                <span class="row-subject-tag" style="background:${getSubjectColor(slot.subject)};">${slot.subject}</span>
+                <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room}</div>
+              </div>
+              <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <span>${isChecked ? 'Present ✅' : 'Absent ❌'}</span>
+                <input type="checkbox" class="att-checkbox" data-slotidx="${idx}" data-date="${dateStr}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; margin:0;">
+              </label>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+
+        container.querySelectorAll('.att-checkbox').forEach(chk => {
+          chk.onchange = async (e) => {
+            const sIdx = e.target.dataset.slotidx;
+            const dStr = e.target.dataset.date;
+            const status = e.target.checked ? 'Present' : 'Absent';
+            await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
+              date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
+            });
+            renderAttendanceStats();
+          };
+        });
+      });
+    });
+  });
+}
+
+async function renderAttendanceStats(){
+  const statsContainer = document.getElementById('att-stats-container');
+  
+  // Calculate total possible classes from Aug 5, 2026 to Today based on fixed weekly timetable model
+  const startDate = new Date('2026-08-05');
+  const today = new Date();
+  
+  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
+  onSnapshot(ttSnap, async (tSnap)=>{
+    const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
+    
+    // Count total classes per subject up to today
+    const totals = {};
+    const attended = {};
+    
+    let curr = new Date(startDate);
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    
+    const planSnap = collection(db, 'users', user.uid, 'calendar_plans');
+    onSnapshot(planSnap, async (planSnapShot)=>{
+      const plans = {};
+      planSnapShot.forEach(d => plans[d.id] = d.data().type);
+      
+      const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
+      onSnapshot(attLogSnap, async (logSnap)=>{
+        const logs = {};
+        logSnap.forEach(d => logs[d.id] = d.data().status);
+
+        curr = new Date(startDate);
+        while(curr <= today){
+          const dStr = curr.toISOString().split('T')[0];
+          const dName = dayNames[curr.getDay()];
+          const slots = tData[dName] || [];
+          const plan = plans[dStr];
+          
+          slots.forEach((slot, idx)=>{
+            const subj = slot.subject;
+            totals[subj] = (totals[subj] || 0) + 1;
+            
+            const logKey = `${dStr}_${idx}`;
+            let stat = logs[logKey];
+            if(!stat){
+              if(plan === 'leave' || plan === 'skip') stat = 'Absent';
+              else stat = 'Present'; // Default assumed present if not marked
+            }
+            if(stat === 'Present'){
+              attended[subj] = (attended[subj] || 0) + 1;
+            }
+          });
+          
+          curr.setDate(curr.getDate() + 1);
+        }
+
+        let statsHtml = '';
+        const subjects = Object.keys(totals);
+        if(!subjects.length){
+          statsContainer.innerHTML = `<div style="font-size:12px; opacity:.6;">No subjects found.</div>`;
+          return;
+        }
+
+        subjects.forEach(subj => {
+          const tot = totals[subj];
+          const att = attended[subj] || 0;
+          const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
+          const badge = getBadgeClass(pct);
+          
+          statsHtml += `
+            <div style="margin-bottom:10px; font-size:12px;">
+              <div style="display:flex; justify-content:space-between; font-weight:700;">
+                <span>${subj}</span>
+                <span>${att} / ${tot} (${pct}%)</span>
+              </div>
+              <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
+            </div>`;
+        });
+
+        statsContainer.innerHTML = statsHtml;
+      });
+    });
+  });
+}
+
+/* ---------- CLICKABLE CALENDAR PLANNER WITH AUTO LEAVE SYNC ---------- */
 function loadCalendar(){
   const el = document.getElementById('tab-calendar');
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
     <div class="card" style="max-width:100%;">
-      <p style="font-size:12px; opacity:.7;">Tap any date to cycle plans: <b style="color:var(--danger)">Leave</b> → <b style="color:var(--accent2)">Half Day</b> → <b style="color:var(--pink)">Skip</b> → <b>Clear</b></p>
+      <p style="font-size:12px; opacity:.7;">Tap any date to cycle leave plans: <b style="color:var(--danger)">Leave</b> → <b style="color:var(--accent2)">Half Day</b> → <b style="color:var(--pink)">Skip</b> → <b>Clear</b></p>
       <div class="cal-grid" id="cal-grid"></div>
     </div>`;
   
@@ -473,8 +624,13 @@ function loadCalendar(){
     grid.innerHTML = '';
     for(let i = 1; i <= 31; i++){
       const dKey = `2026-08-${String(i).padStart(2,'0')}`;
-      const statusClass = plans[dKey] ? `has-${plans[dKey]}` : '';
-      grid.innerHTML += `<div class="cal-day ${statusClass}" data-date="${dKey}">${i}<br><span style="font-size:9px;">Aug</span></div>`;
+      const planVal = plans[dKey];
+      const statusClass = planVal ? `has-${planVal}` : '';
+      grid.innerHTML += `
+        <div class="cal-day ${statusClass}" data-date="${dKey}">
+          <b>${i}</b>
+          <span style="font-size:9px; opacity:.8;">${planVal ? planVal.toUpperCase() : 'Aug'}</span>
+        </div>`;
     }
     grid.querySelectorAll('.cal-day').forEach(box => {
       box.onclick = async () => {
@@ -485,13 +641,17 @@ function loadCalendar(){
         else if(curr === 'half') next = 'skip';
         else if(curr === 'skip') next = null;
         
-        await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
+        if(next) {
+          await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
+        } else {
+          await deleteDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr));
+        }
       };
     });
   });
 }
 
-/* ---------- ASSIGNMENTS MODULE ---------- */
+/* ---------- ASSIGNMENTS MODULE WITH ADMIN DELETE ---------- */
 function loadAssignments(){
   const el = document.getElementById('tab-assignments');
   const q = query(collection(db,'classes',classCode,'assignments'), orderBy('ts','desc'), limit(50));
@@ -511,24 +671,38 @@ function loadAssignments(){
       const a = d.data();
       el.innerHTML += `
         <div class="row">
-          <b>${a.title}</b> <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <b>${a.title}</b>
+            ${profile.isAdmin ? `<button class="del-btn btn-del-asg" data-id="${d.id}">Delete</button>` : ''}
+          </div>
+          <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
           <div style="margin:4px 0;">${a.desc}</div>
           ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open file</a>` : ''}
         </div>`;
     });
-    if(document.getElementById('asg-post-btn')){
-      document.getElementById('asg-post-btn').onclick = async ()=>{
-        const title = document.getElementById('asg-title').value.trim();
-        const link = document.getElementById('asg-link').value.trim();
-        const desc = document.getElementById('asg-desc').value.trim();
-        if(!title) return alert('Enter a title!');
-        await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, ts: serverTimestamp() });
-      };
+
+    if(profile.isAdmin){
+      if(document.getElementById('asg-post-btn')){
+        document.getElementById('asg-post-btn').onclick = async ()=>{
+          const title = document.getElementById('asg-title').value.trim();
+          const link = document.getElementById('asg-link').value.trim();
+          const desc = document.getElementById('asg-desc').value.trim();
+          if(!title) return alert('Enter a title!');
+          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, ts: serverTimestamp() });
+        };
+      }
+      el.querySelectorAll('.btn-del-asg').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          if(confirm("Delete this task?")){
+            await deleteDoc(doc(db,'classes',classCode,'assignments', e.target.dataset.id));
+          }
+        };
+      });
     }
   });
 }
 
-/* ---------- ANNOUNCEMENTS ---------- */
+/* ---------- ANNOUNCEMENTS WITH ADMIN DELETE ---------- */
 function loadAnnouncements(){
   const el = document.getElementById('tab-announce');
   const q = query(collection(db,'classes',classCode,'announcements'), orderBy('ts','desc'), limit(50));
@@ -537,17 +711,35 @@ function loadAnnouncements(){
     if(profile.isAdmin){
       el.innerHTML += `<div style="display:flex; gap:7px; margin-bottom:12px;"><input id="ann-in" placeholder="Write an announcement…" style="margin:0;"><button class="send-btn" id="ann-send">Post</button></div>`;
     }
-    if(snap.empty) el.innerHTML += `<div class="empty">No announcements yet.</div>`;
+    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No announcements yet.</div>`;
     snap.forEach(d=>{
       const a = d.data();
-      el.innerHTML += `<div class="row"><b>${a.byName||'CR'}</b> · ${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}<div>${a.text}</div></div>`;
+      el.innerHTML += `
+        <div class="row">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b>${a.byName||'CR'}</b>
+            ${profile.isAdmin ? `<button class="del-btn btn-del-ann" data-id="${d.id}">Delete</button>` : ''}
+          </div>
+          <span style="font-size:10px; opacity:.6;">${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}</span>
+          <div>${a.text}</div>
+        </div>`;
     });
-    if(document.getElementById('ann-send')){
-      document.getElementById('ann-send').onclick = async ()=>{
-        const val = document.getElementById('ann-in').value.trim(); if(!val) return;
-        await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
-        document.getElementById('ann-in').value='';
-      };
+
+    if(profile.isAdmin){
+      if(document.getElementById('ann-send')){
+        document.getElementById('ann-send').onclick = async ()=>{
+          const val = document.getElementById('ann-in').value.trim(); if(!val) return;
+          await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
+          document.getElementById('ann-in').value='';
+        };
+      }
+      el.querySelectorAll('.btn-del-ann').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          if(confirm("Delete this announcement?")){
+            await deleteDoc(doc(db,'classes',classCode,'announcements', e.target.dataset.id));
+          }
+        };
+      });
     }
   });
 }
@@ -602,7 +794,7 @@ function loadChat(){
   renderLog();
 }
 
-/* ---------- MEMBERS MODULE (SPLIT ACTIVE & ALL) ---------- */
+/* ---------- MEMBERS MODULE ---------- */
 function loadMembers(){
   const el = document.getElementById('tab-members');
   const presenceRef = ref(rtdb, `presence/${classCode}`);
@@ -619,11 +811,11 @@ function loadMembers(){
         <div class="members-container">
           <div>
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">🟢 ACTIVE NOW (${active.length})</div>
-            ${active.length ? active.map(e => `<div class="row"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div class="empty">No members online</div>'}
+            ${active.length ? active.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No members online</div>'}
           </div>
           <div>
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
-            ${offline.length ? offline.map(e => `<div class="row"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div class="empty">No offline members</div>'}
+            ${offline.length ? offline.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
           </div>
         </div>`;
     });
