@@ -60,16 +60,16 @@
 
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#000000; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
+  .cal-day{background:#949191; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
   .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:700; opacity:0.85;}
-  .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700; color:#5C0000;}
-  .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700; color:#422006;}
-  .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
+  .cal-day.mst-day{background:#f52525; border-color:#D32F2F; font-weight:700; color:#5C0000;}
+  .cal-day.hol-day{background:#ffea48; border-color:#CA8A04; font-weight:700; color:#422006;}
+  .cal-day.has-leave{background:#4f4cf1; border-color:var(--danger);}
   .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
   .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
 
   /* Attendance Progress Bars */
-  .prog-container{background:#eee; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
+  .prog-container{background:#18b803; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
   .prog-fill{height:100%; width:0%; transition:width 0.3s;}
   .prog-good{background:var(--good);}
   .prog-mid{background:var(--accent2);}
