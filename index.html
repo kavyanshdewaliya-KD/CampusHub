@@ -76,11 +76,6 @@
   .prog-bad{background:var(--danger);}
   .target-line{position:absolute; top:0; bottom:0; left:75%; width:2px; background:var(--ink); z-index:2; opacity:0.7;}
 
-.calendar-day.weekend {
-  background-color: #e2e8f0;
-  color: #334155;
-}
-
   /* Compact Bottom Navigation */
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
   nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
@@ -536,12 +531,12 @@ async function renderDayAttendanceForm(){
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const dayName = dayNames[dObj.getDay()];
 
-  const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
-  onSnapshot(planSnap, async (pSnap)=>{
+  const planRef = doc(db, 'users', user.uid, 'calendar_plans', dateStr);
+  onSnapshot(planRef, async (pSnap)=>{
     const planType = pSnap.exists() ? pSnap.data().type : null;
     
-    const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-    onSnapshot(ttSnap, async (tSnap)=>{
+    const ttRef = doc(db, 'classes', classCode, 'meta', 'timetable');
+    onSnapshot(ttRef, async (tSnap)=>{
       const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
       const daySlots = (tData && tData[dayName]) || [];
       
@@ -584,9 +579,11 @@ async function renderDayAttendanceForm(){
             const sIdx = e.target.dataset.slotidx;
             const dStr = e.target.dataset.date;
             const status = e.target.checked ? 'Present' : 'Absent';
+            
             await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
               date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
-            });
+            }, { merge: true });
+            
             renderAttendanceStats();
           };
         });
@@ -601,21 +598,21 @@ async function renderAttendanceStats(){
   const startDate = new Date('2026-08-05');
   const today = new Date();
   
-  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ttSnap, async (tSnap)=>{
+  const ttRef = doc(db, 'classes', classCode, 'meta', 'timetable');
+  onSnapshot(ttRef, async (tSnap)=>{
     const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
     const totals = {};
     const attended = {};
     let curr = new Date(startDate);
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     
-    const planSnap = collection(db, 'users', user.uid, 'calendar_plans');
-    onSnapshot(planSnap, async (planSnapShot)=>{
+    const planRef = collection(db, 'users', user.uid, 'calendar_plans');
+    onSnapshot(planRef, async (planSnapShot)=>{
       const plans = {};
       planSnapShot.forEach(d => plans[d.id] = d.data().type);
       
-      const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attLogSnap, async (logSnap)=>{
+      const attLogRef = collection(db, 'users', user.uid, 'attendance_logs');
+      onSnapshot(attLogRef, async (logSnap)=>{
         const logs = {};
         logSnap.forEach(d => logs[d.id] = d.data().status);
 
