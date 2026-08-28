@@ -1,167 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Campusmate — IET DAVV CSE-B</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#6366f1" />
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusHub</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6C4CE0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --radius:16px; --border-w:3px; --font-display:'Baloo 2','Fredoka',sans-serif; --font-body:'Poppins',sans-serif;
+    --bg:#F1EEFC; --panel:#fff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#fff;
+    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF; }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--font-body); min-height:100vh;}
+  h1,h2,h3{font-family:var(--font-display); font-weight:700;}
+  button{font-family:var(--font-body); cursor:pointer;} .hidden{display:none !important;}
+  #login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .card{background:var(--panel); border:var(--border-w) solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px;}
+  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:var(--border-w) solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
+  input,select{width:100%; padding:10px 12px; border:var(--border-w) solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px;}
+  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--panel); border-bottom:var(--border-w) solid var(--border); position:sticky; top:0;}
+  main{padding:16px; max-width:720px; margin:0 auto; padding-bottom:80px;}
+  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:700;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px;}
+  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
+  .row{border:2px solid var(--border); border-radius:10px; padding:9px 11px; margin-bottom:8px; background:var(--chip); font-size:13px;}
+  .lock-note{background:var(--chip); border:2px dashed var(--border); border-radius:10px; padding:9px 12px; font-size:12px; margin-bottom:10px;}
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; height:340px; overflow-y:auto; margin-bottom:10px;}
+  .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
+  .chat-input-row{display:flex; gap:7px;}
+  .chat-input-row input{flex:1; margin:0;}
+  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 14px; font-weight:700;}
+  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:var(--border-w) solid var(--border); display:flex;}
+  nav.tabbar button{flex:1; background:none; border:none; padding:9px 2px 8px; font-size:10px; font-weight:700; opacity:.5;}
+  nav.tabbar button.active{opacity:1; color:var(--primary);}
+  .empty{opacity:.5; font-size:13px;}
+</style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
-  <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col justify-between p-4 pb-20">
-    <!-- Header -->
-    <header class="flex justify-between items-center py-3 border-b border-slate-800">
-      <div>
-        <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">Campusmate</h1>
-        <p class="text-xs text-slate-400">IET DAVV CSE-B</p>
-      </div>
-      <div id="user-badge" class="hidden text-xs px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700"></div>
-    </header>
+<body>
 
-    <!-- Auth View -->
-    <div id="auth-view" class="my-auto space-y-4 text-center py-8">
-      <div class="text-4xl mb-2">🎓</div>
-      <h2 class="text-2xl font-bold">Welcome to Campusmate</h2>
-      <p class="text-sm text-slate-400 max-w-xs mx-auto">Enter your class key and sign in with Google to join the CSE-B portal.</p>
-      
-      <div class="space-y-3 pt-4 max-w-xs mx-auto">
-        <input id="class-key-input" type="password" placeholder="Enter Class Key (Admin or User Key)" class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-indigo-500" />
-        <button id="google-signin-btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg text-sm transition">
-          <span>Sign in with Google</span>
-        </button>
-      </div>
-      <p class="text-xs text-slate-500 pt-2">🔑 Admin Key: <b>IETKDPROJECT1</b> | User Key: <b>IETCSEB</b></p>
-    </div>
-
-    <!-- Main App Content -->
-    <main id="main-content" class="hidden flex-1 py-4 space-y-4">
-      <!-- Admin Upload Banner (Only visible if logged in with Admin Key) -->
-      <div id="admin-panel" class="hidden p-3 rounded-lg bg-indigo-950/60 border border-indigo-700/50 space-y-2">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-semibold text-indigo-300">👑 Admin / CR Controls</span>
-          <span class="text-[10px] bg-indigo-800 px-2 py-0.5 rounded text-indigo-100">CR Mode Active</span>
-        </div>
-        <button id="add-notice-btn" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded font-medium">
-          + Post New Announcement / Notice
-        </button>
-      </div>
-
-      <!-- Live Active Members Bar -->
-      <div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg text-xs">
-        <span class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-slate-300">Active Classmates:</span>
-        </span>
-        <span id="active-count" class="font-bold text-emerald-400">1 Online</span>
-      </div>
-
-      <!-- Tab Content Placeholder -->
-      <div id="tab-content" class="bg-slate-800/40 border border-slate-800 rounded-xl p-4 min-h-[300px]">
-        <h3 class="font-semibold text-slate-200">Today's Timetable</h3>
-        <p class="text-xs text-slate-400 mt-1">Verified CSE-B Schedule loaded.</p>
-      </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/60">
-      Built by KAVYANSH 🚀 <span class="text-slate-600">(don't sue me IET 😅)</span>
-    </footer>
+<div id="login-screen">
+  <div class="card">
+    <h1>CampusHub ⚡🎓</h1>
+    <p style="font-size:13px; opacity:.7;">Sign in with your real Google account. Then join or create your class with a shared class code.</p>
+    <button class="btn-primary" id="google-btn">Continue with Google</button>
+    <p id="login-status" style="font-size:12px; opacity:.6; margin-top:10px;"></p>
   </div>
+  <div class="card hidden" id="join-card">
+    <h2 style="font-size:18px;">Join your class</h2>
+    <input id="in-code" placeholder="Class code e.g. CSE-B-2026" style="text-transform:uppercase;">
+    <input id="in-role" placeholder="Role tag e.g. Student / CR">
+    <select id="in-batch"><option value="B1">Batch 1</option><option value="B2">Batch 2</option></select>
+    <input id="in-adminpass" placeholder="Admin passcode (optional, CR only)">
+    <button class="btn-primary" id="join-btn">Enter Classroom 🚀</button>
+  </div>
+</div>
 
-  <!-- Firebase Integration Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getDatabase, ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-rtdb.js";
-    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+<div id="app-screen" class="hidden">
+  <header class="topbar">
+    <div><b id="hdr-name"></b><div style="font-size:10.5px; opacity:.6;" id="hdr-sub"></div></div>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <span class="pill" id="admin-pill" style="display:none;">🔑 Admin</span>
+      <button class="icon-btn" id="notif-btn" title="Enable notifications">🔔</button>
+      <button class="icon-btn" id="signout-btn" title="Sign out">🚪</button>
+    </div>
+  </header>
+  <main>
+    <section id="tab-timetable"></section>
+    <section id="tab-announce" class="hidden"></section>
+    <section id="tab-chat" class="hidden"></section>
+    <section id="tab-members" class="hidden"></section>
+  </main>
+  <nav class="tabbar">
+    <button data-tab="timetable">🗓️ Timetable</button>
+    <button data-tab="announce">📢 Announce</button>
+    <button data-tab="chat">💬 Chat</button>
+    <button data-tab="members">👥 Members</button>
+  </nav>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
-      authDomain: "ietcse-bb0c9.firebaseapp.com",
-      databaseURL: "https://ietcse-bb0c9-default-rtdb.firebaseio.com",
-      projectId: "ietcse-bb0c9",
-      storageBucket: "ietcse-bb0c9.firebasestorage.app",
-      messagingSenderId: "39297300181",
-      appId: "1:39297300181:web:08b6d3e5bae40b9c19145c"
-    };
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
-    const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
+// ==== YOUR FIREBASE PROJECT ====
+const firebaseConfig = {
+  apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
+  authDomain: "ietcse-bb0c9.firebaseapp.com",
+  databaseURL: "https://ietcse-bb0c9-default-rtdb.firebaseio.com",
+  projectId: "ietcse-bb0c9",
+  storageBucket: "ietcse-bb0c9.firebasestorage.app",
+  messagingSenderId: "39297300181",
+  appId: "1:39297300181:web:08b6d3e5bae40b9c19145c",
+};
+// TODO: paste your VAPID key here (Project settings -> Cloud Messaging -> Web Push certificates)
+const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const rtdb = getDatabase(app);
-    const messaging = getMessaging(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const rtdb = getDatabase(app);
+let messaging; try{ messaging = getMessaging(app); }catch(e){ console.warn('Messaging not available', e); }
 
-    const ADMIN_KEY = "IETKDPROJECT1";
-    const USER_KEY = "IETCSEB";
+let user=null, classCode='', profile={role:'Student', batch:'B1', isAdmin:false};
 
-    document.getElementById("google-signin-btn").addEventListener("click", async () => {
-      const inputKey = document.getElementById("class-key-input").value.trim();
-      
-      if (inputKey !== ADMIN_KEY && inputKey !== USER_KEY) {
-        alert("Invalid Class Key! Please enter either the Admin Key or User Key.");
-        return;
-      }
+/* ---------- AUTH ---------- */
+document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
+  .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
-      const role = (inputKey === ADMIN_KEY) ? "admin" : "user";
-      const provider = new GoogleAuthProvider();
+onAuthStateChanged(auth, (u)=>{
+  user = u;
+  if(u){
+    document.getElementById('login-status').textContent = `Signed in as ${u.displayName} (${u.email})`;
+    document.getElementById('join-card').classList.remove('hidden');
+  } else {
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('app-screen').classList.add('hidden');
+    document.getElementById('join-card').classList.add('hidden');
+  }
+});
 
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+document.getElementById('join-btn').onclick = async ()=>{
+  classCode = document.getElementById('in-code').value.trim().toUpperCase();
+  if(!classCode || !user) return;
+  profile.role = document.getElementById('in-role').value.trim() || 'Student';
+  profile.batch = document.getElementById('in-batch').value;
+  const adminpass = document.getElementById('in-adminpass').value.trim();
 
-        // Save User Role to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName,
-          email: user.email,
-          role: role,
-          lastLogin: new Date().toISOString()
-        }, { merge: true });
+  const classRef = doc(db, 'classes', classCode);
+  const classSnap = await getDoc(classRef);
+  if(!classSnap.exists()) await setDoc(classRef, { createdAt: serverTimestamp(), adminPass: adminpass || null });
+  else if(adminpass){
+    const data = classSnap.data();
+    if(!data.adminPass){ await updateDoc(classRef, { adminPass: adminpass }); profile.isAdmin = true; }
+    else if(data.adminPass === adminpass) profile.isAdmin = true;
+  }
 
-        // Realtime Presence Setup
-        const userPresenceRef = ref(rtdb, `presence/${user.uid}`);
-        set(userPresenceRef, { name: user.displayName, online: true });
-        onDisconnect(userPresenceRef).remove();
+  const memberRef = doc(db, 'classes', classCode, 'members', user.uid);
+  await setDoc(memberRef, {
+    name: user.displayName, email: user.email, role: profile.role, batch: profile.batch,
+    isAdmin: profile.isAdmin, photoURL: user.photoURL, updatedAt: serverTimestamp()
+  }, { merge:true });
 
-        // Push Notification VAPID Registration
-        try {
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-            console.log("FCM Token:", token);
-          }
-        } catch (e) { console.log("Push notice skipped", e); }
+  boot();
+};
 
-        // Render UI based on Role
-        renderUI(user, role);
-      } catch (err) {
-        alert("Sign-In failed: " + err.message);
-      }
+document.getElementById('signout-btn').onclick = ()=> signOut(auth);
+
+/* ---------- BOOT ---------- */
+function boot(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('hdr-name').textContent = user.displayName;
+  document.getElementById('hdr-sub').textContent = `${profile.role} · ${classCode} · Batch ${profile.batch.slice(1)}`;
+  document.getElementById('admin-pill').style.display = profile.isAdmin ? 'inline-block' : 'none';
+  setupPresence();
+  loadTimetable();
+  loadAnnouncements();
+  loadChat();
+  loadMembers();
+  showTab('timetable');
+}
+
+document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
+function showTab(t){
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  ['timetable','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
+}
+
+/* ---------- PRESENCE (Realtime Database) ---------- */
+function setupPresence(){
+  const myStatusRef = ref(rtdb, `presence/${classCode}/${user.uid}`);
+  const connectedRef = ref(rtdb, '.info/connected');
+  onValue(connectedRef, (snap)=>{
+    if(snap.val()===false) return;
+    onDisconnect(myStatusRef).set({ name:user.displayName, state:'offline', last_changed: rtdbServerTs() })
+      .then(()=> rtdbSet(myStatusRef, { name:user.displayName, state:'online', last_changed: rtdbServerTs() }));
+  });
+}
+
+/* ---------- TIMETABLE ---------- */
+async function loadTimetable(){
+  const el = document.getElementById('tab-timetable');
+  const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
+  onSnapshot(ref_, (snap)=>{
+    const days = snap.exists() ? snap.data().days : {};
+    el.innerHTML = `<div class="section-title"><h2>🗓️ Timetable</h2>${profile.isAdmin? '<button class="add-btn" id="tt-edit-btn">Edit (paste JSON)</button>':''}</div>`;
+    if(!profile.isAdmin) el.innerHTML += `<div class="lock-note">🔒 Read-only — ask your CR/admin to update.</div>`;
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+    dayNames.forEach(d=>{
+      const periods = (days && days[d]) || [];
+      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>`<div class="row"><b>${p.time}</b> — ${p.subject} <div style="font-size:11px;opacity:.7;">${p.teacher||''} ${p.room||''}</div></div>`).join('') : `<div class="empty">No classes listed.</div>`);
     });
-
-    function renderUI(user, role) {
-      document.getElementById("auth-view").classList.add("hidden");
-      document.getElementById("main-content").classList.remove("hidden");
-      
-      const badge = document.getElementById("user-badge");
-      badge.classList.remove("hidden");
-      badge.innerHTML = `${user.displayName.split(' ')[0]} ${role === 'admin' ? '👑 CR' : '👨‍🎓'}`;
-
-      if (role === "admin") {
-        document.getElementById("admin-panel").classList.remove("hidden");
-      }
-
-      // Track online active count
-      const presenceRef = ref(rtdb, 'presence');
-      onValue(presenceRef, (snapshot) => {
-        const data = snapshot.val() || {};
-        const count = Object.keys(data).length;
-        document.getElementById("active-count").textContent = `${count} Online`;
-      });
+    if(profile.isAdmin){
+      const btn = document.getElementById('tt-edit-btn');
+      if(btn) btn.onclick = async ()=>{
+        const current = JSON.stringify(days||{}, null, 2);
+        const next = prompt('Paste timetable JSON (days: Mon-Fri, each an array of {time,subject,teacher,room}):', current);
+        if(next==null) return;
+        try{ const parsed = JSON.parse(next); await setDoc(ref_, { days: parsed }); }
+        catch(e){ alert('Invalid JSON: '+e.message); }
+      };
     }
-  </script>
+  });
+}
+
+/* ---------- ANNOUNCEMENTS ---------- */
+function loadAnnouncements(){
+  const el = document.getElementById('tab-announce');
+  const q = query(collection(db,'classes',classCode,'announcements'), orderBy('ts','desc'), limit(50));
+  onSnapshot(q, (snap)=>{
+    el.innerHTML = `<div class="section-title"><h2>📢 Announcements</h2></div>`;
+    if(profile.isAdmin){
+      el.innerHTML += `<div style="display:flex; gap:7px; margin-bottom:12px;"><input id="ann-in" placeholder="Write an announcement…" style="margin:0;"><button class="send-btn" id="ann-send">Post</button></div>`;
+    }
+    if(snap.empty) el.innerHTML += `<div class="empty">No announcements yet.</div>`;
+    snap.forEach(d=>{
+      const a = d.data();
+      el.innerHTML += `<div class="row"><b>${a.byName||'Admin'}</b> · ${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}<div>${a.text}</div></div>`;
+    });
+    const sendBtn = document.getElementById('ann-send');
+    if(sendBtn) sendBtn.onclick = async ()=>{
+      const val = document.getElementById('ann-in').value.trim(); if(!val) return;
+      await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
+      document.getElementById('ann-in').value='';
+    };
+  });
+}
+
+/* ---------- CHAT ---------- */
+function loadChat(){
+  const el = document.getElementById('tab-chat');
+  el.innerHTML = `<div class="section-title"><h2>💬 Class Chat</h2></div>
+    <div class="chat-log" id="chat-log"></div>
+    <div class="chat-input-row"><input id="chat-in" placeholder="Message everyone…"><button class="send-btn" id="chat-send">Send</button></div>`;
+  const q = query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200));
+  onSnapshot(q, (snap)=>{
+    const log = document.getElementById('chat-log'); if(!log) return;
+    log.innerHTML = '';
+    snap.forEach(d=>{
+      const m = d.data();
+      log.innerHTML += `<div class="msg"><b>${m.role||'Student'} · ${m.name}</b><div>${m.text}</div></div>`;
+    });
+    log.scrollTop = log.scrollHeight;
+  });
+  document.getElementById('chat-send').onclick = sendMsg;
+  document.getElementById('chat-in').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMsg(); });
+  async function sendMsg(){
+    const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
+    await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
+    inp.value='';
+  }
+}
+
+/* ---------- MEMBERS (Firestore roster + Realtime DB presence) ---------- */
+function loadMembers(){
+  const el = document.getElementById('tab-members');
+  const presenceRef = ref(rtdb, `presence/${classCode}`);
+  onSnapshot(collection(db,'classes',classCode,'members'), (snap)=>{
+    onValue(presenceRef, (pSnap)=>{
+      const presence = pSnap.val() || {};
+      const entries = [];
+      snap.forEach(d=> entries.push({ uid:d.id, ...d.data() }));
+      entries.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      const active = entries.filter(e=> presence[e.uid]?.state==='online');
+      const inactive = entries.filter(e=> presence[e.uid]?.state!=='online');
+      el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>`;
+      const row = e => `<div class="row"><span style="color:${presence[e.uid]?.state==='online'?'var(--good)':'#999'}">●</span> <b>${e.name}</b> — ${e.role||'Student'} · Batch ${String(e.batch||'').slice(1)} ${e.isAdmin?'🔑':''}</div>`;
+      if(active.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;">ACTIVE NOW</div>` + active.map(row).join('');
+      if(inactive.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;">NOT ACTIVE</div>` + inactive.map(row).join('');
+    });
+  });
+}
+
+/* ---------- FCM PUSH ---------- */
+document.getElementById('notif-btn').onclick = async ()=>{
+  if(!messaging){ alert('Messaging not supported in this browser.'); return; }
+  try{
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted'){ alert('Notifications blocked.'); return; }
+    await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+    if(token && user && classCode){
+      await updateDoc(doc(db,'classes',classCode,'members',user.uid), { fcmToken: token });
+      alert('Notifications enabled ✅');
+    }
+  }catch(e){ alert('Could not enable notifications: '+e.message); }
+};
+onMessage_safe();
+function onMessage_safe(){ try{ if(messaging) onMessage(messaging, (payload)=> console.log('Foreground push:', payload)); }catch(e){} }
+</script>
 </body>
 </html>
