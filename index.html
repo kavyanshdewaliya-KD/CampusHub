@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root[data-theme="1"] {
-    --bg:#F1EEFC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
+    --bg:#F4F2FC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
     --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF;
     --lab-bg:#FFE5D9; --lab-border:#FF9E7D;
   }
@@ -18,6 +18,11 @@
     --bg:#FFF9F0; --panel:#ffffff; --ink:#1F1924; --primary:#FF6B6B; --primary-ink:#ffffff;
     --accent2:#4ECDC4; --pink:#FFE66D; --danger:#FF5A5F; --good:#10B981; --border:#1F1924; --chip:#F7FFF7;
     --lab-bg:#FFE3E3; --lab-border:#FF6B6B;
+  }
+  :root[data-theme="3"] {
+    --bg:#E8F4F8; --panel:#ffffff; --ink:#0F172A; --primary:#0284C7; --primary-ink:#ffffff;
+    --accent2:#38BDF8; --pink:#F472B6; --danger:#EF4444; --good:#10B981; --border:#0F172A; --chip:#E0F2FE;
+    --lab-bg:#FEF3C7; --lab-border:#F59E0B;
   }
 
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
@@ -30,11 +35,11 @@
   .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
   input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit;}
   
-  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
-  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:110px;}
+  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
+  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
   
-  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:700;}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; font-size:15px;}
+  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px;}
   
   .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
@@ -44,7 +49,7 @@
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
   .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px;}
 
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:340px; overflow-y:auto; margin-bottom:10px;}
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px;}
   .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
   .chat-input-row input{flex:1; margin:0;}
@@ -54,8 +59,10 @@
   @media(max-width:600px){.members-container{grid-template-columns:1fr;}}
 
   /* Calendar Grid */
-  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px;}
-  .cal-day{background:#fff; border:2px solid var(--border); border-radius:10px; padding:8px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:55px; display:flex; flex-direction:column; justify-content:space-between;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
+  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between;}
+  .cal-day.mst-day{background:#FFD1D1; border-color:#D32F2F; font-weight:700;}
+  .cal-day.hol-day{background:#FEF08A; border-color:#CA8A04; font-weight:700;}
   .cal-day.has-leave{background:#FFE3E3; border-color:var(--danger);}
   .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
   .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
@@ -67,11 +74,13 @@
   .prog-mid{background:var(--accent2);}
   .prog-bad{background:var(--danger);}
 
-  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; overflow-x:auto;}
-  nav.tabbar button{flex:1; min-width:64px; background:none; border:none; padding:10px 2px; font-size:11px; font-weight:700; opacity:.5; white-space:nowrap;}
-  nav.tabbar button.active{opacity:1; color:var(--primary); border-top:3px solid var(--primary);}
+  /* Compact Bottom Navigation */
+  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
+  nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.6; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  nav.tabbar button .t-icon{font-size:18px;}
+  nav.tabbar button.active{opacity:1; color:var(--primary); background:var(--chip); border-top:3px solid var(--primary);}
   
-  footer.dev-footer{text-align:center; opacity:0.75; font-size:12px; margin-top:24px; font-weight:700;}
+  footer.dev-footer{text-align:center; opacity:0.75; font-size:11px; margin-top:20px; font-weight:700;}
   
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
   .modal-body{background:#fff; border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px;}
@@ -92,15 +101,12 @@
 <div id="app-screen" class="hidden">
   <header class="topbar">
     <div>
-      <b id="hdr-name"></b>
-      <div style="font-size:10.5px; opacity:.6;" id="hdr-sub"></div>
+      <b id="hdr-name" style="font-size:13px;"></b>
+      <div style="font-size:10px; opacity:.6;" id="hdr-sub"></div>
     </div>
-    <div style="display:flex; gap:6px; align-items:center;">
-      <span class="pill" id="admin-pill" style="display:none;">🔑 CR / Admin</span>
-      <button class="icon-btn" id="key-access-btn" title="Unlock Admin Access">🔑</button>
-      <button class="icon-btn" id="theme-btn" title="Toggle Theme">🎨</button>
-      <button class="icon-btn" id="settings-btn" title="Settings">⚙️</button>
-      <button class="icon-btn" id="signout-btn" title="Sign out">🚪</button>
+    <div style="display:flex; gap:5px; align-items:center;">
+      <button class="icon-btn" id="members-top-btn" title="Members">👥</button>
+      <button class="icon-btn" id="settings-btn" title="Settings & Theme">⚙️</button>
     </div>
   </header>
   
@@ -116,25 +122,34 @@
   </main>
 
   <nav class="tabbar">
-    <button data-tab="timetable">🗓️ Schedule</button>
-    <button data-tab="attendance">📋 Attendance</button>
-    <button data-tab="calendar">📅 Calendar</button>
-    <button data-tab="assignments">📚 Tasks</button>
-    <button data-tab="announce">📢 Announce</button>
-    <button data-tab="chat">💬 Chat</button>
-    <button data-tab="members">👥 Members</button>
+    <button data-tab="timetable" class="active"><span class="t-icon">🗓️</span><span>Sch</span></button>
+    <button data-tab="attendance"><span class="t-icon">📋</span><span>Attend</span></button>
+    <button data-tab="calendar"><span class="t-icon">📅</span><span>Cal</span></button>
+    <button data-tab="assignments"><span class="t-icon">📚</span><span>Tasks</span></button>
+    <button data-tab="announce"><span class="t-icon">📢</span><span>Notice</span></button>
+    <button data-tab="chat"><span class="t-icon">💬</span><span>Chat</span></button>
   </nav>
 </div>
 
-<!-- Admin Key Passcode Modal -->
-<div id="admin-modal" class="modal-overlay hidden">
+<!-- Settings, Theme & Admin Key Modal -->
+<div id="settings-modal" class="modal-overlay hidden">
   <div class="card" style="margin:0;">
-    <h3 style="margin-top:0;">🔑 Enter Admin Key</h3>
-    <p style="font-size:12px; opacity:.7;">Enter the CR Passcode to switch to Admin mode.</p>
-    <input id="admin-unlock-key" type="password" placeholder="Enter Admin Passcode">
-    <div style="display:flex; gap:8px;">
-      <button class="btn-primary" id="unlock-submit-btn">Unlock</button>
-      <button class="btn-primary" id="unlock-close-btn" style="background:#ccc; color:#000;">Cancel</button>
+    <div class="section-title">
+      <h3 style="margin:0;">⚙️ App Settings</h3>
+      <button id="settings-close" class="del-btn">✕</button>
+    </div>
+    
+    <label style="font-size:12px; font-weight:700;">Select Theme:</label>
+    <select id="theme-select">
+      <option value="1">Purple Dream 💜</option>
+      <option value="2">Sunset Coral 🧡</option>
+      <option value="3">Ocean Blue 💙</option>
+    </select>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🔑 Admin / CR Access Key:</label>
+      <input id="admin-unlock-key" type="password" placeholder="Enter Admin Passcode">
+      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
     </div>
   </div>
 </div>
@@ -191,6 +206,23 @@ let currentTimetableData = {};
 let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
 let activeTheme = localStorage.getItem('ch_theme') || '1';
 document.body.setAttribute('data-theme', activeTheme);
+
+// Official Academic Calendar Fixed Dates (MST in Red, Holidays in Yellow)
+const fixedMSTDates = {
+  '2026-09-09': 'Class Test-I', '2026-09-10': 'Class Test-I', '2026-09-11': 'Class Test-I',
+  '2026-10-14': 'Class Test-II', '2026-10-15': 'Class Test-II', '2026-10-16': 'Class Test-II',
+  '2026-11-18': 'Class Test-III', '2026-11-19': 'Class Test-III', '2026-11-20': 'Class Test-III'
+};
+
+const fixedHolidays = {
+  '2026-08-15': 'Independence Day',
+  '2026-09-04': 'Janmashtami',
+  '2026-10-02': 'Gandhi Jayanti',
+  '2026-10-20': 'Dashara',
+  '2026-11-09': 'Govardhan Puja',
+  '2026-11-24': 'Guru Nanak Jayanti',
+  '2026-12-25': 'Christmas'
+};
 
 const defaultTimetable = {
   "Mon": [
@@ -270,28 +302,36 @@ async function syncMemberDoc(){
   } catch(e){ console.warn(e); }
 }
 
-document.getElementById('signout-btn').onclick = ()=> signOut(auth);
+document.getElementById('settings-btn').onclick = ()=> document.getElementById('settings-modal').classList.remove('hidden');
+document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
+document.getElementById('members-top-btn').onclick = ()=> showTab('members');
 
-document.getElementById('theme-btn').onclick = ()=>{
-  activeTheme = activeTheme === '1' ? '2' : '1';
+document.getElementById('theme-select').value = activeTheme;
+document.getElementById('theme-select').onchange = (e)=>{
+  activeTheme = e.target.value;
   document.body.setAttribute('data-theme', activeTheme);
   localStorage.setItem('ch_theme', activeTheme);
 };
 
-document.getElementById('key-access-btn').onclick = ()=> document.getElementById('admin-modal').classList.remove('hidden');
-document.getElementById('settings-btn').onclick = ()=> document.getElementById('admin-modal').classList.remove('hidden');
-document.getElementById('unlock-close-btn').onclick = ()=> document.getElementById('admin-modal').classList.add('hidden');
-
 document.getElementById('unlock-submit-btn').onclick = ()=>{
-  const k = document.getElementById('admin-unlock-key').value.trim().toUpperCase();
+  const k = document.getElementById('admin-unlock-key').value.trim();
   if(k === "IETKDPROJECT1"){
     profile.isAdmin = true; profile.role = "CR / Admin";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('admin-modal').classList.add('hidden');
+    document.getElementById('settings-modal').classList.add('hidden');
     boot();
     alert("CR / Admin privileges unlocked!");
-  } else alert("Incorrect key!");
+  } else if(k === "STUDENT") {
+    profile.isAdmin = false; profile.role = "Student";
+    localStorage.setItem('ch_profile', JSON.stringify(profile));
+    syncMemberDoc();
+    document.getElementById('settings-modal').classList.add('hidden');
+    boot();
+    alert("Switched to Student mode!");
+  } else {
+    alert("Incorrect key!");
+  }
 };
 
 function boot(){
@@ -299,7 +339,6 @@ function boot(){
   document.getElementById('app-screen').classList.remove('hidden');
   document.getElementById('hdr-name').textContent = user.displayName;
   document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B`;
-  document.getElementById('admin-pill').style.display = profile.isAdmin ? 'inline-block' : 'none';
   
   setupPresence();
   loadTimetable();
@@ -334,7 +373,7 @@ function loadTimetable(){
   const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ref_, (snap)=>{
     currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
-    el.innerHTML = `<div class="section-title"><h2>🗓️ Class Schedule (Room M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit Schedule</button>':''}</div>`;
+    el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
     ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
       const periods = (currentTimetableData && currentTimetableData[d]) || [];
       el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>{
@@ -374,10 +413,10 @@ function renderEditorDayList(){
           <b>Slot #${idx+1}</b>
           <button class="del-btn btn-remove-slot">Remove</button>
         </div>
-        <input class="inp-time" value="${item.time||''}" placeholder="Time (e.g. 09:00 - 10:00)">
+        <input class="inp-time" value="${item.time||''}" placeholder="Time (09:00 - 10:00)">
         <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name">
-        <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher / Faculty Code">
-        <input class="inp-room" value="${item.room||''}" placeholder="Room / Lab No.">
+        <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher Code">
+        <input class="inp-room" value="${item.room||''}" placeholder="Room No.">
         <label style="font-size:12px; font-weight:600;">
           <input type="checkbox" class="inp-islab" ${item.isLab ? 'checked':''}> Is Lab (Peach Background)
         </label>
@@ -432,7 +471,7 @@ function loadAttendance(){
   const todayStr = new Date().toISOString().split('T')[0];
   
   el.innerHTML = `
-    <div class="section-title"><h2>📋 Daily Attendance & Analytics</h2></div>
+    <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
       <label style="font-size:12px; font-weight:700;">Select Date:</label>
       <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
@@ -440,7 +479,7 @@ function loadAttendance(){
     </div>
     <div class="card" style="max-width:100%;">
       <h3>📊 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026) through semester schedule rules.</p>
+      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
       <div id="att-stats-container"></div>
     </div>`;
 
@@ -454,6 +493,12 @@ async function renderDayAttendanceForm(){
   const dateStr = document.getElementById('att-date').value;
   const container = document.getElementById('att-classes-container');
   
+  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
+    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
+    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
+    return;
+  }
+
   const dObj = new Date(dateStr);
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const dayName = dayNames[dObj.getDay()];
@@ -463,23 +508,20 @@ async function renderDayAttendanceForm(){
     return;
   }
 
-  // Check if calendar planner marked this date as leave / skip / half
   const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
   onSnapshot(planSnap, async (pSnap)=>{
     const planType = pSnap.exists() ? pSnap.data().type : null;
     
-    // Fetch slots for this day
     const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
     onSnapshot(ttSnap, async (tSnap)=>{
       const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
       const daySlots = (tData && tData[dayName]) || [];
       
       if(!daySlots.length){
-        container.innerHTML = `<div style="font-size:13px; opacity:.6;">No periods listed for ${dayName}.</div>`;
+        container.innerHTML = `<div style="font-size:12px; opacity:.6;">No periods listed for ${dayName}.</div>`;
         return;
       }
 
-      // Fetch logged attendance for this specific date
       const attCol = collection(db, 'users', user.uid, 'attendance_logs');
       onSnapshot(attCol, (logSnap)=>{
         const logs = {};
@@ -487,7 +529,7 @@ async function renderDayAttendanceForm(){
           if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
         });
 
-        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Planner Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
+        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
         
         daySlots.forEach((slot, idx)=>{
           const logKey = `${dateStr}_${idx}`;
@@ -527,19 +569,14 @@ async function renderDayAttendanceForm(){
 
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
-  
-  // Calculate total possible classes from Aug 5, 2026 to Today based on fixed weekly timetable model
   const startDate = new Date('2026-08-05');
   const today = new Date();
   
   const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ttSnap, async (tSnap)=>{
     const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-    
-    // Count total classes per subject up to today
     const totals = {};
     const attended = {};
-    
     let curr = new Date(startDate);
     const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     
@@ -556,25 +593,27 @@ async function renderAttendanceStats(){
         curr = new Date(startDate);
         while(curr <= today){
           const dStr = curr.toISOString().split('T')[0];
-          const dName = dayNames[curr.getDay()];
-          const slots = tData[dName] || [];
-          const plan = plans[dStr];
-          
-          slots.forEach((slot, idx)=>{
-            const subj = slot.subject;
-            totals[subj] = (totals[subj] || 0) + 1;
+          // Skip MST and College Holidays from standard class calculations
+          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
+            const dName = dayNames[curr.getDay()];
+            const slots = tData[dName] || [];
+            const plan = plans[dStr];
             
-            const logKey = `${dStr}_${idx}`;
-            let stat = logs[logKey];
-            if(!stat){
-              if(plan === 'leave' || plan === 'skip') stat = 'Absent';
-              else stat = 'Present'; // Default assumed present if not marked
-            }
-            if(stat === 'Present'){
-              attended[subj] = (attended[subj] || 0) + 1;
-            }
-          });
-          
+            slots.forEach((slot, idx)=>{
+              const subj = slot.subject;
+              totals[subj] = (totals[subj] || 0) + 1;
+              
+              const logKey = `${dStr}_${idx}`;
+              let stat = logs[logKey];
+              if(!stat){
+                if(plan === 'leave' || plan === 'skip') stat = 'Absent';
+                else stat = 'Present';
+              }
+              if(stat === 'Present'){
+                attended[subj] = (attended[subj] || 0) + 1;
+              }
+            });
+          }
           curr.setDate(curr.getDate() + 1);
         }
 
@@ -607,33 +646,78 @@ async function renderAttendanceStats(){
   });
 }
 
-/* ---------- CLICKABLE CALENDAR PLANNER WITH AUTO LEAVE SYNC ---------- */
+/* ---------- CLICKABLE CALENDAR PLANNER (WITH FIXED MST & HOLIDAYS) ---------- */
 function loadCalendar(){
   const el = document.getElementById('tab-calendar');
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
     <div class="card" style="max-width:100%;">
-      <p style="font-size:12px; opacity:.7;">Tap any date to cycle leave plans: <b style="color:var(--danger)">Leave</b> → <b style="color:var(--accent2)">Half Day</b> → <b style="color:var(--pink)">Skip</b> → <b>Clear</b></p>
+      <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
+        <span style="background:#FFD1D1; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
+        <span style="background:#FEF08A; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
+      </p>
+      <label style="font-size:12px; font-weight:700;">Select Month:</label>
+      <select id="cal-month-sel" style="margin-bottom:10px;">
+        <option value="8">August 2026</option>
+        <option value="9" selected>September 2026</option>
+        <option value="10">October 2026</option>
+        <option value="11">November 2026</option>
+        <option value="12">December 2026</option>
+      </select>
       <div class="cal-grid" id="cal-grid"></div>
     </div>`;
   
+  const monthSel = document.getElementById('cal-month-sel');
+  monthSel.onchange = renderCalendarGrid;
+  renderCalendarGrid();
+}
+
+async function renderCalendarGrid(){
   const grid = document.getElementById('cal-grid');
+  const month = document.getElementById('cal-month-sel').value;
+  
+  const daysInMonth = new Date(2026, month, 0).getDate();
   const planRef = collection(db, 'users', user.uid, 'calendar_plans');
+  
   onSnapshot(planRef, (snap)=>{
     const plans = {};
     snap.forEach(d => plans[d.id] = d.data().type);
     grid.innerHTML = '';
-    for(let i = 1; i <= 31; i++){
-      const dKey = `2026-08-${String(i).padStart(2,'0')}`;
-      const planVal = plans[dKey];
-      const statusClass = planVal ? `has-${planVal}` : '';
+    
+    for(let i = 1; i <= daysInMonth; i++){
+      const mStr = String(month).padStart(2,'0');
+      const dStr = `2026-${mStr}-${String(i).padStart(2,'0')}`;
+      
+      const isMst = fixedMSTDates[dStr];
+      const isHol = fixedHolidays[dStr];
+      const planVal = plans[dStr];
+      
+      let cls = '';
+      let badgeText = `${i}`;
+      
+      if(isMst){
+        cls = 'mst-day';
+        badgeText = `${i} (MST)`;
+      } else if(isHol){
+        cls = 'hol-day';
+        badgeText = `${i} (Hol)`;
+      } else if(planVal) {
+        cls = `has-${planVal}`;
+        badgeText = `${i} (${planVal.toUpperCase()})`;
+      }
+      
       grid.innerHTML += `
-        <div class="cal-day ${statusClass}" data-date="${dKey}">
+        <div class="cal-day ${cls}" data-date="${dStr}" data-fixed="${isMst || isHol ? 'yes':'no'}">
           <b>${i}</b>
-          <span style="font-size:9px; opacity:.8;">${planVal ? planVal.toUpperCase() : 'Aug'}</span>
+          <span style="font-size:8.5px; opacity:.9;">${isMst ? 'MST' : (isHol ? 'Hol' : (planVal ? planVal.toUpperCase() : ''))}</span>
         </div>`;
     }
+    
     grid.querySelectorAll('.cal-day').forEach(box => {
       box.onclick = async () => {
+        if(box.dataset.fixed === 'yes'){
+          alert("MST exams and official college holidays are fixed and unchangeable!");
+          return;
+        }
         const dStr = box.dataset.date;
         const curr = plans[dStr];
         let next = 'leave';
@@ -651,7 +735,7 @@ function loadCalendar(){
   });
 }
 
-/* ---------- ASSIGNMENTS MODULE WITH ADMIN DELETE ---------- */
+/* ---------- ASSIGNMENTS WITH ADMIN UPLOAD COLOR & DELETE ---------- */
 function loadAssignments(){
   const el = document.getElementById('tab-assignments');
   const q = query(collection(db,'classes',classCode,'assignments'), orderBy('ts','desc'), limit(50));
@@ -659,20 +743,22 @@ function loadAssignments(){
     el.innerHTML = `<div class="section-title"><h2>📚 Tasks & Assignments</h2></div>`;
     if(profile.isAdmin){
       el.innerHTML += `
-        <div class="card" style="max-width:100%;">
+        <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
+          <h3 style="margin-top:0; color:var(--primary);">👑 CR / Admin Upload Portal</h3>
           <input id="asg-title" placeholder="Assignment Title">
           <input id="asg-link" placeholder="Optional Drive/File Link">
           <textarea id="asg-desc" placeholder="Details and instructions..." rows="2"></textarea>
-          <button class="add-btn" id="asg-post-btn" style="width:100%;">Post Task 🚀</button>
+          <button class="add-btn" id="asg-post-btn" style="width:100%; background:var(--primary); color:#fff;">Post Admin Task 🚀</button>
         </div>`;
     }
-    if(snap.empty) el.innerHTML += `<div class="empty">No tasks posted.</div>`;
+    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No tasks posted.</div>`;
     snap.forEach(d=>{
       const a = d.data();
+      const isAdminPost = a.isAdminPost || false;
       el.innerHTML += `
-        <div class="row">
+        <div class="row" style="${isAdminPost ? 'border-color:var(--primary); background:var(--chip);' : ''}">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <b>${a.title}</b>
+            <b>${a.title} ${isAdminPost ? '👑':''}</b>
             ${profile.isAdmin ? `<button class="del-btn btn-del-asg" data-id="${d.id}">Delete</button>` : ''}
           </div>
           <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
@@ -688,7 +774,7 @@ function loadAssignments(){
           const link = document.getElementById('asg-link').value.trim();
           const desc = document.getElementById('asg-desc').value.trim();
           if(!title) return alert('Enter a title!');
-          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, ts: serverTimestamp() });
+          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
         };
       }
       el.querySelectorAll('.btn-del-asg').forEach(btn=>{
@@ -702,7 +788,7 @@ function loadAssignments(){
   });
 }
 
-/* ---------- ANNOUNCEMENTS WITH ADMIN DELETE ---------- */
+/* ---------- ANNOUNCEMENTS ---------- */
 function loadAnnouncements(){
   const el = document.getElementById('tab-announce');
   const q = query(collection(db,'classes',classCode,'announcements'), orderBy('ts','desc'), limit(50));
