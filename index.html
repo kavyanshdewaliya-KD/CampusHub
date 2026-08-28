@@ -9,48 +9,76 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{ --radius:16px; --border-w:3px; --font-display:'Baloo 2','Fredoka',sans-serif; --font-body:'Poppins',sans-serif;
-    --bg:#F1EEFC; --panel:#fff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#fff;
-    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF; }
+  :root[data-theme="1"] {
+    --bg:#F1EEFC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
+    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF;
+    --lab-bg:#FFE5D9; --lab-border:#FF9E7D;
+  }
+  :root[data-theme="2"] {
+    --bg:#FFF9F0; --panel:#ffffff; --ink:#1F1924; --primary:#FF6B6B; --primary-ink:#ffffff;
+    --accent2:#4ECDC4; --pink:#FFE66D; --danger:#FF5A5F; --good:#10B981; --border:#1F1924; --chip:#F7FFF7;
+    --lab-bg:#FFE3E3; --lab-border:#FF6B6B;
+  }
+
   *{box-sizing:border-box;} html,body{margin:0;padding:0;}
-  body{background:var(--bg); color:var(--ink); font-family:var(--font-body); min-height:100vh;}
-  h1,h2,h3{font-family:var(--font-display); font-weight:700; margin-top:10px; margin-bottom:6px;}
-  button{font-family:var(--font-body); cursor:pointer;} .hidden{display:none !important;}
+  body{background:var(--bg); color:var(--ink); font-family:'Poppins',sans-serif; min-height:100vh; transition:background 0.2s;}
+  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px;}
+  button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
+
   #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
-  .card{background:var(--panel); border:var(--border-w) solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px;}
-  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:var(--border-w) solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:var(--border-w) solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit;}
-  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--panel); border-bottom:var(--border-w) solid var(--border); position:sticky; top:0; z-index:10;}
-  main{padding:16px; max-width:720px; margin:0 auto; padding-bottom:90px;}
+  .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px;}
+  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
+  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit;}
+  
+  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
+  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:110px;}
+  
   .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:700;}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px;}
+  
   .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
-  .row{border:2px solid var(--border); border-radius:10px; padding:9px 11px; margin-bottom:8px; background:var(--chip); font-size:13px;}
-  .lock-note{background:var(--chip); border:2px dashed var(--border); border-radius:10px; padding:9px 12px; font-size:12px; margin-bottom:10px;}
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; height:340px; overflow-y:auto; margin-bottom:10px;}
+  .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:4px 8px; font-size:11px; font-weight:700;}
+
+  .row{border:2px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border);}
+  .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
+  .row-subject-tag{display:inline-block; padding:2px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px;}
+
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; height:320px; overflow-y:auto; margin-bottom:10px;}
   .msg{margin-bottom:10px; font-size:13px;} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
   .chat-input-row input{flex:1; margin:0;}
   .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 14px; font-weight:700;}
-  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:var(--border-w) solid var(--border); display:flex; z-index:10;}
-  nav.tabbar button{flex:1; background:none; border:none; padding:9px 2px 8px; font-size:11px; font-weight:700; opacity:.5;}
+
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px;}
+  .cal-day{background:#fff; border:2px solid var(--border); border-radius:8px; padding:8px 4px; text-align:center; font-size:12px; position:relative; cursor:pointer;}
+  .cal-day.has-leave{border-bottom:5px solid var(--danger);}
+  .cal-day.has-half{border-bottom:5px solid var(--accent2);}
+  .cal-day.has-skip{border-bottom:5px solid var(--pink);}
+
+  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; overflow-x:auto;}
+  nav.tabbar button{flex:1; min-width:64px; background:none; border:none; padding:99px 2px 8px; font-size:10px; font-weight:700; opacity:.5; white-space:nowrap; padding: 10px 0;}
   nav.tabbar button.active{opacity:1; color:var(--primary);}
-  .empty{opacity:.5; font-size:13px;}
+  
+  footer.dev-footer{text-align:center; opacity:0.6; font-size:11px; margin-top:20px; font-weight:600;}
+  
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
+  .modal-body{background:#fff; border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px;}
+  .edit-item-box{border:2px dashed var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:#FDFDFD;}
 </style>
 </head>
-<body>
+<body data-theme="1">
 
 <div id="login-screen">
   <div class="card">
     <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
-    <p style="font-size:13px; opacity:.7;">Sign in with your Google account and enter your class key.</p>
+    <p style="font-size:13px; opacity:.7;">Sign in with Google to sync your class session.</p>
     <button class="btn-primary" id="google-btn">Continue with Google</button>
     <p id="login-status" style="font-size:12px; opacity:.6; margin-top:10px; margin-bottom:0;"></p>
   </div>
   <div class="card hidden" id="join-card">
-    <h2 style="font-size:18px; margin-top:0;">Join your class</h2>
-    <input id="in-code" type="password" placeholder="Enter Access Key" style="text-transform:uppercase;">
+    <h2 style="font-size:18px; margin-top:0;">Enter Class Passkey</h2>
+    <input id="in-code" type="password" placeholder="Enter Key (e.g. IETCSEB)" style="text-transform:uppercase;">
     <select id="in-batch"><option value="B1">Batch 1</option><option value="B2">Batch 2</option></select>
     <button class="btn-primary" id="join-btn">Enter Classroom 🚀</button>
   </div>
@@ -58,26 +86,74 @@
 
 <div id="app-screen" class="hidden">
   <header class="topbar">
-    <div><b id="hdr-name"></b><div style="font-size:10.5px; opacity:.6;" id="hdr-sub"></div></div>
+    <div>
+      <b id="hdr-name"></b>
+      <div style="font-size:10.5px; opacity:.6;" id="hdr-sub"></div>
+    </div>
     <div style="display:flex; gap:6px; align-items:center;">
       <span class="pill" id="admin-pill" style="display:none;">🔑 CR / Admin</span>
+      <button class="icon-btn" id="theme-btn" title="Toggle Theme">🎨</button>
+      <button class="icon-btn" id="settings-btn" title="Admin Settings">⚙️</button>
       <button class="icon-btn" id="signout-btn" title="Sign out">🚪</button>
     </div>
   </header>
+  
   <main>
     <section id="tab-timetable"></section>
+    <section id="tab-attendance" class="hidden"></section>
+    <section id="tab-calendar" class="hidden"></section>
     <section id="tab-assignments" class="hidden"></section>
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
+    <footer class="dev-footer">Built by Kavyansh</footer>
   </main>
+
   <nav class="tabbar">
     <button data-tab="timetable">🗓️ Schedule</button>
+    <button data-tab="attendance">📋 Attendance</button>
+    <button data-tab="calendar">📅 Calendar</button>
     <button data-tab="assignments">📚 Tasks</button>
     <button data-tab="announce">📢 Announce</button>
     <button data-tab="chat">💬 Chat</button>
     <button data-tab="members">👥 Members</button>
   </nav>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0;">
+    <h3 style="margin-top:0;">⚙️ Settings & Unlock Admin</h3>
+    <p style="font-size:12px; opacity:.7;">Enter the CR Passcode to elevate your session to CR / Admin without logging out.</p>
+    <input id="admin-unlock-key" type="password" placeholder="Enter CR Key">
+    <div style="display:flex; gap:8px;">
+      <button class="btn-primary" id="unlock-submit-btn">Unlock Admin</button>
+      <button class="btn-primary" id="unlock-close-btn" style="background:#ccc; color:#000;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Timetable Visual Editor Modal -->
+<div id="tt-modal" class="modal-overlay hidden">
+  <div class="modal-body">
+    <div class="section-title">
+      <h3 style="margin:0;">📝 Edit Timetable Schedule</h3>
+      <button id="tt-modal-close" class="del-btn">✕ Close</button>
+    </div>
+    <label style="font-size:12px; font-weight:700;">Select Day:</label>
+    <select id="tt-edit-day">
+      <option value="Mon">Monday</option>
+      <option value="Tue">Tuesday</option>
+      <option value="Wed">Wednesday</option>
+      <option value="Thu">Thursday</option>
+      <option value="Fri">Friday</option>
+    </select>
+    
+    <div id="tt-editor-list" style="margin:14px 0;"></div>
+    
+    <button class="add-btn" id="tt-add-slot-btn" style="width:100%; margin-bottom:12px;">+ Add Class Slot</button>
+    <button class="btn-primary" id="tt-save-cloud-btn">Save Changes to Cloud ☁️</button>
+  </div>
 </div>
 
 <script type="module">
@@ -101,29 +177,36 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
 
-let user=null, classCode='CSE-B-2026', profile={role:'Student', batch:'B1', isAdmin:false};
+let user = null;
+let classCode = 'CSE-B-2026';
+let activeChatTarget = 'ALL';
+let currentTimetableData = {};
+
+let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","batch":"B1","isAdmin":false}');
+let activeTheme = localStorage.getItem('ch_theme') || '1';
+document.body.setAttribute('data-theme', activeTheme);
 
 const defaultTimetable = {
   "Mon": [
     {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
     {"time": "10:00 - 11:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem (B2: A-206) / Basic Elec (B1: A-205)", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206"},
+    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem (B2) / Basic Elec (B1)", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206", "isLab": true},
     {"time": "03:00 - 04:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"}
   ],
   "Tue": [
     {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec (B2: D-107) / Mech Engg (B1: D-107)", "teacher": "Faculty", "room": "Lab D-107"},
+    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec (B2) / Mech Engg (B1)", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem (B1: A-206) / Mech Engg (B2: A-205)", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206"}
+    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem (B1) / Mech Engg (B2)", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206", "isLab": true}
   ],
   "Wed": [
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "Workshop Practice (Batch B2)", "teacher": "4JS", "room": "Workshop"},
-    {"time": "01:00 - 02:00", "subject": "Design Thinking (Batch B1)", "teacher": "VF-1VV", "room": "M-309"},
+    {"time": "01:00 - 03:00", "subject": "Workshop Practice (B2)", "teacher": "4JS", "room": "Workshop", "isLab": true},
+    {"time": "01:00 - 02:00", "subject": "Design Thinking (B1)", "teacher": "VF-1VV", "room": "M-309"},
     {"time": "03:00 - 04:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
   ],
   "Thu": [
@@ -135,7 +218,7 @@ const defaultTimetable = {
   ],
   "Fri": [
     {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice (Batch B1)", "teacher": "4JS", "room": "Workshop"},
+    {"time": "09:00 - 11:00", "subject": "Workshop Practice (B1)", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
     {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
@@ -143,72 +226,97 @@ const defaultTimetable = {
   ]
 };
 
-/* ---------- AUTH ---------- */
+function getSubjectColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 70%, 88%)`;
+}
+
+/* ---------- AUTH & SESSION ---------- */
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
 onAuthStateChanged(auth, (u)=>{
   user = u;
   if(u){
-    document.getElementById('login-status').textContent = `Signed in as ${u.displayName} (${u.email})`;
-    document.getElementById('join-card').classList.remove('hidden');
+    document.getElementById('login-status').textContent = `Signed in as ${u.displayName}`;
+    if(localStorage.getItem('ch_joined') === 'true'){
+      boot();
+    } else {
+      document.getElementById('join-card').classList.remove('hidden');
+    }
   } else {
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('app-screen').classList.add('hidden');
-    document.getElementById('join-card').classList.add('hidden');
   }
 });
 
-/* ---------- KEY VALIDATION ---------- */
-document.getElementById('join-btn').onclick = async ()=>{
+document.getElementById('join-btn').onclick = ()=>{
   const inputKey = document.getElementById('in-code').value.trim().toUpperCase();
-  if(!inputKey || !user){
-    alert("Please enter your key and sign in with Google first!");
-    return;
-  }
-
-  if(inputKey === "IETKDPROJECT1") {
-    profile.isAdmin = true;
-    profile.role = "CR / Admin";
-  } else if(inputKey === "IETCSEB") {
-    profile.isAdmin = false;
-    profile.role = "Student";
-  } else {
-    alert("Invalid Access Key!");
-    return;
-  }
+  if(!inputKey || !user) return alert("Please enter key and sign in!");
+  
+  if(inputKey === "IETKDPROJECT1") { profile.isAdmin = true; profile.role = "CR / Admin"; }
+  else if(inputKey === "IETCSEB") { profile.isAdmin = false; profile.role = "Student"; }
+  else return alert("Invalid Access Key!");
 
   profile.batch = document.getElementById('in-batch').value;
-
-  try {
-    const memberRef = doc(db, 'classes', classCode, 'members', user.uid);
-    await setDoc(memberRef, {
-      name: user.displayName,
-      email: user.email,
-      role: profile.role,
-      batch: profile.batch,
-      isAdmin: profile.isAdmin,
-      photoURL: user.photoURL,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-  } catch(e) {
-    console.warn("Permission notice:", e.message);
-  }
-
+  localStorage.setItem('ch_profile', JSON.stringify(profile));
+  localStorage.setItem('ch_joined', 'true');
+  
+  syncMemberDoc();
   boot();
 };
 
-document.getElementById('signout-btn').onclick = ()=> signOut(auth);
+async function syncMemberDoc(){
+  if(!user) return;
+  try {
+    await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
+      name: user.displayName, email: user.email, role: profile.role,
+      batch: profile.batch, isAdmin: profile.isAdmin, photoURL: user.photoURL,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch(e){ console.warn(e); }
+}
 
-/* ---------- APP BOOT ---------- */
+document.getElementById('signout-btn').onclick = ()=>{
+  localStorage.removeItem('ch_joined');
+  signOut(auth);
+};
+
+/* ---------- HEADER & THEME ---------- */
+document.getElementById('theme-btn').onclick = ()=>{
+  activeTheme = activeTheme === '1' ? '2' : '1';
+  document.body.setAttribute('data-theme', activeTheme);
+  localStorage.setItem('ch_theme', activeTheme);
+};
+
+document.getElementById('settings-btn').onclick = ()=> document.getElementById('settings-modal').classList.remove('hidden');
+document.getElementById('unlock-close-btn').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
+document.getElementById('unlock-submit-btn').onclick = ()=>{
+  const k = document.getElementById('admin-unlock-key').value.trim().toUpperCase();
+  if(k === "IETKDPROJECT1"){
+    profile.isAdmin = true; profile.role = "CR / Admin";
+    localStorage.setItem('ch_profile', JSON.stringify(profile));
+    syncMemberDoc();
+    document.getElementById('settings-modal').classList.add('hidden');
+    boot();
+    alert("Admin privileges unlocked!");
+  } else alert("Incorrect key!");
+};
+
+/* ---------- BOOT ---------- */
 function boot(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
   document.getElementById('hdr-name').textContent = user.displayName;
   document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B · Batch ${profile.batch.slice(1)}`;
   document.getElementById('admin-pill').style.display = profile.isAdmin ? 'inline-block' : 'none';
+  
   setupPresence();
   loadTimetable();
+  loadAttendance();
+  loadCalendar();
   loadAssignments();
   loadAnnouncements();
   loadChat();
@@ -219,10 +327,9 @@ function boot(){
 document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
 function showTab(t){
   document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
-  ['timetable','assignments','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
+  ['timetable','attendance','calendar','assignments','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
 }
 
-/* ---------- PRESENCE ---------- */
 function setupPresence(){
   const myStatusRef = ref(rtdb, `presence/${classCode}/${user.uid}`);
   const connectedRef = ref(rtdb, '.info/connected');
@@ -233,29 +340,177 @@ function setupPresence(){
   });
 }
 
-/* ---------- TIMETABLE MODULE ---------- */
-async function loadTimetable(){
+/* ---------- TIMETABLE MODULE & VISUAL EDITOR ---------- */
+function loadTimetable(){
   const el = document.getElementById('tab-timetable');
   const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ref_, (snap)=>{
-    const days = snap.exists() ? snap.data().days : defaultTimetable;
-    el.innerHTML = `<div class="section-title"><h2>🗓️ Timetable (Room M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-edit-btn">Edit Schedule</button>':''}</div>`;
-    if(!profile.isAdmin) el.innerHTML += `<div class="lock-note">🔒 Official IET DAVV Timetable loaded. Contact CR for updates.</div>`;
-    const dayNames = ['Mon','Tue','Wed','Thu','Fri'];
-    dayNames.forEach(d=>{
-      const periods = (days && days[d]) || [];
-      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>`<div class="row"><b>${p.time}</b> — ${p.subject} <div style="font-size:11px;opacity:.7;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div></div>`).join('') : `<div class="empty">No classes scheduled.</div>`);
+    currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
+    el.innerHTML = `<div class="section-title"><h2>🗓️ Class Schedule (Room M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit Schedule</button>':''}</div>`;
+    ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
+      const periods = (currentTimetableData && currentTimetableData[d]) || [];
+      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>{
+        const chipColor = getSubjectColor(p.subject);
+        return `<div class="row ${p.isLab ? 'lab-row' : ''}">
+          <span class="row-subject-tag" style="background:${chipColor};">${p.subject}</span>
+          <b>${p.time}</b>
+          <div style="font-size:11px; opacity:.8; margin-top:3px;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
+        </div>`;
+      }).join('') : `<div class="empty">No classes scheduled.</div>`);
     });
-    if(profile.isAdmin){
-      const btn = document.getElementById('tt-edit-btn');
-      if(btn) btn.onclick = async ()=>{
-        const current = JSON.stringify(days||{}, null, 2);
-        const next = prompt('Edit timetable JSON:', current);
-        if(next==null) return;
-        try{ const parsed = JSON.parse(next); await setDoc(ref_, { days: parsed }); }
-        catch(e){ alert('Invalid JSON: '+e.message); }
-      };
+    
+    if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
+      document.getElementById('tt-open-editor-btn').onclick = openTimetableEditor;
     }
+  });
+}
+
+// Visual Timetable Editor Logic
+function openTimetableEditor(){
+  document.getElementById('tt-modal').classList.remove('hidden');
+  renderEditorDayList();
+}
+
+document.getElementById('tt-modal-close').onclick = ()=> document.getElementById('tt-modal').classList.add('hidden');
+document.getElementById('tt-edit-day').onchange = renderEditorDayList;
+
+function renderEditorDayList(){
+  const selDay = document.getElementById('tt-edit-day').value;
+  const list = document.getElementById('tt-editor-list');
+  const items = currentTimetableData[selDay] || [];
+  list.innerHTML = '';
+  
+  items.forEach((item, idx)=>{
+    list.innerHTML += `
+      <div class="edit-item-box" data-idx="${idx}">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <b>Slot #${idx+1}</b>
+          <button class="del-btn btn-remove-slot">Remove</button>
+        </div>
+        <input class="inp-time" value="${item.time||''}" placeholder="Time (e.g. 09:00 - 10:00)">
+        <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name">
+        <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher / Faculty Code">
+        <input class="inp-room" value="${item.room||''}" placeholder="Room / Lab No.">
+        <label style="font-size:12px; font-weight:600;">
+          <input type="checkbox" class="inp-islab" ${item.isLab ? 'checked':''}> Is Lab (Peach Background)
+        </label>
+      </div>`;
+  });
+  
+  list.querySelectorAll('.btn-remove-slot').forEach(btn=>{
+    btn.onclick = (e)=>{
+      const idx = e.target.closest('.edit-item-box').dataset.idx;
+      currentTimetableData[selDay].splice(idx, 1);
+      renderEditorDayList();
+    };
+  });
+}
+
+document.getElementById('tt-add-slot-btn').onclick = ()=>{
+  const selDay = document.getElementById('tt-edit-day').value;
+  if(!currentTimetableData[selDay]) currentTimetableData[selDay] = [];
+  currentTimetableData[selDay].push({"time": "09:00 - 10:00", "subject": "New Subject", "teacher": "VF-XX", "room": "M-309", "isLab": false});
+  renderEditorDayList();
+};
+
+document.getElementById('tt-save-cloud-btn').onclick = async ()=>{
+  const selDay = document.getElementById('tt-edit-day').value;
+  const boxes = document.querySelectorAll('#tt-editor-list .edit-item-box');
+  const updatedDayList = [];
+  
+  boxes.forEach(box=>{
+    updatedDayList.push({
+      time: box.querySelector('.inp-time').value.trim(),
+      subject: box.querySelector('.inp-subject').value.trim(),
+      teacher: box.querySelector('.inp-teacher').value.trim(),
+      room: box.querySelector('.inp-room').value.trim(),
+      isLab: box.querySelector('.inp-islab').checked
+    });
+  });
+
+  currentTimetableData[selDay] = updatedDayList;
+  
+  try {
+    await setDoc(doc(db, 'classes', classCode, 'meta', 'timetable'), { days: currentTimetableData });
+    document.getElementById('tt-modal').classList.add('hidden');
+    alert('Timetable updated successfully!');
+  } catch(e) {
+    alert('Error saving timetable: ' + e.message);
+  }
+};
+
+/* ---------- ATTENDANCE MODULE ---------- */
+function loadAttendance(){
+  const el = document.getElementById('tab-attendance');
+  const todayStr = new Date().toISOString().split('T')[0];
+  el.innerHTML = `
+    <div class="section-title"><h2>📋 Attendance Tracker</h2></div>
+    <div class="card" style="max-width:100%;">
+      <label style="font-size:12px; font-weight:700;">Select Date (from 5 Aug to Today):</label>
+      <input type="date" id="att-date" min="2026-08-05" max="${todayStr}" value="${todayStr}">
+      <div id="att-status-box" style="margin-top:10px;">
+        <p style="font-size:13px;">Log status for selected date:</p>
+        <div style="display:flex; gap:8px;">
+          <button class="add-btn" id="att-present" style="background:var(--good); color:#fff;">Present ✅</button>
+          <button class="add-btn" id="att-absent" style="background:var(--danger); color:#fff;">Absent ❌</button>
+        </div>
+      </div>
+      <div id="att-log-display" style="margin-top:14px; font-size:13px; font-weight:600;"></div>
+    </div>`;
+
+  const dateInp = document.getElementById('att-date');
+  const updateAttDisplay = async () => {
+    const selDate = dateInp.value;
+    const snap = await doc(db, 'users', user.uid, 'attendance', selDate);
+    onSnapshot(snap, (dSnap)=>{
+      const disp = document.getElementById('att-log-display');
+      if(dSnap.exists()) disp.innerHTML = `Status on ${selDate}: <b>${dSnap.data().status}</b>`;
+      else disp.innerHTML = `Status on ${selDate}: <i>Not recorded yet</i>`;
+    });
+  };
+  dateInp.onchange = updateAttDisplay;
+  updateAttDisplay();
+
+  const setAtt = async (status) => {
+    await setDoc(doc(db, 'users', user.uid, 'attendance', dateInp.value), { status, ts: serverTimestamp() });
+  };
+  document.getElementById('att-present').onclick = () => setAtt('Present');
+  document.getElementById('att-absent').onclick = () => setAtt('Absent');
+}
+
+/* ---------- CALENDAR MODULE ---------- */
+function loadCalendar(){
+  const el = document.getElementById('tab-calendar');
+  el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
+    <div class="card" style="max-width:100%;">
+      <p style="font-size:12px; opacity:.7;">Tap any date to toggle: <b>Leave (Red)</b>, <b>Half Day (Yellow)</b>, or <b>Skip (Pink)</b></p>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>`;
+  
+  const grid = document.getElementById('cal-grid');
+  const planRef = collection(db, 'users', user.uid, 'calendar_plans');
+  onSnapshot(planRef, (snap)=>{
+    const plans = {};
+    snap.forEach(d => plans[d.id] = d.data().type);
+    grid.innerHTML = '';
+    for(let i = 1; i <= 31; i++){
+      const dKey = `2026-08-${String(i).padStart(2,'0')}`;
+      const statusClass = plans[dKey] ? `has-${plans[dKey]}` : '';
+      grid.innerHTML += `<div class="cal-day ${statusClass}" data-date="${dKey}">${i}<br><span style="font-size:9px;">Aug</span></div>`;
+    }
+    grid.querySelectorAll('.cal-day').forEach(box => {
+      box.onclick = async () => {
+        const dStr = box.dataset.date;
+        const curr = plans[dStr];
+        let next = 'leave';
+        if(curr === 'leave') next = 'half';
+        else if(curr === 'half') next = 'skip';
+        else if(curr === 'skip') next = null;
+        
+        if(next) await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
+        else await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: null });
+      };
+    });
   });
 }
 
@@ -264,39 +519,35 @@ function loadAssignments(){
   const el = document.getElementById('tab-assignments');
   const q = query(collection(db,'classes',classCode,'assignments'), orderBy('ts','desc'), limit(50));
   onSnapshot(q, (snap)=>{
-    el.innerHTML = `<div class="section-title"><h2>📚 Assignments & Tasks</h2></div>`;
+    el.innerHTML = `<div class="section-title"><h2>📚 Tasks & Assignments</h2></div>`;
     if(profile.isAdmin){
       el.innerHTML += `
-        <div style="background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:14px;">
-          <input id="asg-title" placeholder="Assignment Title (e.g. Applied Math Assignment 1)" style="margin-bottom:6px;">
-          <input id="asg-link" placeholder="Submission Link (Google Drive / Form URL)" style="margin-bottom:6px;">
-          <textarea id="asg-desc" placeholder="Instructions, requirements, and due date..." rows="2" style="margin-bottom:6px;"></textarea>
-          <button class="add-btn" id="asg-post-btn" style="width:100%;">Post Assignment 🚀</button>
+        <div class="card" style="max-width:100%;">
+          <input id="asg-title" placeholder="Assignment Title">
+          <input id="asg-link" placeholder="Optional Drive/File Link">
+          <textarea id="asg-desc" placeholder="Details and instructions..." rows="2"></textarea>
+          <button class="add-btn" id="asg-post-btn" style="width:100%;">Post Task 🚀</button>
         </div>`;
     }
-    if(snap.empty) el.innerHTML += `<div class="empty">No active assignments posted.</div>`;
+    if(snap.empty) el.innerHTML += `<div class="empty">No tasks posted.</div>`;
     snap.forEach(d=>{
       const a = d.data();
       el.innerHTML += `
-        <div class="row" style="background:#fff;">
+        <div class="row">
           <b>${a.title}</b> <span style="font-size:11px; opacity:.6;">by ${a.byName}</span>
           <div style="margin:4px 0;">${a.desc}</div>
-          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary);">🔗 Open Submission Link</a>` : ''}
+          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; color:var(--primary); font-size:12px;">📎 Open Submission Link</a>` : ''}
         </div>`;
     });
-    const postBtn = document.getElementById('asg-post-btn');
-    if(postBtn) postBtn.onclick = async ()=>{
-      const title = document.getElementById('asg-title').value.trim();
-      const link = document.getElementById('asg-link').value.trim();
-      const desc = document.getElementById('asg-desc').value.trim();
-      if(!title) return alert('Please enter an assignment title!');
-      await addDoc(collection(db,'classes',classCode,'assignments'), {
-        title, link, desc, byName: user.displayName, ts: serverTimestamp()
-      });
-      document.getElementById('asg-title').value = '';
-      document.getElementById('asg-link').value = '';
-      document.getElementById('asg-desc').value = '';
-    };
+    if(document.getElementById('asg-post-btn')){
+      document.getElementById('asg-post-btn').onclick = async ()=>{
+        const title = document.getElementById('asg-title').value.trim();
+        const link = document.getElementById('asg-link').value.trim();
+        const desc = document.getElementById('asg-desc').value.trim();
+        if(!title) return alert('Enter a title!');
+        await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, byName: user.displayName, ts: serverTimestamp() });
+      };
+    }
   });
 }
 
@@ -314,41 +565,67 @@ function loadAnnouncements(){
       const a = d.data();
       el.innerHTML += `<div class="row"><b>${a.byName||'CR'}</b> · ${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}<div>${a.text}</div></div>`;
     });
-    const sendBtn = document.getElementById('ann-send');
-    if(sendBtn) sendBtn.onclick = async ()=>{
-      const val = document.getElementById('ann-in').value.trim(); if(!val) return;
-      await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
-      document.getElementById('ann-in').value='';
-    };
+    if(document.getElementById('ann-send')){
+      document.getElementById('ann-send').onclick = async ()=>{
+        const val = document.getElementById('ann-in').value.trim(); if(!val) return;
+        await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
+        document.getElementById('ann-in').value='';
+      };
+    }
   });
 }
 
-/* ---------- CHAT ---------- */
+/* ---------- CHAT MODULE ---------- */
 function loadChat(){
   const el = document.getElementById('tab-chat');
-  el.innerHTML = `<div class="section-title"><h2>💬 Class Chat</h2></div>
+  el.innerHTML = `
+    <div class="section-title"><h2>💬 Chat</h2></div>
+    <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
+      <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class</button>
+      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private</button>
+    </div>
     <div class="chat-log" id="chat-log"></div>
-    <div class="chat-input-row"><input id="chat-in" placeholder="Message everyone…"><button class="send-btn" id="chat-send">Send</button></div>`;
-  const q = query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200));
-  onSnapshot(q, (snap)=>{
-    const log = document.getElementById('chat-log'); if(!log) return;
-    log.innerHTML = '';
-    snap.forEach(d=>{
-      const m = d.data();
-      log.innerHTML += `<div class="msg"><b>${m.role||'Student'} · ${m.name}</b><div>${m.text}</div></div>`;
+    <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
+  
+  const renderLog = () => {
+    const qCol = activeChatTarget === 'ALL' 
+      ? query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200))
+      : query(collection(db,'private_chats', [user.uid, activeChatTarget].sort().join('_'), 'messages'), orderBy('ts','asc'), limit(200));
+    
+    onSnapshot(qCol, (snap)=>{
+      const log = document.getElementById('chat-log'); if(!log) return;
+      log.innerHTML = '';
+      snap.forEach(d=>{
+        const m = d.data();
+        log.innerHTML += `<div class="msg"><b>${m.role||'Student'} · ${m.name}</b><div>${m.text}</div></div>`;
+      });
+      log.scrollTop = log.scrollHeight;
     });
-    log.scrollTop = log.scrollHeight;
-  });
-  document.getElementById('chat-send').onclick = sendMsg;
-  document.getElementById('chat-in').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMsg(); });
-  async function sendMsg(){
+  };
+
+  document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
+  document.getElementById('btn-chat-priv').onclick = ()=>{
+    const targetUid = prompt("Enter Member User ID / Name to start 1:1 private chat:");
+    if(targetUid) { activeChatTarget = targetUid; renderLog(); }
+  };
+
+  const sendMsg = async () => {
     const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
-    await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
+    if(activeChatTarget === 'ALL'){
+      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
+    } else {
+      const threadId = [user.uid, activeChatTarget].sort().join('_');
+      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
+    }
     inp.value='';
-  }
+  };
+
+  document.getElementById('chat-send').onclick = sendMsg;
+  document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
+  renderLog();
 }
 
-/* ---------- MEMBERS & ACTIVE TRACKER ---------- */
+/* ---------- MEMBERS MODULE ---------- */
 function loadMembers(){
   const el = document.getElementById('tab-members');
   const presenceRef = ref(rtdb, `presence/${classCode}`);
@@ -357,13 +634,25 @@ function loadMembers(){
       const presence = pSnap.val() || {};
       const entries = [];
       snap.forEach(d=> entries.push({ uid:d.id, ...d.data() }));
-      entries.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      
+      entries.sort((a,b)=>{
+        const aOnline = presence[a.uid]?.state==='online' ? 1 : 0;
+        const bOnline = presence[b.uid]?.state==='online' ? 1 : 0;
+        if(bOnline !== aOnline) return bOnline - aOnline;
+        return (a.name||'').localeCompare(b.name||'');
+      });
+
       const active = entries.filter(e=> presence[e.uid]?.state==='online');
       const inactive = entries.filter(e=> presence[e.uid]?.state!=='online');
+      
       el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>`;
-      const row = e => `<div class="row"><span style="color:${presence[e.uid]?.state==='online'?'var(--good)':'#999'}">●</span> <b>${e.name}</b> — ${e.role||'Student'} · Batch ${String(e.batch||'').slice(1)} ${e.isAdmin?'🔑':''}</div>`;
-      if(active.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;">ACTIVE NOW</div>` + active.map(row).join('');
-      if(inactive.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;">NOT ACTIVE</div>` + inactive.map(row).join('');
+      const row = e => `<div class="row">
+        <span style="color:${presence[e.uid]?.state==='online'?'var(--good)':'#999'}">●</span> 
+        <b>${e.name}</b> — <span class="pill">${e.role||'Student'}</span> · Batch ${String(e.batch||'').slice(1)} ${e.isAdmin?'🔑':''}
+      </div>`;
+      
+      if(active.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;font-weight:700;">ACTIVE NOW</div>` + active.map(row).join('');
+      if(inactive.length) el.innerHTML += `<div style="font-size:11px;opacity:.5;margin:8px 0 4px;font-weight:700;">OFFLINE</div>` + inactive.map(row).join('');
     });
   });
 }
