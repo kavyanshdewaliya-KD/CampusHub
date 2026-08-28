@@ -1,1084 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CampusHub · CSE-B</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#6C4CE0">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root[data-theme="1"] {
-    --bg:#F4F2FC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
-    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF;
-    --lab-bg:#FFE5D9; --lab-border:#FF9E7D; --weekend-bg:#E2DFEE; --weekend-ink:#4A3F6B;
-  }
-  :root[data-theme="2"] {
-    --bg:#FFF9F0; --panel:#ffffff; --ink:#1F1924; --primary:#FF6B6B; --primary-ink:#ffffff;
-    --accent2:#4ECDC4; --pink:#FFE66D; --danger:#FF5A5F; --good:#10B981; --border:#1F1924; --chip:#F7FFF7;
-    --lab-bg:#FFE3E3; --lab-border:#FF6B6B; --weekend-bg:#F0E6D8; --weekend-ink:#4F4552;
-  }
-  :root[data-theme="3"] {
-    --bg:#E8F4F8; --panel:#ffffff; --ink:#0F172A; --primary:#0284C7; --primary-ink:#ffffff;
-    --accent2:#38BDF8; --pink:#F472B6; --danger:#EF4444; --good:#10B981; --border:#0F172A; --chip:#E0F2FE;
-    --lab-bg:#FEF3C7; --lab-border:#F59E0B; --weekend-bg:#D1E2EC; --weekend-ink:#334E68;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Hub</title>
+    <style>
+        /* Existing styles maintained, adding calendar & dashboard styles */
+        :root {
+            --bg-main: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --border-color: #e2e8f0;
+        }
 
-  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
-  body{background:var(--bg); color:var(--ink); font-family:'Poppins',sans-serif; min-height:100vh; transition:background 0.2s, color 0.2s;}
-  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px; color:var(--ink);}
-  button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: var(--text-main);
+            background: var(--bg-main);
+            margin: 0;
+            padding: 20px;
+        }
 
-  #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
-  .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
-  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
-  
-  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
-  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
-  
-  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; color:var(--ink);}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000; box-shadow:2px 2px 0 var(--border);}
-  
-  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
-  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:#1F1924; box-shadow:2px 2px 0 var(--border);}
-  .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
+        .attendance-dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
-  .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
-  .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px; color:#1F1924;}
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
 
-  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px; color:#0F172A; box-shadow:3px 3px 0 var(--border);}
-  .msg{margin-bottom:10px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:6px;} .msg b{font-size:11px;}
-  .chat-input-row{display:flex; gap:7px;}
-  .chat-input-row input{flex:1; margin:0; background:#fff; color:#0F172A;}
-  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
+        .reset-btn {
+            background: #fff;
+            border: 1px solid #cbd5e0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .reset-btn:hover { background: #edf2f7; }
 
-  .members-container{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  @media(max-width:600px){.members-container{grid-template-columns:1fr;}}
+        .attendance-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
 
-  /* Calendar Grid */
-  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#949191; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
-  .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:700; opacity:0.85;}
-  .cal-day.mst-day{background:#f52525; border-color:#D32F2F; font-weight:700; color:#5C0000;}
-  .cal-day.hol-day{background:#ffea48; border-color:#CA8A04; font-weight:700; color:#422006;}
-  .cal-day.has-leave{background:#4f4cf1; border-color:var(--danger);}
-  .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
-  .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+        .label-title { font-size: 11px; font-weight: 700; color: #718096; letter-spacing: 0.5px; }
+        .progress-track {
+            background: #edf2f7;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: #2f855a;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
 
-  /* Attendance Progress Bars */
-  .prog-container{background:#18b803; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
-  .prog-fill{height:100%; width:0%; transition:width 0.3s;}
-  .prog-good{background:var(--good);}
-  .prog-mid{background:var(--accent2);}
-  .prog-bad{background:var(--danger);}
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 3px; }
+        .dot.class-day { background: #fff; border: 1px solid #cbd5e0; }
+        .dot.weekend { background: #edf2f7; }
+        .dot.holiday { background: #6b46c1; }
+        .dot.test { background: #9b2c2c; }
+        .dot.leave { background: #d69e2e; }
+        .dot.outside { background: #f7fafc; border: 1px dashed #cbd5e0; }
 
-  /* Compact Bottom Navigation */
-  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
-  nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
-  nav.tabbar button .t-icon{font-size:18px;}
-  nav.tabbar button.active{opacity:1; color:var(--primary); background:var(--chip); border-top:3px solid var(--primary);}
-  
-  footer.dev-footer{text-align:center; opacity:0.75; font-size:11px; margin-top:20px; font-weight:700;}
-  
-  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
-  .modal-body{background:var(--panel); border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px; box-shadow:6px 6px 0 var(--border); color:var(--ink);}
-  .edit-item-box{border:2px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
-</style>
+        .calendars-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .month-container {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .month-header h3 { margin: 0; font-size: 16px; }
+        .sem-tag { font-size: 12px; color: #718096; background: #edf2f7; padding: 2px 6px; border-radius: 4px; }
+
+        .weekdays-row {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #a0aec0;
+            margin-bottom: 8px;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .day-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .day-cell.weekend, .day-cell.outside {
+            background: #f7fafc;
+            color: #cbd5e0;
+            border-color: #edf2f7;
+            cursor: not-allowed;
+        }
+
+        .day-cell.holiday {
+            background: #6b46c1;
+            color: #fff;
+            border-color: #6b46c1;
+            cursor: not-allowed;
+        }
+
+        .day-cell.test {
+            background: #9b2c2c;
+            color: #fff;
+            border-color: #9b2c2c;
+            cursor: not-allowed;
+        }
+
+        .day-cell.leave {
+            background: #d69e2e;
+            color: #fff;
+            border-color: #d69e2e;
+        }
+
+        .day-cell .day-num { font-weight: 600; }
+        .day-cell .day-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 700; }
+
+        /* Secured Password Input Field style */
+        .settings-modal input[type="password"] {
+            letter-spacing: 2px;
+        }
+    </style>
 </head>
-<body data-theme="1">
+<body>
 
-<div id="login-screen">
-  <div class="card" style="text-align:center;">
-    <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
-    <p style="font-size:13px; opacity:.8;">Sign in to access your IET DAVV CSE-B portal.</p>
-    <button class="btn-primary" id="google-btn">Continue with Google</button>
-    <p id="login-status" style="font-size:12px; opacity:.7; margin-top:10px; margin-bottom:0;"></p>
-  </div>
-</div>
-
-<div id="app-screen" class="hidden">
-  <header class="topbar">
-    <div>
-      <b id="hdr-name" style="font-size:13px;"></b>
-      <div style="font-size:10px; opacity:.7;" id="hdr-sub"></div>
+    <!-- App Settings / Access Key Section (Secured Key Input) -->
+    <div class="settings-modal" style="display:none;">
+        <input id="admin-unlock-key" type="password" placeholder="Enter Access Key">
     </div>
-    <div style="display:flex; gap:6px; align-items:center;">
-      <button class="icon-btn" id="members-top-btn" title="Members">👥</button>
-      <button class="icon-btn" id="settings-btn" title="Settings & Theme">⚙️</button>
-    </div>
-  </header>
-  
-  <main>
-    <section id="tab-timetable"></section>
-    <section id="tab-attendance" class="hidden"></section>
-    <section id="tab-calendar" class="hidden"></section>
-    <section id="tab-assignments" class="hidden"></section>
-    <section id="tab-resources" class="hidden"></section>
-    <section id="tab-announce" class="hidden"></section>
-    <section id="tab-chat" class="hidden"></section>
-    <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
-  </main>
 
-  <nav class="tabbar">
-    <button data-tab="timetable" class="active"><span class="t-icon">🗓️</span><span>Sch</span></button>
-    <button data-tab="attendance"><span class="t-icon">📋</span><span>Attend</span></button>
-    <button data-tab="calendar"><span class="t-icon">📅</span><span>Cal</span></button>
-    <button data-tab="assignments"><span class="t-icon">📚</span><span>Tasks</span></button>
-    <button data-tab="resources"><span class="t-icon">📂</span><span>Files</span></button>
-    <button data-tab="announce"><span class="t-icon">📢</span><span>Notice</span></button>
-    <button data-tab="chat"><span class="t-icon">💬</span><span>Chat</span></button>
-  </nav>
-</div>
-
-<!-- Settings, Theme & Dual Role Key Modal -->
-<div id="settings-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0;">
-    <div class="section-title">
-      <h3 style="margin:0;">⚙️ App Settings</h3>
-      <button id="settings-close" class="del-btn">✕</button>
-    </div>
-    
-    <label style="font-size:12px; font-weight:700;">Select Theme:</label>
-    <select id="theme-select">
-      <option value="1">Purple Dream 💜</option>
-      <option value="2">Sunset Coral 🧡</option>
-      <option value="3">Ocean Blue 💙</option>
-    </select>
-
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
-      <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
-      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
-    </div>
-  </div>
-</div>
-
-<!-- Timetable Visual Editor Modal -->
-<div id="tt-modal" class="modal-overlay hidden">
-  <div class="modal-body">
-    <div class="section-title">
-      <h3 style="margin:0;">📝 Edit Timetable Schedule</h3>
-      <button id="tt-modal-close" class="del-btn">✕ Close</button>
-    </div>
-    <label style="font-size:12px; font-weight:700;">Select Day:</label>
-    <select id="tt-edit-day">
-      <option value="Mon">Monday</option>
-      <option value="Tue">Tuesday</option>
-      <option value="Wed">Wednesday</option>
-      <option value="Thu">Thursday</option>
-      <option value="Fri">Friday</option>
-    </select>
-    
-    <div id="tt-editor-list" style="margin:14px 0;"></div>
-    
-    <button class="add-btn" id="tt-add-slot-btn" style="width:100%; margin-bottom:12px;">+ Add Class Slot</button>
-    <button class="btn-primary" id="tt-save-cloud-btn">Save Changes to Cloud ☁️</button>
-  </div>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
-  authDomain: "ietcse-bb0c9.firebaseapp.com",
-  databaseURL: "https://ietcse-bb0c9-default-rtdb.firebaseio.com",
-  projectId: "ietcse-bb0c9",
-  storageBucket: "ietcse-bb0c9.firebasestorage.app",
-  messagingSenderId: "39297300181",
-  appId: "1:39297300181:web:08b6d3e5bae40b9c19145c",
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const rtdb = getDatabase(app);
-
-let user = null;
-let classCode = 'CSE-B-2026';
-let activeChatTarget = 'ALL';
-let currentTimetableData = {};
-let currentCalMonth = 9; // September 2026 default
-
-let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
-let activeTheme = localStorage.getItem('ch_theme') || '1';
-document.body.setAttribute('data-theme', activeTheme);
-
-const fixedMSTDates = {
-  '2026-09-09': 'Class Test-I', '2026-09-10': 'Class Test-I', '2026-09-11': 'Class Test-I',
-  '2026-10-14': 'Class Test-II', '2026-10-15': 'Class Test-II', '2026-10-16': 'Class Test-II',
-  '2026-11-18': 'Class Test-III', '2026-11-19': 'Class Test-III', '2026-11-20': 'Class Test-III'
-};
-
-const fixedHolidays = {
-  '2026-08-15': 'Independence Day',
-  '2026-09-04': 'Janmashtami',
-  '2026-10-02': 'Gandhi Jayanti',
-  '2026-10-20': 'Dashara',
-  '2026-11-09': 'Govardhan Puja',
-  '2026-11-24': 'Guru Nanak Jayanti',
-  '2026-12-25': 'Christmas'
-};
-
-const subjectThemeColors = {
-  'Applied Chemistry': 'background:#d1fae5; border-color:#34d399; color:#065f46;',
-  'Basic Electronics': 'background:#dbeafe; border-color:#60a5fa; color:#1e40af;',
-  'Applied Math-I': 'background:#fef08a; border-color:#facc15; color:#713f12;',
-  'Mechanical Engineering': 'background:#ffedd5; border-color:#fb923c; color:#9a3412;',
-  'Technical English': 'background:#fee2e2; border-color:#f87171; color:#991b1b;',
-  'Workshop Practice': 'background:#fce7f3; border-color:#f472b6; color:#831843;',
-  'General': 'background:#f3f4f6; border-color:#9ca3af; color:#1f2937;'
-};
-
-const defaultTimetable = {
-  "Mon": [
-    {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "LAB: Applied Chem / Basic Elec", "teacher": "VF-SA / VF-1SS", "room": "Lab A-205/A-206", "isLab": true},
-    {"time": "03:00 - 04:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"}
-  ],
-  "Tue": [
-    {"time": "09:00 - 10:00", "subject": "Applied Chemistry", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "LAB: Basic Elec / Mech Engg", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "03:00 - 05:00", "subject": "LAB: Applied Chem / Mech Engg", "teacher": "VF-SA / VF-VS", "room": "Lab A-205/A-206", "isLab": true}
-  ],
-  "Wed": [
-    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "03:00 - 04:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
-  ],
-  "Thu": [
-    {"time": "09:00 - 10:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Technical English (Remedial)", "teacher": "2AS", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Technical English", "teacher": "2AS", "room": "M-309"},
-    {"time": "01:00 - 02:00", "subject": "Applied Chemistry (Remedial)", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"}
-  ],
-  "Fri": [
-    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "04:00 - 05:00", "subject": "Gen Mech Engg (Remedial)", "teacher": "4JS", "room": "M-309"}
-  ]
-};
-
-function getSubjectColor(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  const h = Math.abs(hash) % 360;
-  return `hsl(${h}, 70%, 88%)`;
-}
-
-function getBadgeClass(pct){
-  if(pct >= 75) return 'prog-good';
-  if(pct >= 65) return 'prog-mid';
-  return 'prog-bad';
-}
-
-document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
-  .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
-
-onAuthStateChanged(auth, (u)=>{
-  user = u;
-  if(u){
-    syncMemberDoc();
-    boot();
-  } else {
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('app-screen').classList.add('hidden');
-  }
-});
-
-async function syncMemberDoc(){
-  if(!user) return;
-  try {
-    await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
-      name: user.displayName, email: user.email, role: profile.role,
-      isAdmin: profile.isAdmin, photoURL: user.photoURL,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-  } catch(e){ console.warn(e); }
-}
-
-document.getElementById('settings-btn').onclick = ()=> document.getElementById('settings-modal').classList.remove('hidden');
-document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
-document.getElementById('members-top-btn').onclick = ()=> showTab('members');
-
-document.getElementById('theme-select').value = activeTheme;
-document.getElementById('theme-select').onchange = (e)=>{
-  activeTheme = e.target.value;
-  document.body.setAttribute('data-theme', activeTheme);
-  localStorage.setItem('ch_theme', activeTheme);
-};
-
-document.getElementById('unlock-submit-btn').onclick = ()=>{
-  const k = document.getElementById('admin-unlock-key').value.trim();
-  if(k === "IETKDPROJECT1"){
-    profile.isAdmin = true; profile.role = "CR / Admin";
-    localStorage.setItem('ch_profile', JSON.stringify(profile));
-    syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
-    boot();
-    alert("CR / Admin privileges unlocked!");
-  } else if(k === "IETCSEB") {
-    profile.isAdmin = false; profile.role = "Student";
-    localStorage.setItem('ch_profile', JSON.stringify(profile));
-    syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
-    boot();
-    alert("Switched to Student mode successfully!");
-  } else {
-    alert("Incorrect key! Use valid admin (IETKDPROJECT1) or student (IETCSEB) passcode.");
-  }
-};
-
-function boot(){
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('app-screen').classList.remove('hidden');
-  document.getElementById('hdr-name').textContent = user.displayName;
-  document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B`;
-  
-  setupPresence();
-  loadTimetable();
-  loadAttendance();
-  loadCalendar();
-  loadAssignments();
-  loadResources();
-  loadAnnouncements();
-  loadChat();
-  loadMembers();
-  showTab('timetable');
-}
-
-document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
-function showTab(t){
-  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
-  ['timetable','attendance','calendar','assignments','resources','announce','chat','members'].forEach(s=> document.getElementById('tab-'+s).classList.toggle('hidden', s!==t));
-}
-
-function setupPresence(){
-  const myStatusRef = ref(rtdb, `presence/${classCode}/${user.uid}`);
-  const connectedRef = ref(rtdb, '.info/connected');
-  onValue(connectedRef, (snap)=>{
-    if(snap.val()===false) return;
-    onDisconnect(myStatusRef).set({ name:user.displayName, state:'offline', last_changed: rtdbServerTs() })
-      .then(()=> rtdbSet(myStatusRef, { name:user.displayName, state:'online', last_changed: rtdbServerTs() }));
-  });
-}
-
-function loadTimetable(){
-  const el = document.getElementById('tab-timetable');
-  const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ref_, (snap)=>{
-    currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
-    el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
-    ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
-      const periods = (currentTimetableData && currentTimetableData[d]) || [];
-      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>{
-        const chipColor = getSubjectColor(p.subject);
-        return `<div class="row ${p.isLab ? 'lab-row' : ''}">
-          <span class="row-subject-tag" style="background:${chipColor};">${p.subject}</span>
-          <b>${p.time}</b>
-          <div style="font-size:11px; opacity:.8;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
-        </div>`;
-      }).join('') : `<div style="font-size:12px; opacity:0.6;">No classes scheduled.</div>`);
-    });
-    
-    if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
-      document.getElementById('tt-open-editor-btn').onclick = openTimetableEditor;
-    }
-  });
-}
-
-function openTimetableEditor(){
-  document.getElementById('tt-modal').classList.remove('hidden');
-  renderEditorDayList();
-}
-
-document.getElementById('tt-modal-close').onclick = ()=> document.getElementById('tt-modal').classList.add('hidden');
-document.getElementById('tt-edit-day').onchange = renderEditorDayList;
-
-function renderEditorDayList(){
-  const selDay = document.getElementById('tt-edit-day').value;
-  const list = document.getElementById('tt-editor-list');
-  const items = currentTimetableData[selDay] || [];
-  list.innerHTML = '';
-  
-  items.forEach((item, idx)=>{
-    list.innerHTML += `
-      <div class="edit-item-box" data-idx="${idx}">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-          <b>Slot #${idx+1}</b>
-          <button class="del-btn btn-remove-slot">Remove</button>
-        </div>
-        <input class="inp-time" value="${item.time||''}" placeholder="Time (09:00 - 10:00)">
-        <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name">
-        <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher Code">
-        <input class="inp-room" value="${item.room||''}" placeholder="Room No.">
-        <label style="font-size:12px; font-weight:600; color:#0F172A;">
-          <input type="checkbox" class="inp-islab" ${item.isLab ? 'checked':''}> Is Lab (Peach Background)
-        </label>
-      </div>`;
-  });
-  
-  list.querySelectorAll('.btn-remove-slot').forEach(btn=>{
-    btn.onclick = (e)=>{
-      const idx = e.target.closest('.edit-item-box').dataset.idx;
-      currentTimetableData[selDay].splice(idx, 1);
-      renderEditorDayList();
-    };
-  });
-}
-
-document.getElementById('tt-add-slot-btn').onclick = ()=>{
-  const selDay = document.getElementById('tt-edit-day').value;
-  if(!currentTimetableData[selDay]) currentTimetableData[selDay] = [];
-  currentTimetableData[selDay].push({"time": "09:00 - 10:00", "subject": "New Subject", "teacher": "VF-XX", "room": "M-309", "isLab": false});
-  renderEditorDayList();
-};
-
-document.getElementById('tt-save-cloud-btn').onclick = async ()=>{
-  const selDay = document.getElementById('tt-edit-day').value;
-  const boxes = document.querySelectorAll('#tt-editor-list .edit-item-box');
-  const updatedDayList = [];
-  
-  boxes.forEach(box=>{
-    updatedDayList.push({
-      time: box.querySelector('.inp-time').value.trim(),
-      subject: box.querySelector('.inp-subject').value.trim(),
-      teacher: box.querySelector('.inp-teacher').value.trim(),
-      room: box.querySelector('.inp-room').value.trim(),
-      isLab: box.querySelector('.inp-islab').checked
-    });
-  });
-
-  currentTimetableData[selDay] = updatedDayList;
-  
-  try {
-    await setDoc(doc(db, 'classes', classCode, 'meta', 'timetable'), { days: currentTimetableData });
-    document.getElementById('tt-modal').classList.add('hidden');
-    alert('Timetable updated successfully!');
-  } catch(e) {
-    alert('Error saving timetable: ' + e.message);
-  }
-};
-
-function loadAttendance(){
-  const el = document.getElementById('tab-attendance');
-  const todayStr = new Date().toISOString().split('T')[0];
-  
-  el.innerHTML = `
-    <div class="section-title"><h2>📋 Attendance</h2></div>
-    <div class="card" style="max-width:100%;">
-      <label style="font-size:12px; font-weight:700;">Select Date:</label>
-      <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
-      <div id="att-classes-container" style="margin-top:12px;"></div>
-    </div>
-    <div class="card" style="max-width:100%;">
-      <h3>📊 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
-      <div id="att-stats-container"></div>
-    </div>`;
-
-  const dateInp = document.getElementById('att-date');
-  dateInp.onchange = renderDayAttendanceForm;
-  renderDayAttendanceForm();
-  renderAttendanceStats();
-}
-
-async function renderDayAttendanceForm(){
-  const dateStr = document.getElementById('att-date').value;
-  const container = document.getElementById('att-classes-container');
-  
-  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
-    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
-    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
-    return;
-  }
-
-  const dObj = new Date(dateStr);
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dayName = dayNames[dObj.getDay()];
-  
-  if(dayName === 'Sun' || dayName === 'Sat'){
-    container.innerHTML = `<div style="font-size:13px; opacity:.7; text-align:center; padding:10px;">Weekend! No scheduled classes on ${dayName}.</div>`;
-    return;
-  }
-
-  const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
-  onSnapshot(planSnap, async (pSnap)=>{
-    const planType = pSnap.exists() ? pSnap.data().type : null;
-    
-    const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-    onSnapshot(ttSnap, async (tSnap)=>{
-      const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-      const daySlots = (tData && tData[dayName]) || [];
-      
-      if(!daySlots.length){
-        container.innerHTML = `<div style="font-size:12px; opacity:.6;">No periods listed for ${dayName}.</div>`;
-        return;
-      }
-
-      const attCol = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attCol, (logSnap)=>{
-        const logs = {};
-        logSnap.forEach(d => {
-          if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
-        });
-
-        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
-        
-        daySlots.forEach((slot, idx)=>{
-          const logKey = `${dateStr}_${idx}`;
-          const currentStatus = logs[logKey] || (planType === 'leave' || planType === 'skip' ? 'Absent' : 'Present');
-          const isChecked = currentStatus === 'Present';
-          
-          html += `
-            <div class="row" style="flex-direction:row; justify-content:space-between; align-items:center; padding:8px 12px;">
-              <div>
-                <span class="row-subject-tag" style="background:${getSubjectColor(slot.subject)};">${slot.subject}</span>
-                <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room}</div>
-              </div>
-              <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <span>${isChecked ? 'Present ✅' : 'Absent ❌'}</span>
-                <input type="checkbox" class="att-checkbox" data-slotidx="${idx}" data-date="${dateStr}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; margin:0;">
-              </label>
-            </div>`;
-        });
-
-        container.innerHTML = html;
-
-        container.querySelectorAll('.att-checkbox').forEach(chk => {
-          chk.onchange = async (e) => {
-            const sIdx = e.target.dataset.slotidx;
-            const dStr = e.target.dataset.date;
-            const status = e.target.checked ? 'Present' : 'Absent';
-            await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
-              date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
-            });
-            renderAttendanceStats();
-          };
-        });
-      });
-    });
-  });
-}
-
-async function renderAttendanceStats(){
-  const statsContainer = document.getElementById('att-stats-container');
-  const startDate = new Date('2026-08-05');
-  const today = new Date();
-  
-  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ttSnap, async (tSnap)=>{
-    const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-    const totals = {};
-    const attended = {};
-    let curr = new Date(startDate);
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    
-    const planSnap = collection(db, 'users', user.uid, 'calendar_plans');
-    onSnapshot(planSnap, async (planSnapShot)=>{
-      const plans = {};
-      planSnapShot.forEach(d => plans[d.id] = d.data().type);
-      
-      const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attLogSnap, async (logSnap)=>{
-        const logs = {};
-        logSnap.forEach(d => logs[d.id] = d.data().status);
-
-        curr = new Date(startDate);
-        while(curr <= today){
-          const dStr = curr.toISOString().split('T')[0];
-          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
-            const dName = dayNames[curr.getDay()];
-            const slots = tData[dName] || [];
-            const plan = plans[dStr];
-            
-            slots.forEach((slot, idx)=>{
-              const subj = slot.subject;
-              totals[subj] = (totals[subj] || 0) + 1;
-              
-              const logKey = `${dStr}_${idx}`;
-              let stat = logs[logKey];
-              if(!stat){
-                if(plan === 'leave' || plan === 'skip') stat = 'Absent';
-                else stat = 'Present';
-              }
-              if(stat === 'Present'){
-                attended[subj] = (attended[subj] || 0) + 1;
-              }
-            });
-          }
-          curr.setDate(curr.getDate() + 1);
-        }
-
-        let statsHtml = '';
-        const subjects = Object.keys(totals);
-        if(!subjects.length){
-          statsContainer.innerHTML = `<div style="font-size:12px; opacity:.6;">No subjects found.</div>`;
-          return;
-        }
-
-        subjects.forEach(subj => {
-          const tot = totals[subj];
-          const att = attended[subj] || 0;
-          const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
-          const badge = getBadgeClass(pct);
-          
-          statsHtml += `
-            <div style="margin-bottom:10px; font-size:12px;">
-              <div style="display:flex; justify-content:space-between; font-weight:700;">
-                <span>${subj}</span>
-                <span>${att} / ${tot} (${pct}%)</span>
-              </div>
-              <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
-            </div>`;
-        });
-
-        statsContainer.innerHTML = statsHtml;
-      });
-    });
-  });
-}
-
-function loadCalendar(){
-  const el = document.getElementById('tab-calendar');
-  const monthNames = ["", "August 2026", "September 2026", "October 2026", "November 2026", "December 2026"];
-  
-  el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
-    <div class="card" style="max-width:100%;">
-      <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
-        <span style="background:#FFD1D1; color:#5C0000; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
-        <span style="background:#FEF08A; color:#422006; padding:2px 6px; border:1px solid #CA8A04; border-radius:4px;">Yellow = College Holidays</span>
-      </p>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <button class="icon-btn" id="cal-prev-btn">⟨</button>
-        <b id="cal-month-title" style="font-size:14px;">September 2026</b>
-        <button class="icon-btn" id="cal-next-btn">⟩</button>
+    <!-- Attendance Dashboard & Interactive Calendar View -->
+    <div class="attendance-dashboard">
+      <div class="stats-bar">
+        <span>Teaching days: <strong id="total-teaching">75</strong></span>
+        <span>Leaves placed: <strong id="total-leaves">19</strong></span>
+        <span>Projected attendance: <strong id="projected-att">74.7%</strong></span>
+        <button id="reset-plan-btn" class="reset-btn">Reset to recommended plan</button>
       </div>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>`;
-  
-  document.getElementById('cal-prev-btn').onclick = () => {
-    if(currentCalMonth > 8) { currentCalMonth--; renderCalendarGrid(); }
-  };
-  document.getElementById('cal-next-btn').onclick = () => {
-    if(currentCalMonth < 12) { currentCalMonth++; renderCalendarGrid(); }
-  };
-  
-  renderCalendarGrid();
-}
 
-async function renderCalendarGrid(){
-  const grid = document.getElementById('cal-grid');
-  const titleEl = document.getElementById('cal-month-title');
-  const monthNames = { 8: "August 2026", 9: "September 2026", 10: "October 2026", 11: "November 2026", 12: "December 2026" };
-  titleEl.textContent = monthNames[currentCalMonth];
+      <div class="attendance-card">
+        <div class="card-header">
+          <span class="label-title">CURRENT ATTENDANCE</span>
+          <span id="attendance-ratio-text">56 present / 19 leave of 75 days</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-fill" class="progress-fill" style="width: 74.7%;"></div>
+        </div>
+      </div>
 
-  const daysInMonth = new Date(2026, currentCalMonth, 0).getDate();
-  const planRef = collection(db, 'users', user.uid, 'calendar_plans');
-  
-  onSnapshot(planRef, (snap)=>{
-    const plans = {};
-    snap.forEach(d => plans[d.id] = d.data().type);
-    grid.innerHTML = '';
-    
-    for(let i = 1; i <= daysInMonth; i++){
-      const mStr = String(currentCalMonth).padStart(2,'0');
-      const dStr = `2026-${mStr}-${String(i).padStart(2,'0')}`;
-      
-      const dateObj = new Date(2026, currentCalMonth - 1, i);
-      const dayOfWeek = dateObj.getDay();
-      const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-      
-      const isMst = fixedMSTDates[dStr];
-      const isHol = fixedHolidays[dStr];
-      const planVal = plans[dStr];
-      
-      let cls = '';
-      let badgeText = `${i}`;
-      
-      if(isMst){
-        cls = 'mst-day';
-        badgeText = `${i} (MST)`;
-      } else if(isHol){
-        cls = 'hol-day';
-        badgeText = `${i} (Hol)`;
-      } else if(isWeekend) {
-        cls = 'weekend-day';
-      } else if(planVal) {
-        cls = `has-${planVal}`;
-      }
-      
-      grid.innerHTML += `
-        <div class="cal-day ${cls}" data-date="${dStr}" data-fixed="${isMst || isHol ? 'yes':'no'}">
-          <b>${i}</b>
-          <span style="font-size:8.5px; opacity:.9;">${isMst ? 'MST' : (isHol ? 'Hol' : (isWeekend ? 'Off' : (planVal ? planVal.toUpperCase() : '')))}</span>
-        </div>`;
-    }
-    
-    grid.querySelectorAll('.cal-day').forEach(box => {
-      box.onclick = async () => {
-        if(box.dataset.fixed === 'yes'){
-          alert("MST exams and official college holidays are fixed and unchangeable!");
-          return;
-        }
-        const dStr = box.dataset.date;
-        const curr = plans[dStr];
-        let next = 'leave';
-        if(curr === 'leave') next = 'half';
-        else if(curr === 'half') next = 'skip';
-        else if(curr === 'skip') next = null;
-        
-        if(next) {
-          await setDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr), { type: next });
-        } else {
-          await deleteDoc(doc(db, 'users', user.uid, 'calendar_plans', dStr));
-        }
-      };
-    });
-  });
-}
+      <div class="legend-bar">
+        <span class="legend-item"><span class="dot class-day"></span> Regular class day (click to add leave)</span>
+        <span class="legend-item"><span class="dot weekend"></span> Weekend (off)</span>
+        <span class="legend-item"><span class="dot holiday"></span> Public holiday</span>
+        <span class="legend-item"><span class="dot test"></span> Class test</span>
+        <span class="legend-item"><span class="dot leave"></span> Planned leave (drag to move)</span>
+        <span class="legend-item"><span class="dot outside"></span> Outside semester</span>
+      </div>
 
-function loadAssignments(){
-  const el = document.getElementById('tab-assignments');
-  const q = query(collection(db,'classes',classCode,'assignments'), orderBy('ts','desc'), limit(50));
-  onSnapshot(q, (snap)=>{
-    el.innerHTML = `<div class="section-title"><h2>📚 Tasks & Assignments</h2></div>`;
-    if(profile.isAdmin){
-      el.innerHTML += `
-        <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
-          <h3 style="margin-top:0; color:var(--primary);">👑 CR / Admin Upload Portal</h3>
-          <input id="asg-title" placeholder="Assignment Title">
-          <input id="asg-link" placeholder="Optional Drive/File Link">
-          <textarea id="asg-desc" placeholder="Details and instructions..." rows="2"></textarea>
-          <label style="font-size:12px; font-weight:700;">Card Color Theme:</label>
-          <select id="asg-color" style="margin-bottom:10px;">
-            <option value="background:#d1fae5; border-color:#34d399; color:#065f46;">Green 🟢</option>
-            <option value="background:#dbeafe; border-color:#60a5fa; color:#1e40af;">Blue 🔵</option>
-            <option value="background:#fef08a; border-color:#facc15; color:#713f12;">Yellow 🟡</option>
-            <option value="background:#ffedd5; border-color:#fb923c; color:#9a3412;">Peach / Orange 🍑</option>
-            <option value="background:#fee2e2; border-color:#f87171; color:#991b1b;">Red 🔴</option>
-            <option value="background:#fce7f3; border-color:#f472b6; color:#831843;">Pink 🌸</option>
-          </select>
-          <button class="add-btn" id="asg-post-btn" style="width:100%; background:var(--primary); color:#fff;">Post Admin Task 🚀</button>
-        </div>`;
-    }
-    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No tasks posted.</div>`;
-    snap.forEach(d=>{
-      const a = d.data();
-      const styleOverride = a.cardStyle || 'background:#d1fae5; border-color:#34d399; color:#065f46;';
-      el.innerHTML += `
-        <div class="row" style="${styleOverride}">
-          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <b>${a.title} 👑</b>
-            ${profile.isAdmin ? `<button class="del-btn btn-del-asg" data-id="${d.id}">Delete</button>` : ''}
-          </div>
-          <span style="font-size:11px; opacity:.8;">by ${a.byName}</span>
-          <div style="margin:4px 0; font-weight:500;">${a.desc}</div>
-          ${a.link ? `<a href="${a.link}" target="_blank" style="font-weight:700; text-decoration:underline; font-size:12px;">📎 Open file</a>` : ''}
-        </div>`;
-    });
+      <div class="calendars-wrapper">
+        <div class="month-container">
+          <div class="month-header"><h3>August 2026</h3><span class="sem-tag">Sem A</span></div>
+          <div class="weekdays-row"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+          <div class="days-grid" id="grid-aug-2026"></div>
+        </div>
 
-    if(profile.isAdmin){
-      if(document.getElementById('asg-post-btn')){
-        document.getElementById('asg-post-btn').onclick = async ()=>{
-          const title = document.getElementById('asg-title').value.trim();
-          const link = document.getElementById('asg-link').value.trim();
-          const desc = document.getElementById('asg-desc').value.trim();
-          const cardStyle = document.getElementById('asg-color').value;
-          if(!title) return alert('Enter a title!');
-          await addDoc(collection(db,'classes',classCode,'assignments'), { title, link, desc, cardStyle, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
-        };
-      }
-      el.querySelectorAll('.btn-del-asg').forEach(btn=>{
-        btn.onclick = async (e)=>{
-          if(confirm("Delete this task?")){
-            await deleteDoc(doc(db,'classes',classCode,'assignments', e.target.dataset.id));
-          }
-        };
-      });
-    }
-  });
-}
-
-function loadResources(){
-  const el = document.getElementById('tab-resources');
-  const subjects = ['Applied Chemistry', 'Basic Electronics', 'Applied Math-I', 'Mechanical Engineering', 'Technical English', 'Workshop Practice', 'General'];
-  let currentSubj = 'Applied Chemistry';
-
-  const renderResView = () => {
-    const q = query(collection(db,'classes',classCode,'resources'), orderBy('ts','desc'), limit(100));
-    onSnapshot(q, (snap)=>{
-      let html = `
-        <div class="section-title"><h2>📂 Resources & Documents Hub</h2></div>
-        <div style="display:flex; gap:5px; overflow-x:auto; padding-bottom:6px; margin-bottom:12px;">
-          ${subjects.map(s => `<button class="add-btn res-subj-btn" data-subj="${s}" style="${currentSubj === s ? 'background:var(--primary); color:#fff;' : 'background:#fff;'}">${s}</button>`).join('')}
-        </div>`;
-
-      if(profile.isAdmin){
-        html += `
-          <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
-            <h3 style="margin-top:0; color:var(--primary);">👑 Admin Upload Portal (${currentSubj})</h3>
-            <input id="res-title" placeholder="Document Title (e.g. Unit 1 Notes / Roll List)">
-            <select id="res-type" style="margin-bottom:10px;">
-              <option value="Notes">Notes</option>
-              <option value="Books">Books</option>
-              <option value="Roll List">Roll List</option>
-              <option value="Question Paper">Question Paper</option>
-            </select>
-            <input id="res-link" placeholder="Drive / File Link">
-            <textarea id="res-desc" placeholder="Upload Bar Description & Details..." rows="2"></textarea>
-            <label style="font-size:12px; font-weight:700;">Subject Theme Color:</label>
-            <select id="res-subj-color" style="margin-bottom:10px;">
-              <option value="Applied Chemistry">Applied Chemistry (Green)</option>
-              <option value="Basic Electronics">Basic Electronics (Blue)</option>
-              <option value="Applied Math-I">Applied Math-I (Yellow)</option>
-              <option value="Mechanical Engineering">Mechanical Engineering (Peach)</option>
-              <option value="Technical English">Technical English (Red)</option>
-              <option value="Workshop Practice">Workshop Practice (Pink)</option>
-              <option value="General">General (Gray)</option>
-            </select>
-            <button class="add-btn" id="res-post-btn" style="width:100%; background:var(--primary); color:#fff;">Upload Resource 🚀</button>
-          </div>`;
-      }
-
-      html += `<div id="res-list-container">`;
-      let count = 0;
-      snap.forEach(d => {
-        const r = d.data();
-        if(r.subject === currentSubj){
-          count++;
-          const themeStyle = subjectThemeColors[r.subjectTheme || r.subject] || subjectThemeColors['General'];
-          html += `
-            <div class="row" style="${themeStyle}">
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <span class="pill" style="background:#fff;">${r.type}</span>
-                  <b style="margin-left:6px; font-size:14px;">${r.title}</b>
-                  <span style="font-size:10px; opacity:.7; margin-left:4px;">(${r.subject})</span>
-                </div>
-                ${profile.isAdmin ? `<button class="del-btn btn-del-res" data-id="${d.id}">Delete</button>` : ''}
-              </div>
-              ${r.desc ? `<div style="margin:4px 0; font-size:12px; opacity:0.9;">${r.desc}</div>` : ''}
-              ${r.link ? `<a href="${r.link}" target="_blank" style="font-size:12px; font-weight:700; text-decoration:underline; margin-top:2px; display:inline-block;">📎 Open file</a>` : ''}
-            </div>`;
-        }
-      });
-      if(count === 0) html += `<div style="font-size:12px; opacity:.6;">No resources uploaded for ${currentSubj} yet.</div>`;
-      html += `</div>`;
-
-      el.innerHTML = html;
-
-      el.querySelectorAll('.res-subj-btn').forEach(btn => {
-        btn.onclick = () => {
-          currentSubj = btn.dataset.subj;
-          renderResView();
-        };
-      });
-
-      if(profile.isAdmin && document.getElementById('res-post-btn')){
-        document.getElementById('res-post-btn').onclick = async () => {
-          const title = document.getElementById('res-title').value.trim();
-          const type = document.getElementById('res-type').value;
-          const link = document.getElementById('res-link').value.trim();
-          const desc = document.getElementById('res-desc').value.trim();
-          const subjectTheme = document.getElementById('res-subj-color').value;
-          if(!title) return alert('Enter a resource title!');
-          await addDoc(collection(db,'classes',classCode,'resources'), { title, type, subject: currentSubj, desc, subjectTheme, link, ts: serverTimestamp() });
-        };
-      }
-
-      el.querySelectorAll('.btn-del-res').forEach(btn => {
-        btn.onclick = async (e) => {
-          if(confirm("Delete this resource?")){
-            await deleteDoc(doc(db,'classes',classCode,'resources', e.target.dataset.id));
-          }
-        };
-      });
-    });
-  };
-  renderResView();
-}
-
-function loadAnnouncements(){
-  const el = document.getElementById('tab-announce');
-  const q = query(collection(db,'classes',classCode,'announcements'), orderBy('ts','desc'), limit(50));
-  onSnapshot(q, (snap)=>{
-    el.innerHTML = `<div class="section-title"><h2>📢 Announcements</h2></div>`;
-    if(profile.isAdmin){
-      el.innerHTML += `<div style="display:flex; gap:7px; margin-bottom:12px;"><input id="ann-in" placeholder="Write an announcement…" style="margin:0;"><button class="send-btn" id="ann-send">Post</button></div>`;
-    }
-    if(snap.empty) el.innerHTML += `<div style="font-size:12px; opacity:.6;">No announcements yet.</div>`;
-    snap.forEach(d=>{
-      const a = d.data();
-      el.innerHTML += `
-        <div class="row">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b>${a.byName||'CR'}</b>
-            ${profile.isAdmin ? `<button class="del-btn btn-del-ann" data-id="${d.id}">Delete</button>` : ''}
-          </div>
-          <span style="font-size:10px; opacity:.6;">${a.ts? new Date(a.ts.toDate()).toLocaleString() : ''}</span>
-          <div>${a.text}</div>
-        </div>`;
-    });
-
-    if(profile.isAdmin){
-      if(document.getElementById('ann-send')){
-        document.getElementById('ann-send').onclick = async ()=>{
-          const val = document.getElementById('ann-in').value.trim(); if(!val) return;
-          await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
-          document.getElementById('ann-in').value='';
-        };
-      }
-      el.querySelectorAll('.btn-del-ann').forEach(btn=>{
-        btn.onclick = async (e)=>{
-          if(confirm("Delete this announcement?")){
-            await deleteDoc(doc(db,'classes',classCode,'announcements', e.target.dataset.id));
-          }
-        };
-      });
-    }
-  });
-}
-
-function loadChat(){
-  const el = document.getElementById('tab-chat');
-  el.innerHTML = `
-    <div class="section-title"><h2>💬 Chat</h2></div>
-    <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
-      <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class Chat</button>
-      <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Chats</button>
+        <div class="month-container">
+          <div class="month-header"><h3>September 2026</h3><span class="sem-tag">Sem A</span></div>
+          <div class="weekdays-row"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+          <div class="days-grid" id="grid-sep-2026"></div>
+        </div>
+      </div>
     </div>
-    <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
-      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Recently Messaged 1:1 Threads:</div>
-      <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
-    </div>
-    <div class="chat-log" id="chat-log"></div>
-    <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
-  
-  const renderLog = () => {
-    const privBar = document.getElementById('private-recent-bar');
-    if(activeChatTarget !== 'ALL') privBar.classList.remove('hidden');
-    else privBar.classList.add('hidden');
 
-    const qCol = activeChatTarget === 'ALL' 
-      ? query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200))
-      : query(collection(db,'private_chats', [user.uid, activeChatTarget].sort().join('_'), 'messages'), orderBy('ts','asc'), limit(200));
-    
-    onSnapshot(qCol, (snap)=>{
-      const log = document.getElementById('chat-log'); if(!log) return;
-      log.innerHTML = '';
-      snap.forEach(d=>{
-        const m = d.data();
-        log.innerHTML += `
-          <div class="msg">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b>${m.role||'Student'} · ${m.name}</b>
-              ${profile.isAdmin ? `<button class="del-btn btn-del-msg" data-id="${d.id}" style="padding:2px 6px; font-size:10px;">Revoke</button>` : ''}
-            </div>
-            <div>${m.text}</div>
-          </div>`;
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const calendarData = {
+          "aug-2026": [
+            { day: 1, type: "outside" },
+            { day: 2, type: "weekend" }, { day: 3, type: "weekend" }, { day: 4, type: "weekend" }, { day: 5, type: "class" }, { day: 6, type: "class" }, { day: 7, type: "class" }, { day: 8, type: "weekend" },
+            { day: 9, type: "weekend" }, { day: 10, type: "class" }, { day: 11, type: "class" }, { day: 12, type: "class" }, { day: 13, type: "leave" }, { day: 14, type: "leave" }, { day: 15, type: "holiday", label: "INDEPENDENCE DAY" },
+            { day: 16, type: "weekend" }, { day: 17, type: "class" }, { day: 18, type: "class" }, { day: 19, type: "class" }, { day: 20, type: "leave" }, { day: 21, type: "leave" }, { day: 22, type: "weekend" },
+            { day: 23, type: "weekend" }, { day: 24, type: "class" }, { day: 25, type: "class" }, { day: 26, type: "holiday", label: "MILAD-UN-NABI" }, { day: 27, type: "leave" }, { day: 28, type: "holiday", label: "RAKSHA BANDHAN" }, { day: 29, type: "weekend" },
+            { day: 30, type: "weekend" }, { day: 31, type: "class" }
+          ],
+          "sep-2026": [
+            { day: 1, type: "class" }, { day: 2, type: "class" }, { day: 3, type: "leave", label: "LEAVE" }, { day: 4, type: "holiday", label: "JANMASHTAMI" }, { day: 5, type: "weekend" },
+            { day: 6, type: "weekend" }, { day: 7, type: "class" }, { day: 8, type: "class" }, { day: 9, type: "test", label: "TEST" }, { day: 10, type: "test", label: "TEST" }, { day: 11, type: "test", label: "TEST" }, { day: 12, type: "weekend" },
+            { day: 13, type: "weekend" }, { day: 14, type: "holiday", label: "GANESH CHATURTHI" }, { day: 15, type: "leave", label: "LEAVE" }, { day: 16, type: "class" }, { day: 17, type: "class" }, { day: 18, type: "class" }, { day: 19, type: "weekend" },
+            { day: 20, type: "weekend" }, { day: 21, type: "class" }, { day: 22, type: "class" }, { day: 23, type: "class" }, { day: 24, type: "leave", label: "LEAVE" }, { day: 25, type: "leave", label: "LEAVE" }, { day: 26, type: "weekend" },
+            { day: 27, type: "weekend" }, { day: 28, type: "class" }, { day: 29, type: "class" }, { day: 30, type: "class" }
+          ]
+        };
+
+        function renderCalendars() {
+          Object.keys(calendarData).forEach(monthKey => {
+            const grid = document.getElementById(`grid-${monthKey}`);
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            calendarData[monthKey].forEach((item) => {
+              const cell = document.createElement("div");
+              cell.className = `day-cell ${item.type}`;
+              cell.innerHTML = `
+                <span class="day-num">${item.day}</span>
+                <span class="day-label">${item.label || (item.type === 'leave' ? 'LEAVE' : '')}</span>
+              `;
+
+              cell.addEventListener("click", () => {
+                if (item.type === "class") {
+                  item.type = "leave";
+                  item.label = "LEAVE";
+                } else if (item.type === "leave") {
+                  item.type = "class";
+                  item.label = "";
+                }
+                renderCalendars();
+                updateStats();
+              });
+
+              grid.appendChild(cell);
+            });
+          });
+        }
+
+        function updateStats() {
+          let totalTeachingDays = 0;
+          let totalLeaves = 0;
+
+          Object.values(calendarData).forEach(month => {
+            month.forEach(day => {
+              if (day.type === "class" || day.type === "leave") {
+                totalTeachingDays++;
+              }
+              if (day.type === "leave") {
+                totalLeaves++;
+              }
+            });
+          });
+
+          const presentDays = totalTeachingDays - totalLeaves;
+          const percentage = totalTeachingDays > 0 ? ((presentDays / totalTeachingDays) * 100).toFixed(1) : 100;
+
+          const teachingEl = document.getElementById("total-teaching");
+          const leavesEl = document.getElementById("total-leaves");
+          const projectedEl = document.getElementById("projected-att");
+          const ratioEl = document.getElementById("attendance-ratio-text");
+          const progressEl = document.getElementById("progress-fill");
+
+          if (teachingEl) teachingEl.textContent = totalTeachingDays;
+          if (leavesEl) leavesEl.textContent = totalLeaves;
+          if (projectedEl) projectedEl.textContent = `${percentage}%`;
+          if (ratioEl) ratioEl.textContent = `${presentDays} present / ${totalLeaves} leave of ${totalTeachingDays} days`;
+          if (progressEl) progressEl.style.width = `${percentage}%`;
+        }
+
+        renderCalendars();
+        updateStats();
       });
-      log.scrollTop = log.scrollHeight;
-
-      if(profile.isAdmin){
-        log.querySelectorAll('.btn-del-msg').forEach(btn => {
-          btn.onclick = async (e) => {
-            const msgId = e.target.dataset.id;
-            if(confirm("Revoke/Delete this message?")){
-              const colPath = activeChatTarget === 'ALL' ? `classes/${classCode}/chat` : `private_chats/${[user.uid, activeChatTarget].sort().join('_')}/messages`;
-              await deleteDoc(doc(db, colPath, msgId));
-            }
-          };
-        });
-      }
-    });
-
-    // Render recently texted bar
-    const recentList = document.getElementById('recent-threads-list');
-    if(recentList){
-      onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
-        recentList.innerHTML = '';
-        memSnap.forEach(d => {
-          if(d.id !== user.uid){
-            const mem = d.data();
-            recentList.innerHTML += `<button class="add-btn" data-uid="${d.id}" style="padding:4px 8px; font-size:11px; background:${activeChatTarget === d.id ? 'var(--primary); color:#fff;' : '#fff'};">${mem.name}</button>`;
-          }
-        });
-        recentList.querySelectorAll('button').forEach(btn => {
-          btn.onclick = () => {
-            activeChatTarget = btn.dataset.uid;
-            renderLog();
-          };
-        });
-      });
-    }
-  };
-
-  document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
-  document.getElementById('btn-chat-priv').onclick = ()=>{
-    const targetUid = prompt("Enter Member User ID / Name or pick from the recent bar below:");
-    if(targetUid) { activeChatTarget = targetUid; renderLog(); }
-  };
-
-  const sendMsg = async () => {
-    const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
-    if(activeChatTarget === 'ALL'){
-      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
-    } else {
-      const threadId = [user.uid, activeChatTarget].sort().join('_');
-      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, ts: serverTimestamp() });
-    }
-    inp.value='';
-  };
-
-  document.getElementById('chat-send').onclick = sendMsg;
-  document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
-  renderLog();
-}
-
-function loadMembers(){
-  const el = document.getElementById('tab-members');
-  const presenceRef = ref(rtdb, `presence/${classCode}`);
-  onSnapshot(collection(db,'classes',classCode,'members'), (snap)=>{
-    onValue(presenceRef, (pSnap)=>{
-      const presence = pSnap.val() || {};
-      const entries = [];
-      snap.forEach(d=> entries.push({ uid:d.id, ...d.data() }));
-      
-      const active = entries.filter(e=> presence[e.uid]?.state==='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      const offline = entries.filter(e=> presence[e.uid]?.state!=='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-      
-      el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>
-        <div class="members-container">
-          <div>
-            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">🟢 ACTIVE NOW (${active.length})</div>
-            ${active.length ? active.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No members online</div>'}
-          </div>
-          <div>
-            <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
-            ${offline.length ? offline.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px;"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
-          </div>
-        </div>`;
-    });
-  });
-}
-</script>
+    </script>
 </body>
 </html>
