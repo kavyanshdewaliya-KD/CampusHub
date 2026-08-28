@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --radius:16px; --border-w:3px;
+    --font-display:'Baloo 2','Fredoka',sans-serif;
+    --font-body:'Poppins',sans-serif;
+  }
+  body[data-vt="1"]{
+    --bg:#F1EEFC; --panel:#fff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#fff;
+    --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --amber:#FFB020;
+    --border:#241645; --chip:#E7E1FF;
+  }
+  body[data-vt="2"]{
+    --bg:#FFF1F7; --panel:#fff; --ink:#5C1943; --primary:#FF6FA5; --primary-ink:#fff;
+    --accent2:#B57BFF; --pink:#FF6FA5; --danger:#FF5A5F; --good:#2FBF8F; --amber:#FFB020;
+    --border:#5C1943; --chip:#FFE1EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--font-body); min-height:100vh; -webkit-tap-highlight-color:transparent;}
+  h1,h2,h3{font-family:var(--font-display); font-weight:700;}
+  button{font-family:var(--font-body); cursor:pointer;}
+  input,select,textarea{font-family:var(--font-body);}
+  .hidden{display:none !important;}
+
+  #login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  .login-card{background:var(--panel); border:var(--border-w) solid var(--border); border-radius:24px; padding:26px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border);}
+  .login-card h1{font-size:26px; margin:0 0 4px;}
+  .login-card p.sub{margin:0 0 18px; opacity:.72; font-size:13px;}
+  .field{margin-bottom:13px;}
+  .field label{display:block; font-size:12px; font-weight:600; margin-bottom:5px; opacity:.8;}
+  .field input, .field select{width:100%; padding:10px 12px; border:var(--border-w) solid var(--border); border-radius:12px; font-size:14px; background:#fff; color:var(--ink);}
+  .pick-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .pick-opt{flex:1; min-width:70px; border:var(--border-w) solid var(--border); border-radius:12px; padding:9px 4px; text-align:center; font-weight:700; font-size:13px; background:#fff; opacity:.5;}
+  .pick-opt.active{opacity:1; background:var(--chip); box-shadow:3px 3px 0 var(--border); transform:translateY(-1px);}
+  .google-btn{width:100%; display:flex; align-items:center; justify-content:center; gap:10px; background:#fff; border:var(--border-w) solid var(--border); border-radius:12px; padding:11px; font-weight:600; font-size:14px; margin-bottom:12px;}
+  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:var(--border-w) solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
+  .btn-primary:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--border);}
+  .note{font-size:11px; opacity:.6; margin-top:8px; text-align:center; line-height:1.5;}
+  details.adv{margin:6px 0 14px; font-size:12px;}
+  details.adv summary{cursor:pointer; font-weight:600; opacity:.75;}
+
+  #app-screen{min-height:100vh; padding-bottom:78px;}
+  header.topbar{display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--panel); border-bottom:var(--border-w) solid var(--border); position:sticky; top:0; z-index:20;}
+  header.topbar .who{display:flex; flex-direction:column;}
+  header.topbar .who b{font-family:var(--font-display); font-size:15px;}
+  header.topbar .who span{font-size:10.5px; opacity:.65;}
+  .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:4px 9px; font-size:10.5px; font-weight:700;}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:15px; position:relative; flex-shrink:0;}
+  .icon-btn .dot{position:absolute; top:-3px; right:-3px; width:9px; height:9px; border-radius:50%; background:var(--danger); border:2px solid var(--panel);}
+  .topbar-right{display:flex; gap:6px; align-items:center;}
+
+  main{padding:16px; max-width:720px; margin:0 auto;}
+  .section-title{display:flex; align-items:center; justify-content:space-between; margin:4px 0 12px; gap:8px; flex-wrap:wrap;}
+  .section-title h2{margin:0; font-size:19px;}
+  .card{background:var(--panel); border:var(--border-w) solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:14px; box-shadow:4px 4px 0 var(--border);}
+  .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px;}
+  .lock-note{background:var(--chip); border:2px dashed var(--border); border-radius:10px; padding:9px 12px; font-size:12px; opacity:.85; margin-bottom:10px;}
+
+  .day-block{margin-bottom:14px;}
+  .day-block h3{margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.5px;}
+  .period-row{display:flex; justify-content:space-between; align-items:center; border:2px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:6px; font-size:13px;}
+  .period-row .meta{opacity:.7; font-size:11px;}
+  .period-row .del{background:none;border:none;color:var(--danger);font-weight:800;font-size:14px;}
+  .batch-tag{font-size:10px; font-weight:800; background:var(--pink); color:#fff; border-radius:6px; padding:1px 6px; margin-left:5px;}
+  .empty-note{opacity:.55; font-size:13px; padding:6px 0;}
+
+  .bar-outer{background:#fff; border:2px solid var(--border); border-radius:999px; height:16px; overflow:hidden; margin-top:6px;}
+  .bar-inner{height:100%; border-radius:999px; transition:width .4s;}
+  .overall-num{font-family:var(--font-display); font-size:36px; margin:0;}
+  .subject-att-row{margin-bottom:12px;}
+  .subject-att-row .lbl{display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:4px;}
+  .class-mark-row{display:flex; align-items:center; justify-content:space-between; border:2px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:8px; background:var(--chip);}
+  .chk-row{display:flex; align-items:center; gap:10px;}
+  .chk-row input[type=checkbox]{width:20px; height:20px;}
+
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cal-dow{font-size:10px; text-align:center; opacity:.6; font-weight:700;}
+  .cal-cell{aspect-ratio:1; border:2px solid var(--border); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:12px; font-weight:600; background:#fff; position:relative; user-select:none;}
+  .cal-cell.has-class{background:var(--chip);}
+  .cal-cell.today{outline:2px solid var(--accent2); outline-offset:1px;}
+  .cal-cell.holiday{background:var(--pink); color:#fff;}
+  .cal-cell.plan-leave{border-bottom:5px solid var(--danger);}
+  .cal-cell.plan-half{border-bottom:5px solid var(--amber);}
+  .cal-cell.plan-skip{border-bottom:5px solid #8B8B8B;}
+  .cal-cell .dot{width:5px; height:5px; border-radius:50%; background:var(--primary); margin-top:2px;}
+  .cal-cell.blank{border:none; background:transparent;}
+  .legend{display:flex; gap:10px; flex-wrap:wrap; font-size:10.5px; margin-top:10px; opacity:.75;}
+  .legend span{display:flex; align-items:center; gap:4px;}
+  .sw{width:10px; height:10px; border-radius:3px; display:inline-block; border:1.5px solid var(--border);}
+
+  .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:flex-end; justify-content:center; z-index:50;}
+  .modal-sheet{background:var(--panel); width:100%; max-width:480px; border-radius:20px 20px 0 0; border:var(--border-w) solid var(--border); border-bottom:none; padding:18px; max-height:82vh; overflow-y:auto;}
+  .modal-sheet h3{margin:0 0 12px;}
+  .close-x{float:right; background:#fff; border:2px solid var(--border); border-radius:8px; width:30px; height:30px;}
+
+  .topic-item{display:flex; align-items:center; gap:8px; padding:6px 0; font-size:13px; border-bottom:1px dashed var(--border);}
+  .topic-item:last-child{border-bottom:none;}
+  .assign-card{border:2px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:var(--chip);}
+  .assign-card .due{font-size:11px; font-weight:700; color:var(--danger);}
+  .file-btn{display:inline-block; margin-top:6px; background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; text-decoration:none;}
+
+  .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; height:340px; overflow-y:auto; margin-bottom:10px;}
+  .msg{margin-bottom:12px;}
+  .msg .name{font-size:10.5px; font-weight:800; opacity:.7;}
+  .roletag{font-size:9px; font-weight:800; border-radius:5px; padding:1px 5px; margin-right:4px; color:#241645;}
+  .msg .bubble{background:var(--chip); border:2px solid var(--border); border-radius:12px; padding:7px 10px; font-size:13px; display:inline-block; max-width:85%;}
+  .msg .sticker{font-size:38px; line-height:1;}
+  .chat-input-row{display:flex; gap:7px; align-items:center;}
+  .chat-input-row input{flex:1; border:2px solid var(--border); border-radius:10px; padding:10px 12px;}
+  .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 14px; font-weight:700;}
+  .emoji-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:38px; height:38px; font-size:16px; flex-shrink:0;}
+  .emoji-panel{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; display:grid; grid-template-columns:repeat(8,1fr); gap:6px;}
+  .emoji-panel button{background:none; border:none; font-size:19px; padding:2px;}
+  .sticker-panel{background:#fff; border:2px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px; display:grid; grid-template-columns:repeat(6,1fr); gap:6px;}
+  .sticker-panel button{background:none; border:none; font-size:26px; padding:4px;}
+
+  nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:var(--border-w) solid var(--border); display:flex; z-index:20;}
+  nav.tabbar button{flex:1; background:none; border:none; padding:9px 2px 8px; font-size:10px; font-weight:700; color:var(--ink); opacity:.5; display:flex; flex-direction:column; align-items:center; gap:2px; position:relative;}
+  nav.tabbar button.active{opacity:1; color:var(--primary);}
+  nav.tabbar button .ic{font-size:18px;}
+  nav.tabbar button .dot{position:absolute; top:2px; right:14px; width:8px; height:8px; border-radius:50%; background:var(--danger);}
+
+  .form-row{display:flex; gap:8px; margin-bottom:10px;}
+  .form-row input, .form-row select{flex:1; border:2px solid var(--border); border-radius:10px; padding:9px 10px; font-size:13px;}
+  .inline-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:9px 14px; font-weight:700; font-size:13px;}
+  .member-row{display:flex; justify-content:space-between; align-items:center; border:2px solid var(--border); border-radius:10px; padding:9px 11px; margin-bottom:8px; background:var(--chip); font-size:13px;}
+  .member-row .l{font-size:10px; opacity:.6;}
+  .active-dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px;}
+  .group-hdr{font-size:11px; font-weight:800; opacity:.5; margin:10px 0 4px; text-transform:uppercase;}
+  .announce-card{border:2px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:var(--accent2);}
+  .footer-credit{text-align:center; font-size:11px; opacity:.55; padding:14px 0 4px;}
+</style>
+</head>
+<body data-vt="1">
+
+<!-- ============ LOGIN ============ -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>CampusHub ⚡🎓</h1>
+    <p class="sub">One class code for everyone. Timetable, syllabus, attendance &amp; chat — shared with your class, attendance stays private to you.</p>
+    <button class="google-btn" id="google-btn">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.1 4 9.2 8.5 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.3 35.4 26.8 36 24 36c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.1 39.4 16 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.3 5.3C40.9 36.3 44 30.7 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    <p class="note" style="margin-top:-8px;margin-bottom:14px;">Demo sign-in — real Google login needs a Firebase backend (see chat).</p>
+
+    <div class="field"><label>Your name</label><input id="in-name" type="text" placeholder="e.g. Aditi Sharma"></div>
+    <div class="field"><label>Class code (the shared key)</label><input id="in-code" type="text" placeholder="e.g. CSE-B-2026" style="text-transform:uppercase;"></div>
+    <div class="field"><label>Lab batch</label>
+      <div class="pick-row">
+        <div class="pick-opt active" data-batch="B1" onclick="pickBatch('B1')">Batch 1</div>
+        <div class="pick-opt" data-batch="B2" onclick="pickBatch('B2')">Batch 2</div>
+      </div>
+    </div>
+    <div class="field"><label>Vibe tag 🕺💃 <span style="font-weight:400;opacity:.6;">(just for fun)</span></label>
+      <div class="pick-row">
+        <div class="pick-opt active" data-g="boy" onclick="pickGender('boy')">🕺 Boy</div>
+        <div class="pick-opt" data-g="gyal" onclick="pickGender('gyal')">💃 Gyal</div>
+        <div class="pick-opt" data-g="other" onclick="pickGender('other')">✨ Other</div>
+      </div>
+    </div>
+    <div class="field"><label>Role tag <span style="font-weight:400;opacity:.6;">(shown above your name in chat)</span></label>
+      <input id="in-role" type="text" placeholder="e.g. Student / CR / Topper 😅">
+    </div>
+    <details class="adv">
+      <summary>CR / Admin access (optional)</summary>
+      <div class="field" style="margin-top:8px;">
+        <label>Admin passcode</label>
+        <input id="in-adminpass" type="text" placeholder="Only your CR sets/knows this">
+        <p class="note" style="text-align:left;">First person to set a passcode for this class code becomes admin. You can also unlock/change this later from the ⚙️ Settings icon.</p>
+      </div>
+    </details>
+    <button class="btn-primary" onclick="enterApp()">Enter Classroom 🚀</button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app-screen" class="hidden">
+  <header class="topbar">
+    <div class="who"><b id="hdr-name">—</b><span id="hdr-sub">—</span></div>
+    <div class="topbar-right">
+      <span class="pill" id="hdr-admin-pill" style="display:none;">🔑 Admin</span>
+      <button class="icon-btn" title="Theme" onclick="toggleVT()">🎨</button>
+      <button class="icon-btn" title="Announcements" id="announce-btn" onclick="openAnnouncements()">📢</button>
+      <button class="icon-btn" title="Members" onclick="openMembers()">👥</button>
+      <button class="icon-btn" title="Settings" onclick="openSettings()">⚙️</button>
+    </div>
+  </header>
+  <main>
+    <section id="tab-timetable"></section>
+    <section id="tab-calendar" class="hidden"></section>
+    <section id="tab-attendance" class="hidden"></section>
+    <section id="tab-syllabus" class="hidden"></section>
+    <section id="tab-chat" class="hidden"></section>
+    <p class="footer-credit">Built by <b>Kavyansh</b> 🚀 (don't sue me IET 😅)</p>
+  </main>
+  <nav class="tabbar">
+    <button data-tab="timetable" onclick="showTab('timetable')"><span class="ic">🗓️</span>Timetable</button>
+    <button data-tab="calendar" onclick="showTab('calendar')"><span class="ic">📅</span>Calendar</button>
+    <button data-tab="attendance" onclick="showTab('attendance')"><span class="ic">📊</span>Attendance</button>
+    <button data-tab="syllabus" onclick="showTab('syllabus')"><span class="ic">📘</span>Study</button>
+    <button data-tab="chat" onclick="showTab('chat')"><span class="ic">💬</span>Chat</button>
+  </nav>
+</div>
+<div id="modal-root"></div>
+
+<script>
+/* ============================================================ STATE */
+let profile = { name:'', code:'', batch:'B1', gender:'boy', role:'Student', isAdmin:false };
+let loginBatch='B1', loginGender='boy';
+const DAYS = ['Mon','Tue','Wed','Thu','Fri'];
+const GENDER_EMOJI = {boy:'🕺', gyal:'💃', other:'✨'};
+const GENDER_COLOR = {boy:'#8EC5FF', gyal:'#FFB3D1', other:'#C9F7D9'};
+const EMOJIS = ['😂','😍','🔥','💀','😭','🙌','😎','🥹','👍','👏','🎉','😅','🤝','🥲','😤','🫡','🥳','😴','🤔','🫠','💯','✅','❌','⚡'];
+const STICKERS = ['🎉','😂','💀','🔥','😭😭','🙌','🥳','🚀','👀','🫡','💯','🤡'];
+const SUBJ_COLORS = ['#FFE3E3','#FFF3D6','#E3FFE8','#E0F7FA','#E8E3FF','#FFE3F5','#E3F0FF','#F0FFE3'];
+function subjColor(subj){
+  if(/lab|workshop/i.test(subj)) return '#FFD9B3';
+  let h=0; for(let i=0;i<subj.length;i++) h=(h*31+subj.charCodeAt(i))>>>0;
+  return SUBJ_COLORS[h % SUBJ_COLORS.length];
+}
+function roleColor(role){
+  const palette=['#FFD9B3','#C9F7D9','#D9E8FF','#FFE0F0','#FFF3B0','#E4D9FF'];
+  let h=0; for(let i=0;i<role.length;i++) h=(h*31+role.charCodeAt(i))>>>0;
+  return palette[h % palette.length];
+}
+
+/* ============================================================ STORAGE HELPERS */
+async function sGet(key, shared){ try{ const r = await window.storage.get(key, !!shared); return r? JSON.parse(r.value): null; }catch(e){ return null; } }
+async function sSet(key, value, shared){ try{ await window.storage.set(key, JSON.stringify(value), !!shared); }catch(e){ console.error('storage set failed', key, e); } }
+
+const kTimetable=()=>`cc:${profile.code}:timetable`;
+const kSyllabus =()=>`cc:${profile.code}:syllabus`;
+const kAssign   =()=>`cc:${profile.code}:assignments`;
+const kTests    =()=>`cc:${profile.code}:tests`;
+const kChat     =()=>`cc:${profile.code}:chat`;
+const kDM       =(pair)=>`cc:${profile.code}:dm:${pair}`;
+const kAnnounce =()=>`cc:${profile.code}:announcements`;
+const kMembers  =()=>`cc:${profile.code}:members`;
+const kAdminPass=()=>`cc:${profile.code}:adminpass`;
+const kHolidays =()=>`cc:${profile.code}:holidays`;
+const kUpdated  =()=>`cc:${profile.code}:updated`;
+const kSeen     =()=>`me:${profile.code}:seen`;
+const kAttDate  =(d)=>`me:${profile.code}:att:${d}`;
+const kAttAgg   =()=>`me:${profile.code}:agg`;
+const kAttDates =()=>`me:${profile.code}:attdates`;
+const kDone     =()=>`me:${profile.code}:done`;
+const kPlan     =()=>`me:${profile.code}:plan`; // {date:'leave'|'half'|'skip'}
+
+/* ============================================================ SEED DATA */
+function seedTimetable(){
+  return {
+    Mon:[
+      {time:'9:00–10:00', subject:'Applied Chemistry', teacher:'Dr. Bhadauria/Agrawal', room:'', batch:'both'},
+      {time:'10:00–11:00', subject:'Applied Mathematics-I', teacher:'Sneha Moriya', room:'', batch:'both'},
+      {time:'11:00–12:00', subject:'Basic Electronics', teacher:'Shalty Saxena', room:'', batch:'both'},
+      {time:'1:00–3:00', subject:'LAB: Applied Chem (B2) / Basic Elec (B1)', teacher:'', room:'A-206 / A-205', batch:'both'},
+      {time:'3:00–4:00', subject:'Applied Chemistry', teacher:'Dr. Bhadauria/Agrawal', room:'', batch:'both'},
+    ],
+    Tue:[
+      {time:'9:00–10:00', subject:'Applied Chemistry', teacher:'Dr. Bhadauria/Agrawal', room:'', batch:'both'},
+      {time:'10:00–12:00', subject:'LAB: Basic Elec (B2) / Mech Engg (B1)', teacher:'', room:'D-107', batch:'both'},
+      {time:'1:00–2:00', subject:'Applied Mathematics-I', teacher:'Sneha Moriya', room:'', batch:'both'},
+      {time:'2:00–3:00', subject:'Technical English', teacher:'Dr. Arti Sharan', room:'', batch:'both'},
+      {time:'3:00–5:00', subject:'LAB: Applied Chem (B1) / Mech Engg (B2)', teacher:'', room:'A-206 / A-205', batch:'both'},
+    ],
+    Wed:[
+      {time:'9:00–10:00', subject:'Applied Mathematics-I (Remedial)', teacher:'Sneha Moriya', room:'', batch:'both'},
+      {time:'10:00–11:00', subject:'Applied Mathematics-I', teacher:'Sneha Moriya', room:'', batch:'both'},
+      {time:'11:00–12:00', subject:'General Mechanical Engg', teacher:'Santosh Kansal', room:'', batch:'both'},
+      {time:'1:00–2:00', subject:'Technical English', teacher:'Dr. Arti Sharan', room:'', batch:'both'},
+      {time:'2:00–3:00', subject:'Technical English (Remedial)', teacher:'Dr. Arti Sharan', room:'', batch:'both'},
+      {time:'3:00–4:00', subject:'Applied Chemistry (Remedial)', teacher:'Dr. Bhadauria/Agrawal', room:'', batch:'both'},
+    ],
+    Thu:[
+      {time:'9:00–10:00', subject:'Design Thinking', teacher:'Dr. Vivek Vyas', room:'', batch:'both'},
+      {time:'10:00–12:00 ⚠️verify', subject:'Workshop Practice (Batch B2)', teacher:'Jyoti Soni', room:'', batch:'B2'},
+      {time:'12:00–1:00', subject:'General Mechanical Engg', teacher:'Jyoti Soni', room:'', batch:'both'},
+      {time:'1:00–2:00', subject:'Technical English', teacher:'Dr. Arti Sharan', room:'', batch:'both'},
+      {time:'2:00–3:00', subject:'Basic Electronics', teacher:'Shalty Saxena', room:'', batch:'both'},
+    ],
+    Fri:[
+      {time:'9:00–11:00 ⚠️verify', subject:'Workshop Practice (Batch B1)', teacher:'Jyoti Soni', room:'', batch:'B1'},
+      {time:'11:00–12:00', subject:'Applied Mathematics-I', teacher:'Sneha Moriya', room:'', batch:'both'},
+      {time:'12:00–1:00', subject:'General Mechanical Engg', teacher:'Santosh Kansal', room:'', batch:'both'},
+      {time:'1:00–2:00', subject:'Basic Electronics', teacher:'Shalty Saxena', room:'', batch:'both'},
+      {time:'2:00–3:00', subject:'General Mechanical Engg (Remedial)', teacher:'Santosh Kansal', room:'', batch:'both'},
+      {time:'3:00–4:00', subject:'Basic Electronics (Remedial)', teacher:'Shalty Saxena', room:'', batch:'both'},
+    ],
+  };
+}
+function seedHolidays(){
+  return [
+    {date:'2026-01-26', label:'Republic Day'},
+    {date:'2026-03-03', label:'Holi'},
+    {date:'2026-03-19', label:'Gudi Padwa'},
+    {date:'2026-03-21', label:'Eid-ul-Fitr'},
+    {date:'2026-03-27', label:'Ram Navami'},
+    {date:'2026-03-31', label:'Mahavir Jayanti'},
+    {date:'2026-04-03', label:'Good Friday'},
+    {date:'2026-04-14', label:'Dr. Ambedkar Jayanti'},
+    {date:'2026-05-01', label:'Buddha Purnima'},
+    {date:'2026-05-27', label:'Eid-ul-Zuha (Bakrid)'},
+    {date:'2026-06-09', label:'Maharana Pratap Jayanti'},
+    {date:'2026-06-26', label:'Muharram'},
+    {date:'2026-08-05', label:'Semester begins'},
+    {date:'2026-08-15', label:'Independence Day'},
+    {date:'2026-08-26', label:'Milad-un-Nabi'},
+    {date:'2026-08-28', label:'Raksha Bandhan'},
+    {date:'2026-09-04', label:'Janmashtami'},
+    {date:'2026-09-09', label:'Class Test I starts'},
+    {date:'2026-09-11', label:'Class Test I ends'},
+    {date:'2026-09-14', label:'Ganesh Chaturthi'},
+    {date:'2026-09-18', label:'Class Test I result'},
+    {date:'2026-10-02', label:'Gandhi Jayanti'},
+    {date:'2026-10-14', label:'Class Test II starts'},
+    {date:'2026-10-16', label:'Class Test II ends'},
+    {date:'2026-10-20', label:'Dussehra'},
+    {date:'2026-10-23', label:'Class Test II result'},
+    {date:'2026-11-07', label:'Dhanteras'},
+    {date:'2026-11-09', label:'Diwali'},
+    {date:'2026-11-18', label:'Class Test III starts'},
+    {date:'2026-11-20', label:'Class Test III ends'},
+    {date:'2026-11-24', label:'Guru Nanak Jayanti'},
+    {date:'2026-11-27', label:'End of Teaching / CT III result'},
+    {date:'2026-12-03', label:'Theory/Practical Exams begin'},
+    {date:'2026-12-23', label:'Theory/Practical Exams end'},
+    {date:'2026-12-24', label:'Vacation begins'},
+    {date:'2026-12-25', label:'Christmas'},
+  ];
+}
+
+/* ============================================================ LOGIN */
+function pickBatch(b){ loginBatch=b; document.querySelectorAll('.pick-opt[data-batch]').forEach(el=>el.classList.remove('active')); document.querySelector(`.pick-opt[data-batch="${b}"]`).classList.add('active'); }
+function pickGender(g){ loginGender=g; document.querySelectorAll('.pick-opt[data-g]').forEach(el=>el.classList.remove('active')); document.querySelector(`.pick-opt[data-g="${g}"]`).classList.add('active'); }
+document.getElementById('google-btn').addEventListener('click', ()=>{ document.getElementById('google-btn').textContent='✓ Signed in (demo)'; });
+
+async function enterApp(){
+  const name=document.getElementById('in-name').value.trim();
+  const code=document.getElementById('in-code').value.trim().toUpperCase();
+  const role=document.getElementById('in-role').value.trim()||'Student';
+  const adminpass=document.getElementById('in-adminpass').value.trim();
+  if(!name||!code){ alert('Please enter your name and the class code.'); return; }
+  profile={ name, code, batch:loginBatch, gender:loginGender, role, isAdmin:false };
+  if(adminpass){
+    const stored=await sGet(kAdminPass(), true);
+    if(!stored){ await sSet(kAdminPass(), adminpass, true); profile.isAdmin=true; }
+    else if(stored===adminpass){ profile.isAdmin=true; }
+  }
+  await sSet('me:lastprofile', profile, false);
+  await registerMember();
+  boot();
+}
+async function tryRestore(){
+  const last=await sGet('me:lastprofile', false);
+  if(last && last.name && last.code){
+    document.getElementById('in-name').value=last.name;
+    document.getElementById('in-code').value=last.code;
+    document.getElementById('in-role').value=last.role||'';
+    pickBatch(last.batch||'B1'); pickGender(last.gender||'boy');
+  }
+  const vt = localStorage_alt('vt') || '1';
+  document.body.setAttribute('data-vt', vt);
+}
+function localStorage_alt(){ return null; } // storage API has no sync local read pre-login; theme defaults to 1
+tryRestore();
+
+async function registerMember(){
+  let members=(await sGet(kMembers(), true))||{};
+  members[profile.name]={ batch:profile.batch, role:profile.role, gender:profile.gender,
+    isAdmin: profile.isAdmin || (members[profile.name]&&members[profile.name].isAdmin) || false,
+    joinedAt:(members[profile.name]&&members[profile.name].joinedAt)||Date.now(), lastActive:Date.now() };
+  await sSet(kMembers(), members, true);
+}
+
+/* ============================================================ BOOT */
+async function boot(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
+  document.getElementById('hdr-name').textContent=`${GENDER_EMOJI[profile.gender]} ${profile.name}`;
+  document.getElementById('hdr-sub').textContent=`${profile.role} · Class ${profile.code} · Batch ${profile.batch.slice(1)}`;
+  document.getElementById('hdr-admin-pill').style.display = profile.isAdmin?'inline-block':'none';
+  const vt=(await sGet(`me:${profile.code}:vt`, false))||'1';
+  document.body.setAttribute('data-vt', vt);
+  await ensureSeeds();
+  showTab('timetable');
+  refreshAnnounceDot();
+  setInterval(registerMember, 60000);
+  setInterval(refreshAnnounceDot, 30000);
+}
+async function ensureSeeds(){
+  if(!(await sGet(kTimetable(), true))) await sSet(kTimetable(), seedTimetable(), true);
+  if(!(await sGet(kHolidays(), true))) await sSet(kHolidays(), seedHolidays(), true);
+}
+async function toggleVT(){
+  const cur=document.body.getAttribute('data-vt');
+  const next = cur==='1' ? '2' : '1';
+  document.body.setAttribute('data-vt', next);
+  if(profile.code) await sSet(`me:${profile.code}:vt`, next, false);
+}
+
+let currentTab='timetable';
+async function showTab(t){
+  currentTab=t;
+  document.querySelectorAll('nav.tabbar button').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
+  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById('tab-'+t).classList.remove('hidden');
+  await markSeen(t);
+  renderCurrentTab();
+}
+function renderCurrentTab(){
+  if(currentTab==='timetable') renderTimetable();
+  if(currentTab==='calendar') renderCalendar();
+  if(currentTab==='attendance') renderAttendance();
+  if(currentTab==='syllabus') renderSyllabus();
+  if(currentTab==='chat') renderChat();
+}
+async function markUpdated(section){ let u=(await sGet(kUpdated(), true))||{}; u[section]=Date.now(); await sSet(kUpdated(), u, true); }
+async function markSeen(section){ let s=(await sGet(kSeen(), false))||{}; s[section]=Date.now(); await sSet(kSeen(), s, false); refreshDots(); }
+async function refreshDots(){
+  const u=(await sGet(kUpdated(), true))||{}; const s=(await sGet(kSeen(), false))||{};
+  ['timetable','syllabus'].forEach(sec=>{
+    const btn=document.querySelector(`nav.tabbar button[data-tab="${sec}"]`); if(!btn) return;
+    const ex=btn.querySelector('.dot'); if(ex) ex.remove();
+    if(u[sec] && (!s[sec]||u[sec]>s[sec])){ const d=document.createElement('span'); d.className='dot'; btn.appendChild(d); }
+  });
+}
+async function refreshAnnounceDot(){
+  const list=(await sGet(kAnnounce(), true))||[];
+  const s=(await sGet(kSeen(), false))||{};
+  const btn=document.getElementById('announce-btn'); if(!btn) return;
+  const ex=btn.querySelector('.dot'); if(ex) ex.remove();
+  const latest=list.length? list[list.length-1].ts : 0;
+  if(latest && (!s.announce || latest>s.announce)){ const d=document.createElement('span'); d.className='dot'; btn.appendChild(d); }
+}
+
+/* ============================================================ TIMETABLE (subject-colored) */
+async function getTimetable(){ return (await sGet(kTimetable(), true)) || seedTimetable(); }
+async function renderTimetable(){
+  const el=document.getElementById('tab-timetable');
+  el.innerHTML=`<div class="section-title"><h2>🗓️ Weekly Timetable</h2></div>`;
+  if(!profile.isAdmin) el.innerHTML+=`<div class="lock-note">🔒 Only your CR/admin can edit this. See something wrong (like workshop timings)? Ask them to fix it via ⚙️ or the +Add/✕ buttons.</div>`;
+  const tt=await getTimetable();
+  DAYS.forEach(day=>{
+    const periods=tt[day]||[];
+    const block=document.createElement('div'); block.className='day-block';
+    let rows = periods.length ? periods.map((p,i)=>`
+      <div class="period-row" style="background:${subjColor(p.subject)}">
+        <div><b>${esc(p.time)}</b> — ${esc(p.subject)}${p.batch&&p.batch!=='both'?`<span class="batch-tag">${esc(p.batch)}</span>`:''} <div class="meta">${esc(p.teacher||'')} ${p.room?'· '+esc(p.room):''}</div></div>
+        ${profile.isAdmin?`<button class="del" onclick="deletePeriod('${day}',${i})">✕</button>`:''}
+      </div>`).join('') : `<div class="empty-note">No classes listed.</div>`;
+    block.innerHTML=`<h3>${day}</h3>${rows}${profile.isAdmin?`<button class="add-btn" onclick="openAddPeriod('${day}')">+ Add class</button>`:''}`;
+    el.appendChild(block);
+  });
+}
+function openAddPeriod(day){
+  openModal(`Add class · ${day}`, `
+    <div class="form-row"><input id="m-time" placeholder="Time e.g. 9:00–11:00"></div>
+    <div class="form-row"><input id="m-subject" placeholder="Subject"></div>
+    <div class="form-row"><input id="m-teacher" placeholder="Teacher (optional)"><input id="m-room" placeholder="Room (optional)"></div>
+    <div class="form-row"><select id="m-batch"><option value="both">Both batches</option><option value="B1">Batch 1 only</option><option value="B2">Batch 2 only</option></select></div>
+    <button class="btn-primary" onclick="savePeriod('${day}')">Save class</button>`);
+}
+async function savePeriod(day){
+  const time=document.getElementById('m-time').value.trim(), subject=document.getElementById('m-subject').value.trim();
+  const teacher=document.getElementById('m-teacher').value.trim(), room=document.getElementById('m-room').value.trim();
+  const batch=document.getElementById('m-batch').value;
+  if(!time||!subject){ alert('Time and subject are required.'); return; }
+  const tt=await getTimetable(); if(!tt[day]) tt[day]=[];
+  tt[day].push({time,subject,teacher,room,batch});
+  await sSet(kTimetable(), tt, true); await markUpdated('timetable'); closeModal(); renderTimetable();
+}
+async function deletePeriod(day, idx){
+  const tt=await getTimetable(); tt[day].splice(idx,1);
+  await sSet(kTimetable(), tt, true); await markUpdated('timetable'); renderTimetable();
+}
+
+/* ============================================================ ATTENDANCE (today + edit any past date) */
+async function getAgg(){ return (await sGet(kAttAgg(), false)) || {}; }
+async function setAttendance(date, subject, checked){
+  let rec=(await sGet(kAttDate(date), false))||{}; const prev=rec[subject]; const status=checked?'present':'absent';
+  rec[subject]=status; await sSet(kAttDate(date), rec, false);
+  let idx=(await sGet(kAttDates(), false))||[]; if(!idx.includes(date)){ idx.push(date); await sSet(kAttDates(), idx, false); }
+  let agg=await getAgg(); if(!agg[subject]) agg[subject]={present:0,total:0};
+  if(prev===undefined){ agg[subject].total+=1; if(status==='present') agg[subject].present+=1; }
+  else if(prev!==status){ if(prev==='present') agg[subject].present-=1; if(status==='present') agg[subject].present+=1; }
+  await sSet(kAttAgg(), agg, false);
+}
+function classesForDate(tt, dateObj){
+  const map={1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri'}; const day=map[dateObj.getDay()]; if(!day) return [];
+  return (tt[day]||[]).filter(p=> p.batch==='both'||p.batch===profile.batch);
+}
+async function buildChecklistHtml(dateStr){
+  const tt=await getTimetable();
+  const dObj=new Date(dateStr+'T00:00:00');
+  const classes=classesForDate(tt, dObj);
+  const rec=(await sGet(kAttDate(dateStr), false))||{};
+  if(!classes.length) return `<div class="empty-note">No classes scheduled on ${dateStr} for Batch ${profile.batch.slice(1)}.</div>`;
+  return classes.map(p=>{
+    const st=rec[p.subject];
+    return `<div class="class-mark-row"><div><b>${esc(p.subject)}</b><div class="meta" style="font-size:11px;opacity:.65;">${esc(p.time)}</div></div>
+      <label class="chk-row"><input type="checkbox" ${st==='present'?'checked':''} onchange="markDate('${dateStr}','${escAttr(p.subject)}', this.checked)"> Present</label></div>`;
+  }).join('');
+}
+async function markDate(date, subject, checked){ await setAttendance(date, subject, checked); renderAttendance(); }
+
+async function renderAttendance(){
+  const el=document.getElementById('tab-attendance');
+  const todayStr=fmtDate(new Date());
+  const agg=await getAgg();
+  let totalPresent=0, totalAll=0; Object.values(agg).forEach(v=>{ totalPresent+=v.present; totalAll+=v.total; });
+  const pct = totalAll ? Math.round((totalPresent/totalAll)*100) : 0;
+  const barColor = pct>=75 ? 'var(--good)' : 'var(--danger)';
+  const selDate = window._attEditDate || todayStr;
+
+  el.innerHTML = `
+    <div class="section-title"><h2>📊 Attendance</h2></div>
+    <div class="card" style="text-align:center;">
+      <div style="font-size:12px;opacity:.7;font-weight:700;">OVERALL THIS SEMESTER (since 5 Aug)</div>
+      <p class="overall-num" style="color:${barColor}">${pct}%</p>
+      <div class="bar-outer"><div class="bar-inner" style="width:${pct}%; background:${barColor};"></div></div>
+      <div style="font-size:12px; margin-top:8px; opacity:.75;">${pct>=75?'✅ Above the 75% requirement':'⚠️ Below 75%'} &nbsp;·&nbsp;${totalPresent}/${totalAll} classes</div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;">Mark attendance</h3>
+      <div class="form-row"><input id="att-date-picker" type="date" min="2026-08-05" max="${todayStr}" value="${selDate}"></div>
+      <div id="att-checklist"></div>
+    </div>
+    <div class="card"><h3 style="margin-top:0;">By subject</h3><div id="subject-bars"></div></div>
+  `;
+  document.getElementById('att-date-picker').addEventListener('change', e=>{ window._attEditDate=e.target.value; renderAttendance(); });
+  document.getElementById('att-checklist').innerHTML = await buildChecklistHtml(selDate);
+
+  const subWrap=document.getElementById('subject-bars');
+  const subjects=Object.keys(agg);
+  if(!subjects.length){ subWrap.innerHTML=`<div class="empty-note">Mark attendance above to see subject-wise stats.</div>`; }
+  else subjects.forEach(s=>{
+    const v=agg[s]; const p=v.total?Math.round((v.present/v.total)*100):0; const c=p>=75?'var(--good)':'var(--danger)';
+    const row=document.createElement('div'); row.className='subject-att-row';
+    row.innerHTML=`<div class="lbl"><span>${esc(s)}</span><span>${p}% (${v.present}/${v.total})</span></div><div class="bar-outer"><div class="bar-inner" style="width:${p}%; background:${c};"></div></div>`;
+    subWrap.appendChild(row);
+  });
+}
+
+/* ============================================================ CALENDAR (tap to plan leave/half/skip) */
+let calCursor=new Date();
+async function renderCalendar(){
+  const el=document.getElementById('tab-calendar');
+  const tt=await getTimetable();
+  const holidays=(await sGet(kHolidays(), true))||[]; const holidayMap={}; holidays.forEach(h=>holidayMap[h.date]=h.label);
+  const plans=(await sGet(kPlan(), false))||{};
+  const year=calCursor.getFullYear(), month=calCursor.getMonth();
+  const first=new Date(year,month,1); const startPad=first.getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const monthName=calCursor.toLocaleString('default',{month:'long',year:'numeric'});
+  el.innerHTML=`
+    <div class="section-title"><h2>📅 Calendar</h2>${profile.isAdmin?`<button class="add-btn" onclick="openAddHoliday()">+ Event</button>`:''}</div>
+    <div class="card">
+      <div class="cal-head"><button class="icon-btn" onclick="shiftMonth(-1)">‹</button><b>${monthName}</b><button class="icon-btn" onclick="shiftMonth(1)">›</button></div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--pink)"></i>Holiday/event</span>
+        <span><i class="sw" style="border-bottom:4px solid var(--danger)"></i>Planned leave</span>
+        <span><i class="sw" style="border-bottom:4px solid var(--amber)"></i>Half day</span>
+        <span><i class="sw" style="border-bottom:4px solid #8B8B8B"></i>Skipping</span>
+      </div>
+      <p class="note" style="text-align:left;">Tap a date to plan a leave, half day, or skipped class. To actually mark attendance you took/missed, use the Attendance tab.</p>
+    </div>`;
+  const grid=document.getElementById('cal-grid');
+  ['S','M','T','W','T','F','S'].forEach(d=>grid.innerHTML+=`<div class="cal-dow">${d}</div>`);
+  for(let i=0;i<startPad;i++) grid.innerHTML+=`<div class="cal-cell blank"></div>`;
+  const todayStr=fmtDate(new Date());
+  for(let d=1; d<=daysInMonth; d++){
+    const dateObj=new Date(year,month,d); const dStr=fmtDate(dateObj);
+    const classes=classesForDate(tt, dateObj);
+    const cell=document.createElement('div'); let cls='cal-cell';
+    if(classes.length) cls+=' has-class';
+    if(dStr===todayStr) cls+=' today';
+    if(holidayMap[dStr]) cls+=' holiday';
+    else if(plans[dStr]==='leave') cls+=' plan-leave';
+    else if(plans[dStr]==='half') cls+=' plan-half';
+    else if(plans[dStr]==='skip') cls+=' plan-skip';
+    cell.className=cls;
+    cell.title=holidayMap[dStr] || (classes.length? classes.map(c=>c.subject).join(', ') : 'No classes');
+    cell.innerHTML=`${d}${classes.length && !holidayMap[dStr]?'<div class="dot"></div>':''}`;
+    cell.addEventListener('click', ()=> openPlanModal(dStr, classes, holidayMap[dStr]));
+    grid.appendChild(cell);
+  }
+}
+function shiftMonth(n){ calCursor=new Date(calCursor.getFullYear(), calCursor.getMonth()+n, 1); renderCalendar(); }
+async function openPlanModal(dateStr, classes, holidayLabel){
+  const plans=(await sGet(kPlan(), false))||{}; const cur=plans[dateStr];
+  let body='';
+  if(holidayLabel) body+=`<div class="lock-note">🎉 ${esc(holidayLabel)}</div>`;
+  body+= classes.length ? `<div class="empty-note">Classes that day: ${esc(classes.map(c=>c.subject).join(', '))}</div>` : `<div class="empty-note">No classes scheduled.</div>`;
+  body+=`<div class="form-row" style="margin-top:12px; flex-wrap:wrap;">
+    <button class="pick-opt ${cur==='leave'?'active':''}" onclick="setPlan('${dateStr}','leave')">🏖️ Leave</button>
+    <button class="pick-opt ${cur==='half'?'active':''}" onclick="setPlan('${dateStr}','half')">🌗 Half day</button>
+    <button class="pick-opt ${cur==='skip'?'active':''}" onclick="setPlan('${dateStr}','skip')">🙈 Skip</button>
+  </div>
+  <button class="inline-btn" style="width:100%; margin-top:6px;" onclick="setPlan('${dateStr}', null)">Clear plan</button>`;
+  openModal(dateStr, body);
+}
+async function setPlan(dateStr, val){
+  let plans=(await sGet(kPlan(), false))||{};
+  if(val) plans[dateStr]=val; else delete plans[dateStr];
+  await sSet(kPlan(), plans, false); closeModal(); renderCalendar();
+}
+function openAddHoliday(){
+  openModal('Add calendar event', `<div class="form-row"><input id="m-h-date" type="date"></div><div class="form-row"><input id="m-h-label" placeholder="Label e.g. Diwali Break"></div><button class="btn-primary" onclick="saveHoliday()">Save</button>`);
+}
+async function saveHoliday(){
+  const date=document.getElementById('m-h-date').value, label=document.getElementById('m-h-label').value.trim();
+  if(!date||!label) return;
+  const hs=(await sGet(kHolidays(), true))||[]; hs.push({date,label});
+  await sSet(kHolidays(), hs, true); closeModal(); renderCalendar();
+}
+
+/* ============================================================ STUDY: Work / Tests / Topics */
+async function getSyllabus(){ return (await sGet(kSyllabus(), true)) || []; }
+async function getAssignments(){ return (await sGet(kAssign(), true)) || []; }
+async function getTests(){ return (await sGet(kTests(), true)) || []; }
+async function getDone(){ return (await sGet(kDone(), false)) || {}; }
+let studySub='work';
+function setStudySub(s){ studySub=s; renderSyllabus(); }
+async function renderSyllabus(){
+  const el=document.getElementById('tab-syllabus');
+  el.innerHTML=`<div class="section-title"><h2>📘 Study</h2></div>
+    <div class="pick-row" style="margin-bottom:12px;">
+      <div class="pick-opt ${studySub==='work'?'active':''}" onclick="setStudySub('work')">📝 Work</div>
+      <div class="pick-opt ${studySub==='tests'?'active':''}" onclick="setStudySub('tests')">🧪 Tests</div>
+      <div class="pick-opt ${studySub==='topics'?'active':''}" onclick="setStudySub('topics')">📖 Topics</div>
+    </div><div id="study-body"></div>`;
+  if(studySub==='work') renderWork(); else if(studySub==='tests') renderTests(); else renderTopics();
+}
+async function renderWork(){
+  const body=document.getElementById('study-body');
+  const list=(await getAssignments()).filter(a=>a.batch==='both'||a.batch===profile.batch);
+  const done=await getDone();
+  body.innerHTML=`<div class="section-title" style="margin:0 0 8px;"><span style="font-size:12px;opacity:.6;">Assignments, projects &amp; chapters due</span>${profile.isAdmin?`<button class="add-btn" onclick="openAddAssignment()">+ Add</button>`:''}</div>`;
+  if(!profile.isAdmin) body.innerHTML+=`<div class="lock-note">🔒 Only your CR/admin can add these — but you can tick off your own progress.</div>`;
+  if(!list.length){ body.innerHTML+=`<div class="empty-note">Nothing due — enjoy it ⚡</div>`; return; }
+  list.sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+  list.forEach(a=>{
+    const isDone=!!done[a.id];
+    const card=document.createElement('div'); card.className='assign-card';
+    card.innerHTML=`<label class="chk-row" style="align-items:flex-start;">
+      <input type="checkbox" ${isDone?'checked':''} onchange="toggleDone('${a.id}', this.checked)">
+      <span style="${isDone?'opacity:.5;text-decoration:line-through;':''}">
+        <b>${esc(a.title)}</b> <span class="pill" style="margin-left:4px;">${esc(a.subject)}</span>
+        <div class="due">${isDone?'✅ Done':'Due '+esc(a.due||'—')}</div>
+        <div style="font-size:12px; margin-top:2px;">${esc(a.desc||'')}</div>
+        ${a.link? `<a class="file-btn" href="${escAttr(a.link)}" target="_blank" rel="noopener">📎 Open file</a>`:''}
+      </span></label>`;
+    body.appendChild(card);
+  });
+}
+async function toggleDone(id, checked){ const done=await getDone(); done[id]=checked; await sSet(kDone(), done, false); renderWork(); }
+function openAddAssignment(){
+  openModal('Add assignment / project / chapter', `
+    <div class="form-row"><input id="m-a-title" placeholder="Title e.g. Assignment 3"></div>
+    <div class="form-row"><input id="m-a-subject" placeholder="Subject"></div>
+    <div class="form-row"><input id="m-a-due" type="date"></div>
+    <div class="form-row"><input id="m-a-desc" placeholder="Notes (optional)"></div>
+    <div class="form-row"><input id="m-a-link" placeholder="Drive/file link (optional) — paste a shareable link"></div>
+    <div class="form-row"><select id="m-a-batch"><option value="both">Both batches</option><option value="B1">Batch 1 only</option><option value="B2">Batch 2 only</option></select></div>
+    <button class="btn-primary" onclick="saveAssignment()">Save</button>`);
+}
+async function saveAssignment(){
+  const title=document.getElementById('m-a-title').value.trim(), subject=document.getElementById('m-a-subject').value.trim();
+  const due=document.getElementById('m-a-due').value, desc=document.getElementById('m-a-desc').value.trim();
+  const link=document.getElementById('m-a-link').value.trim(), batch=document.getElementById('m-a-batch').value;
+  if(!title){ alert('Title required.'); return; }
+  const list=await getAssignments();
+  list.push({id:Date.now()+'_'+Math.floor(Math.random()*9999), title,subject,due,desc,link,batch});
+  await sSet(kAssign(), list, true); await markUpdated('syllabus'); closeModal(); renderSyllabus();
+}
+async function renderTests(){
+  const body=document.getElementById('study-body');
+  const list=(await getTests()).filter(t=>t.batch==='both'||t.batch===profile.batch);
+  body.innerHTML=`<div class="section-title" style="margin:0 0 8px;"><span style="font-size:12px;opacity:.6;">Upcoming tests &amp; what's covered</span>${profile.isAdmin?`<button class="add-btn" onclick="openAddTest()">+ Add</button>`:''}</div>`;
+  if(!profile.isAdmin) body.innerHTML+=`<div class="lock-note">🔒 Only your CR/admin can add these.</div>`;
+  if(!list.length){ body.innerHTML+=`<div class="empty-note">No tests announced yet.</div>`; return; }
+  list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  list.forEach(t=>{
+    const card=document.createElement('div'); card.className='card';
+    card.innerHTML=`<h3 style="margin-top:0;">${esc(t.testName)} <span class="pill">${esc(t.subject)}</span></h3><div class="due">📅 ${esc(t.date||'TBA')}</div><div style="font-size:13px; margin-top:6px;"><b>Covers:</b> ${esc(t.coverage||'—')}</div>`;
+    body.appendChild(card);
+  });
+}
+function openAddTest(){
+  openModal('Add upcoming test', `
+    <div class="form-row"><input id="m-t-name" placeholder="Test name e.g. Class Test II"></div>
+    <div class="form-row"><input id="m-t-subject" placeholder="Subject"></div>
+    <div class="form-row"><input id="m-t-date" type="date"></div>
+    <div class="form-row"><input id="m-t-cover" placeholder="Syllabus covered e.g. Unit 3 & 4"></div>
+    <div class="form-row"><select id="m-t-batch"><option value="both">Both batches</option><option value="B1">Batch 1 only</option><option value="B2">Batch 2 only</option></select></div>
+    <button class="btn-primary" onclick="saveTest()">Save</button>`);
+}
+async function saveTest(){
+  const testName=document.getElementById('m-t-name').value.trim(), subject=document.getElementById('m-t-subject').value.trim();
+  const date=document.getElementById('m-t-date').value, coverage=document.getElementById('m-t-cover').value.trim();
+  const batch=document.getElementById('m-t-batch').value;
+  if(!testName){ alert('Test name required.'); return; }
+  const list=await getTests(); list.push({testName,subject,date,coverage,batch});
+  await sSet(kTests(), list, true); await markUpdated('syllabus'); closeModal(); renderSyllabus();
+}
+async function renderTopics(){
+  const body=document.getElementById('study-body');
+  const syl=await getSyllabus();
+  body.innerHTML=`<div class="section-title" style="margin:0 0 8px;"><span style="font-size:12px;opacity:.6;">Syllabus checklist</span>${profile.isAdmin?`<button class="add-btn" onclick="openAddSubject()">+ Subject</button>`:''}</div>`;
+  if(!profile.isAdmin) body.innerHTML+=`<div class="lock-note">🔒 Only your CR/admin can edit this.</div>`;
+  if(!syl.length) body.innerHTML+=`<div class="empty-note">No subjects added yet.</div>`;
+  syl.forEach((s,si)=>{
+    const card=document.createElement('div'); card.className='card';
+    const topics=(s.topics||[]).map((t,ti)=>`<div class="topic-item"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTopic(${si},${ti})"><span style="${t.done?'text-decoration:line-through;opacity:.55;':''}">${esc(t.text)}</span></div>`).join('')||`<div class="empty-note">No topics yet.</div>`;
+    card.innerHTML=`<h3 style="margin-top:0;">${esc(s.subject)}</h3>${topics}${profile.isAdmin?`<div class="form-row" style="margin-top:10px;"><input id="topic-in-${si}" placeholder="Add topic"><button class="inline-btn" onclick="addTopic(${si})">Add</button></div>`:''}`;
+    body.appendChild(card);
+  });
+}
+function openAddSubject(){ openModal('Add subject', `<div class="form-row"><input id="m-subj-name" placeholder="Subject name"></div><button class="btn-primary" onclick="saveSubject()">Save</button>`); }
+async function saveSubject(){ const name=document.getElementById('m-subj-name').value.trim(); if(!name) return; const syl=await getSyllabus(); syl.push({subject:name, topics:[]}); await sSet(kSyllabus(), syl, true); await markUpdated('syllabus'); closeModal(); renderSyllabus(); }
+async function addTopic(si){ const input=document.getElementById(`topic-in-${si}`); const text=input.value.trim(); if(!text) return; const syl=await getSyllabus(); syl[si].topics=syl[si].topics||[]; syl[si].topics.push({text,done:false}); await sSet(kSyllabus(), syl, true); await markUpdated('syllabus'); renderTopics(); }
+async function toggleTopic(si,ti){ const syl=await getSyllabus(); syl[si].topics[ti].done=!syl[si].topics[ti].done; await sSet(kSyllabus(), syl, true); renderTopics(); }
+
+/* ============================================================ CHAT (class + DM), emoji + stickers */
+let chatPoll=null, chatMode='class', dmWith=null;
+async function renderChat(){
+  const el=document.getElementById('tab-chat');
+  const members=(await sGet(kMembers(), true))||{};
+  const others=Object.keys(members).filter(n=>n!==profile.name).sort((a,b)=>a.localeCompare(b));
+  el.innerHTML=`
+    <div class="section-title"><h2>💬 Chat</h2></div>
+    <div class="pick-row" style="margin-bottom:10px;">
+      <div class="pick-opt ${chatMode==='class'?'active':''}" onclick="setChatMode('class')">🌐 Class</div>
+      <div class="pick-opt ${chatMode==='dm'?'active':''}" onclick="setChatMode('dm')">🤫 Private</div>
+    </div>
+    ${chatMode==='dm'? `<div class="form-row"><select id="dm-select" onchange="pickDM(this.value)">
+        <option value="">Select someone…</option>
+        ${others.map(n=>`<option value="${escAttr(n)}" ${dmWith===n?'selected':''}>${esc(n)}</option>`).join('')}
+      </select></div>`:''}
+    <div class="card">
+      <div class="chat-log" id="chat-log"></div>
+      <div id="emoji-panel-wrap"></div>
+      <div class="chat-input-row">
+        <button class="emoji-btn" onclick="toggleEmojiPanel()">😊</button>
+        <button class="emoji-btn" onclick="toggleStickerPanel()">🎉</button>
+        <input id="chat-in" placeholder="${chatMode==='dm'?'Message privately…':'Message everyone…'}">
+        <button class="send-btn" onclick="sendChat()">Send</button>
+      </div>
+      <p class="note" style="text-align:left;">${chatMode==='dm'?'Only you and the selected person see this.':'Everyone in the class sees this — both batches, combined.'}</p>
+    </div>`;
+  document.getElementById('chat-in').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(); });
+  await loadChat();
+  if(chatPoll) clearInterval(chatPoll);
+  chatPoll=setInterval(()=>{ if(currentTab==='chat') loadChat(); }, 4000);
+}
+function setChatMode(m){ chatMode=m; renderChat(); }
+function pickDM(name){ dmWith=name||null; loadChat(); }
+function dmKeyFor(){ if(!dmWith) return null; return [profile.name, dmWith].sort().join('__'); }
+function toggleEmojiPanel(){ const w=document.getElementById('emoji-panel-wrap'); if(w.querySelector('.emoji-panel')){ w.innerHTML=''; return; } w.innerHTML=`<div class="emoji-panel">${EMOJIS.map(e=>`<button onclick="insertEmoji('${e}')">${e}</button>`).join('')}</div>`; }
+function toggleStickerPanel(){ const w=document.getElementById('emoji-panel-wrap'); if(w.querySelector('.sticker-panel')){ w.innerHTML=''; return; } w.innerHTML=`<div class="sticker-panel">${STICKERS.map(s=>`<button onclick="sendSticker('${s}')">${s}</button>`).join('')}</div>`; }
+function insertEmoji(e){ const inp=document.getElementById('chat-in'); inp.value+=e; inp.focus(); }
+async function activeKey(){ return chatMode==='dm' ? (dmWith? kDM(dmKeyFor()) : null) : kChat(); }
+async function sendSticker(s){
+  const key=await activeKey(); if(!key) return;
+  const msgs=(await sGet(key, true))||[];
+  msgs.push({name:profile.name, role:profile.role, gender:profile.gender, sticker:s, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+  while(msgs.length>150) msgs.shift();
+  await sSet(key, msgs, true);
+  document.getElementById('emoji-panel-wrap').innerHTML=''; loadChat();
+}
+async function loadChat(){
+  const log=document.getElementById('chat-log'); if(!log) return;
+  const key=await activeKey();
+  if(!key){ log.innerHTML=`<div class="empty-note">Pick someone to message privately.</div>`; return; }
+  const msgs=(await sGet(key, true))||[];
+  const atBottom=log.scrollTop+log.clientHeight >= log.scrollHeight-20;
+  log.innerHTML = msgs.map(m=>`
+    <div class="msg"><div class="name"><span class="roletag" style="background:${roleColor(m.role||'Student')}">${esc(m.role||'Student')}</span>${GENDER_EMOJI[m.gender]||''} ${esc(m.name)} · ${esc(m.time)}</div>
+    ${m.sticker?`<div class="sticker">${m.sticker}</div>`:`<div class="bubble">${esc(m.text)}</div>`}</div>`).join('') || `<div class="empty-note">No messages yet — say hi ⚡</div>`;
+  if(atBottom) log.scrollTop=log.scrollHeight;
+}
+async function sendChat(){
+  const input=document.getElementById('chat-in'); const text=input.value.trim(); if(!text) return;
+  const key=await activeKey(); if(!key) return;
+  const msgs=(await sGet(key, true))||[];
+  msgs.push({name:profile.name, role:profile.role, gender:profile.gender, text, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})});
+  while(msgs.length>150) msgs.shift();
+  await sSet(key, msgs, true); input.value=''; loadChat();
+}
+
+/* ============================================================ ANNOUNCEMENTS (CR/admin only post) */
+async function openAnnouncements(){
+  const list=(await sGet(kAnnounce(), true))||[];
+  let body = profile.isAdmin ? `<div class="form-row"><input id="m-ann-text" placeholder="Write an announcement…"></div><button class="btn-primary" onclick="postAnnouncement()">Post</button><hr style="margin:14px 0; opacity:.2;">` : '';
+  body += list.slice().reverse().map(a=>`<div class="announce-card"><b>${esc(a.by)}</b> · ${new Date(a.ts).toLocaleString()}<div style="margin-top:4px;">${esc(a.text)}</div></div>`).join('') || `<div class="empty-note">No announcements yet.</div>`;
+  openModal('📢 Announcements', body);
+  await markSeen('announce'); refreshAnnounceDot();
+}
+async function postAnnouncement(){
+  const text=document.getElementById('m-ann-text').value.trim(); if(!text) return;
+  const list=(await sGet(kAnnounce(), true))||[];
+  list.push({text, by:profile.name, ts:Date.now()});
+  await sSet(kAnnounce(), list, true);
+  closeModal(); openAnnouncements();
+}
+
+/* ============================================================ MEMBERS (alphabetical, active group first) */
+async function openMembers(){
+  await registerMember();
+  const members=(await sGet(kMembers(), true))||{};
+  const now=Date.now();
+  const entries=Object.entries(members).map(([name,m])=>({name, ...m, active:(now-m.lastActive)<5*60*1000}));
+  const activeList=entries.filter(e=>e.active).sort((a,b)=>a.name.localeCompare(b.name));
+  const inactiveList=entries.filter(e=>!e.active).sort((a,b)=>a.name.localeCompare(b.name));
+  const row=(m)=>`<div class="member-row">
+    <div><span class="active-dot" style="background:${m.active?'var(--good)':'#B0B0B0'}"></span>${GENDER_EMOJI[m.gender]||''} <b>${esc(m.name)}</b> <span class="roletag" style="background:${roleColor(m.role||'Student')}; margin-left:4px;">${esc(m.role||'Student')}</span>${m.isAdmin?' 🔑':''}
+    <div class="l">Batch ${String(m.batch||'').slice(1)} · ${m.active?'active now':'last seen '+new Date(m.lastActive).toLocaleDateString()}</div></div></div>`;
+  let body='';
+  if(activeList.length) body += `<div class="group-hdr">Active now</div>` + activeList.map(row).join('');
+  if(inactiveList.length) body += `<div class="group-hdr">Not active</div>` + inactiveList.map(row).join('');
+  if(!body) body=`<div class="empty-note">No one's joined yet — share the class code!</div>`;
+  openModal(`👥 Members (${entries.length})`, body);
+}
+
+/* ============================================================ SETTINGS (admin passcode) */
+async function openSettings(){
+  const stored=await sGet(kAdminPass(), true);
+  let body='';
+  if(profile.isAdmin){
+    body = `<p class="note" style="text-align:left;">You're an admin for <b>${esc(profile.code)}</b>. Current passcode: <b>${stored?esc(stored):'(none set)'}</b>. Share it only with co-admins/CRs.</p>
+      <div class="form-row"><input id="m-new-pass" placeholder="Set a new passcode"></div>
+      <button class="btn-primary" onclick="regenPass()">Update passcode</button>`;
+  } else {
+    body = `<p class="note" style="text-align:left;">Ask your CR for the admin passcode to unlock editing (timetable, syllabus, assignments, announcements).</p>
+      <div class="form-row"><input id="m-unlock-pass" placeholder="Enter admin passcode"></div>
+      <button class="btn-primary" onclick="unlockAdmin()">Unlock admin</button>`;
+  }
+  openModal('⚙️ Class Settings', body);
+}
+async function regenPass(){
+  const np=document.getElementById('m-new-pass').value.trim(); if(!np) return;
+  await sSet(kAdminPass(), np, true); closeModal(); openSettings();
+}
+async function unlockAdmin(){
+  const p=document.getElementById('m-unlock-pass').value.trim();
+  const stored=await sGet(kAdminPass(), true);
+  if(stored && p===stored){
+    profile.isAdmin=true;
+    document.getElementById('hdr-admin-pill').style.display='inline-block';
+    await sSet('me:lastprofile', profile, false);
+    await registerMember();
+    closeModal(); renderCurrentTab();
+  } else { alert('Incorrect passcode.'); }
+}
+
+/* ============================================================ MODAL + UTIL */
+function openModal(title, bodyHtml){
+  document.getElementById('modal-root').innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this) closeModal()"><div class="modal-sheet"><button class="close-x" onclick="closeModal()">✕</button><h3>${title}</h3>${bodyHtml}</div></div>`;
+}
+function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
+function fmtDate(d){ return d.toISOString().slice(0,10); }
+function esc(s){ return (s===undefined||s===null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s){ return esc(s).replace(/'/g, "\\'"); }
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campusmate — IET DAVV CSE-B</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#6366f1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+  <div id="app" class="max-w-md mx-auto min-h-screen flex flex-col justify-between p-4 pb-20">
+    <!-- Header -->
+    <header class="flex justify-between items-center py-3 border-b border-slate-800">
+      <div>
+        <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-pink-400 bg-clip-text text-transparent">Campusmate</h1>
+        <p class="text-xs text-slate-400">IET DAVV CSE-B</p>
+      </div>
+      <div id="user-badge" class="hidden text-xs px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700"></div>
+    </header>
+
+    <!-- Auth View -->
+    <div id="auth-view" class="my-auto space-y-4 text-center py-8">
+      <div class="text-4xl mb-2">🎓</div>
+      <h2 class="text-2xl font-bold">Welcome to Campusmate</h2>
+      <p class="text-sm text-slate-400 max-w-xs mx-auto">Enter your class key and sign in with Google to join the CSE-B portal.</p>
+      
+      <div class="space-y-3 pt-4 max-w-xs mx-auto">
+        <input id="class-key-input" type="password" placeholder="Enter Class Key (Admin or User Key)" class="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-sm focus:outline-none focus:border-indigo-500" />
+        <button id="google-signin-btn" class="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 rounded-lg text-sm transition">
+          <span>Sign in with Google</span>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 pt-2">🔑 Admin Key: <b>IETKDPROJECT1</b> | User Key: <b>IETCSEB</b></p>
+    </div>
+
+    <!-- Main App Content -->
+    <main id="main-content" class="hidden flex-1 py-4 space-y-4">
+      <!-- Admin Upload Banner (Only visible if logged in with Admin Key) -->
+      <div id="admin-panel" class="hidden p-3 rounded-lg bg-indigo-950/60 border border-indigo-700/50 space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-semibold text-indigo-300">👑 Admin / CR Controls</span>
+          <span class="text-[10px] bg-indigo-800 px-2 py-0.5 rounded text-indigo-100">CR Mode Active</span>
+        </div>
+        <button id="add-notice-btn" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded font-medium">
+          + Post New Announcement / Notice
+        </button>
+      </div>
+
+      <!-- Live Active Members Bar -->
+      <div class="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg text-xs">
+        <span class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300">Active Classmates:</span>
+        </span>
+        <span id="active-count" class="font-bold text-emerald-400">1 Online</span>
+      </div>
+
+      <!-- Tab Content Placeholder -->
+      <div id="tab-content" class="bg-slate-800/40 border border-slate-800 rounded-xl p-4 min-h-[300px]">
+        <h3 class="font-semibold text-slate-200">Today's Timetable</h3>
+        <p class="text-xs text-slate-400 mt-1">Verified CSE-B Schedule loaded.</p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500 border-t border-slate-800/60">
+      Built by KAVYANSH 🚀 <span class="text-slate-600">(don't sue me IET 😅)</span>
+    </footer>
+  </div>
+
+  <!-- Firebase Integration Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getDatabase, ref, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-rtdb.js";
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
+      authDomain: "ietcse-bb0c9.firebaseapp.com",
+      databaseURL: "https://ietcse-bb0c9-default-rtdb.firebaseio.com",
+      projectId: "ietcse-bb0c9",
+      storageBucket: "ietcse-bb0c9.firebasestorage.app",
+      messagingSenderId: "39297300181",
+      appId: "1:39297300181:web:08b6d3e5bae40b9c19145c"
+    };
+
+    const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const rtdb = getDatabase(app);
+    const messaging = getMessaging(app);
+
+    const ADMIN_KEY = "IETKDPROJECT1";
+    const USER_KEY = "IETCSEB";
+
+    document.getElementById("google-signin-btn").addEventListener("click", async () => {
+      const inputKey = document.getElementById("class-key-input").value.trim();
+      
+      if (inputKey !== ADMIN_KEY && inputKey !== USER_KEY) {
+        alert("Invalid Class Key! Please enter either the Admin Key or User Key.");
+        return;
+      }
+
+      const role = (inputKey === ADMIN_KEY) ? "admin" : "user";
+      const provider = new GoogleAuthProvider();
+
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Save User Role to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName,
+          email: user.email,
+          role: role,
+          lastLogin: new Date().toISOString()
+        }, { merge: true });
+
+        // Realtime Presence Setup
+        const userPresenceRef = ref(rtdb, `presence/${user.uid}`);
+        set(userPresenceRef, { name: user.displayName, online: true });
+        onDisconnect(userPresenceRef).remove();
+
+        // Push Notification VAPID Registration
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+            console.log("FCM Token:", token);
+          }
+        } catch (e) { console.log("Push notice skipped", e); }
+
+        // Render UI based on Role
+        renderUI(user, role);
+      } catch (err) {
+        alert("Sign-In failed: " + err.message);
+      }
+    });
+
+    function renderUI(user, role) {
+      document.getElementById("auth-view").classList.add("hidden");
+      document.getElementById("main-content").classList.remove("hidden");
+      
+      const badge = document.getElementById("user-badge");
+      badge.classList.remove("hidden");
+      badge.innerHTML = `${user.displayName.split(' ')[0]} ${role === 'admin' ? '👑 CR' : '👨‍🎓'}`;
+
+      if (role === "admin") {
+        document.getElementById("admin-panel").classList.remove("hidden");
+      }
+
+      // Track online active count
+      const presenceRef = ref(rtdb, 'presence');
+      onValue(presenceRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        const count = Object.keys(data).length;
+        document.getElementById("active-count").textContent = `${count} Online`;
+      });
+    }
+  </script>
+</body>
+</html>
