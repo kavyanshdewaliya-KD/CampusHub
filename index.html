@@ -31,9 +31,9 @@
   button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
 
   #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
-  .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
-  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
+  .card{background:var(--panel); border:2.5px solid var(--border); border-radius:18px; padding:22px; max-width:420px; width:100%; box-shadow:4px 4px 0 var(--border); margin-bottom:14px; color:var(--ink);}
+  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:2.5px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:3px 3px 0 var(--border);}
+  input,select,textarea{width:100%; padding:10px 12px; border:2px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
   
   header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
   main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
@@ -41,11 +41,11 @@
   .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; color:var(--ink);}
   .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000; box-shadow:2px 2px 0 var(--border);}
   
-  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px dashed var(--border); padding-bottom:6px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:#1F1924; box-shadow:2px 2px 0 var(--border);}
   .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
 
-  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
+  .row{border:2px solid var(--border); border-radius:14px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
   .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px; color:#1F1924;}
 
@@ -60,20 +60,21 @@
 
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#949191; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
+  .cal-day{background:#f1f0f5; border:2px solid var(--border); border-radius:10px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
   .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:700; opacity:0.85;}
   .cal-day.mst-day{background:#f52525; border-color:#D32F2F; font-weight:700; color:#5C0000;}
   .cal-day.hol-day{background:#ffea48; border-color:#CA8A04; font-weight:700; color:#422006;}
-  .cal-day.has-leave{background:#4f4cf1; border-color:var(--danger);}
+  .cal-day.has-leave{background:#4f4cf1; border-color:var(--border); color:#fff;}
   .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
   .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
 
-  /* Attendance Progress Bars */
-  .prog-container{background:#18b803; border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
+  /* Attendance Progress Bars & Range Indicators */
+  .prog-container{background:#e2dfec; border:2px solid var(--border); border-radius:999px; height:14px; overflow:hidden; width:100%; margin:6px 0; position:relative; box-shadow:inset 1px 1px 0 rgba(0,0,0,0.1);}
   .prog-fill{height:100%; width:0%; transition:width 0.3s;}
   .prog-good{background:var(--good);}
   .prog-mid{background:var(--accent2);}
   .prog-bad{background:var(--danger);}
+  .target-line{position:absolute; top:0; bottom:0; left:75%; width:2px; background:var(--ink); z-index:2; opacity:0.7;}
 
   /* Compact Bottom Navigation */
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
@@ -149,7 +150,7 @@
       <option value="3">Ocean Blue 💙</option>
     </select>
 
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+    <div style="border-top:2px dashed var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
       <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
       <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
@@ -484,13 +485,17 @@ function loadAttendance(){
   el.innerHTML = `
     <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
+      <h3>📈 Semester Attendance Overview</h3>
+      <div id="att-semester-summary"></div>
+    </div>
+    <div class="card" style="max-width:100%;">
       <label style="font-size:12px; font-weight:700;">Select Date:</label>
       <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
       <div id="att-classes-container" style="margin-top:12px;"></div>
     </div>
     <div class="card" style="max-width:100%;">
-      <h3>📊 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
+      <h3>📚 Subject-wise Attendance (%)</h3>
+      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026). Black marker line indicates the 75% target.</p>
       <div id="att-stats-container"></div>
     </div>`;
 
@@ -580,6 +585,7 @@ async function renderDayAttendanceForm(){
 
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
+  const semesterSummaryContainer = document.getElementById('att-semester-summary');
   const startDate = new Date('2026-08-05');
   const today = new Date();
   
@@ -627,6 +633,8 @@ async function renderAttendanceStats(){
           curr.setDate(curr.getDate() + 1);
         }
 
+        let totalClassesAll = 0;
+        let totalAttendedAll = 0;
         let statsHtml = '';
         const subjects = Object.keys(totals);
         if(!subjects.length){
@@ -637,18 +645,37 @@ async function renderAttendanceStats(){
         subjects.forEach(subj => {
           const tot = totals[subj];
           const att = attended[subj] || 0;
+          totalClassesAll += tot;
+          totalAttendedAll += att;
           const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
           const badge = getBadgeClass(pct);
           
           statsHtml += `
-            <div style="margin-bottom:10px; font-size:12px;">
+            <div style="margin-bottom:12px; font-size:12px;">
               <div style="display:flex; justify-content:space-between; font-weight:700;">
                 <span>${subj}</span>
                 <span>${att} / ${tot} (${pct}%)</span>
               </div>
-              <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
+              <div class="prog-container">
+                <div class="target-line"></div>
+                <div class="prog-fill ${badge}" style="width:${pct}%;"></div>
+              </div>
             </div>`;
         });
+
+        const semPct = totalClassesAll > 0 ? Math.round((totalAttendedAll / totalClassesAll) * 100) : 100;
+        const semBadge = getBadgeClass(semPct);
+        
+        semesterSummaryContainer.innerHTML = `
+          <div style="font-size:13px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Overall Semester Attendance</span>
+            <span>${totalAttendedAll} / ${totalClassesAll} (${semPct}%)</span>
+          </div>
+          <div class="prog-container" style="height:16px;">
+            <div class="target-line" title="75% Target"></div>
+            <div class="prog-fill ${semBadge}" style="width:${semPct}%;"></div>
+          </div>
+          <div style="font-size:11px; opacity:.7; margin-top:4px;">Target threshold line is marked at 75% range. Green = &ge;75%, Orange = 65-74%, Red = &lt;65%.</div>`;
 
         statsContainer.innerHTML = statsHtml;
       });
@@ -1010,7 +1037,6 @@ function loadChat(){
       }
     });
 
-    // Render recently texted bar
     const recentList = document.getElementById('recent-threads-list');
     if(recentList){
       onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
