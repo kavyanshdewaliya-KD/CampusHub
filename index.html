@@ -16,7 +16,7 @@
   body{background:var(--bg); color:var(--ink); font-family:var(--font-body); min-height:100vh;}
   h1,h2,h3{font-family:var(--font-display); font-weight:700;}
   button{font-family:var(--font-body); cursor:pointer;} .hidden{display:none !important;}
-  #login-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;}
+  #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
   .card{background:var(--panel); border:var(--border-w) solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px;}
   .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:var(--border-w) solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
   input,select{width:100%; padding:10px 12px; border:var(--border-w) solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px;}
@@ -43,17 +43,15 @@
 
 <div id="login-screen">
   <div class="card">
-    <h1>CampusHub ⚡🎓</h1>
-    <p style="font-size:13px; opacity:.7;">Sign in with your real Google account. Then join or create your class with a shared class code.</p>
+    <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
+    <p style="font-size:13px; opacity:.7;">Sign in with your real Google account. Then enter your assigned class key.</p>
     <button class="btn-primary" id="google-btn">Continue with Google</button>
-    <p id="login-status" style="font-size:12px; opacity:.6; margin-top:10px;"></p>
+    <p id="login-status" style="font-size:12px; opacity:.6; margin-top:10px; margin-bottom:0;"></p>
   </div>
   <div class="card hidden" id="join-card">
-    <h2 style="font-size:18px;">Join your class</h2>
-    <input id="in-code" placeholder="Class code e.g. CSE-B-2026" style="text-transform:uppercase;">
-    <input id="in-role" placeholder="Role tag e.g. Student / CR">
+    <h2 style="font-size:18px; margin-top:0;">Join your class</h2>
+    <input id="in-code" type="password" placeholder="Enter Class Key" style="text-transform:uppercase;">
     <select id="in-batch"><option value="B1">Batch 1</option><option value="B2">Batch 2</option></select>
-    <input id="in-adminpass" placeholder="Admin passcode (optional, CR only)">
     <button class="btn-primary" id="join-btn">Enter Classroom 🚀</button>
   </div>
 </div>
@@ -88,7 +86,6 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSna
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
-// ==== YOUR FIREBASE PROJECT ====
 const firebaseConfig = {
   apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
   authDomain: "ietcse-bb0c9.firebaseapp.com",
@@ -98,7 +95,7 @@ const firebaseConfig = {
   messagingSenderId: "39297300181",
   appId: "1:39297300181:web:08b6d3e5bae40b9c19145c",
 };
-// TODO: paste your VAPID key here (Project settings -> Cloud Messaging -> Web Push certificates)
+
 const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
 const app = initializeApp(firebaseConfig);
@@ -107,7 +104,7 @@ const db = getFirestore(app);
 const rtdb = getDatabase(app);
 let messaging; try{ messaging = getMessaging(app); }catch(e){ console.warn('Messaging not available', e); }
 
-let user=null, classCode='', profile={role:'Student', batch:'B1', isAdmin:false};
+let user=null, classCode='CSE-B-2026', profile={role:'Student', batch:'B1', isAdmin:false};
 
 /* ---------- AUTH ---------- */
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
@@ -125,29 +122,44 @@ onAuthStateChanged(auth, (u)=>{
   }
 });
 
+/* ---------- DUAL KEY JOIN ---------- */
 document.getElementById('join-btn').onclick = async ()=>{
-  classCode = document.getElementById('in-code').value.trim().toUpperCase();
-  if(!classCode || !user) return;
-  profile.role = document.getElementById('in-role').value.trim() || 'Student';
-  profile.batch = document.getElementById('in-batch').value;
-  const adminpass = document.getElementById('in-adminpass').value.trim();
-
-  const classRef = doc(db, 'classes', classCode);
-  const classSnap = await getDoc(classRef);
-  if(!classSnap.exists()) await setDoc(classRef, { createdAt: serverTimestamp(), adminPass: adminpass || null });
-  else if(adminpass){
-    const data = classSnap.data();
-    if(!data.adminPass){ await updateDoc(classRef, { adminPass: adminpass }); profile.isAdmin = true; }
-    else if(data.adminPass === adminpass) profile.isAdmin = true;
+  const inputKey = document.getElementById('in-code').value.trim().toUpperCase();
+  if(!inputKey || !user){
+    alert("Please enter your key and sign in with Google first!");
+    return;
   }
 
-  const memberRef = doc(db, 'classes', classCode, 'members', user.uid);
-  await setDoc(memberRef, {
-    name: user.displayName, email: user.email, role: profile.role, batch: profile.batch,
-    isAdmin: profile.isAdmin, photoURL: user.photoURL, updatedAt: serverTimestamp()
-  }, { merge:true });
+  // Key validation logic
+  if(inputKey === "IETKDPROJECT1") {
+    profile.isAdmin = true;
+    profile.role = "CR / Admin";
+  } else if(inputKey === "IETCSEB") {
+    profile.isAdmin = false;
+    profile.role = "Student";
+  } else {
+    alert("Invalid Access Key! Please check with your CR.");
+    return;
+  }
 
-  boot();
+  profile.batch = document.getElementById('in-batch').value;
+
+  try {
+    const memberRef = doc(db, 'classes', classCode, 'members', user.uid);
+    await setDoc(memberRef, {
+      name: user.displayName,
+      email: user.email,
+      role: profile.role,
+      batch: profile.batch,
+      isAdmin: profile.isAdmin,
+      photoURL: user.photoURL,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    boot();
+  } catch(err) {
+    alert("Error joining classroom: " + err.message);
+  }
 };
 
 document.getElementById('signout-btn').onclick = ()=> signOut(auth);
@@ -157,7 +169,7 @@ function boot(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
   document.getElementById('hdr-name').textContent = user.displayName;
-  document.getElementById('hdr-sub').textContent = `${profile.role} · ${classCode} · Batch ${profile.batch.slice(1)}`;
+  document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B · Batch ${profile.batch.slice(1)}`;
   document.getElementById('admin-pill').style.display = profile.isAdmin ? 'inline-block' : 'none';
   setupPresence();
   loadTimetable();
@@ -258,7 +270,7 @@ function loadChat(){
   }
 }
 
-/* ---------- MEMBERS (Firestore roster + Realtime DB presence) ---------- */
+/* ---------- MEMBERS ---------- */
 function loadMembers(){
   const el = document.getElementById('tab-members');
   const presenceRef = ref(rtdb, `presence/${classCode}`);
