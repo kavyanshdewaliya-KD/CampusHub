@@ -265,6 +265,19 @@ const rtdb = getDatabase(app);
 // Get this from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
 const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
+// Must exactly match the NOTIFY_SECRET environment variable set in Vercel
+const NOTIFY_SECRET = "CampusHubsecrate.xyz";
+
+async function pushNotifyEveryone(title, body){
+  try {
+    await fetch('/api/send-notification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, body, secret: NOTIFY_SECRET })
+    });
+  } catch(e){ console.warn('Notify failed:', e); }
+}
+
 let user = null;
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
@@ -649,6 +662,7 @@ document.getElementById('ov-add-btn').onclick = async ()=>{
   await setDoc(doc(db, 'classes', classCode, 'meta', 'calendarOverrides'), { dates: updated });
   document.getElementById('ov-date').value = '';
   document.getElementById('ov-label').value = '';
+  pushNotifyEveryone('📅 Calendar Update', `${type === 'gt' ? 'GT (Group Tadi) planned' : (label || 'Holiday declared')} on ${dStr}`);
   alert(`${type === 'gt' ? 'GT (Group Tadi)' : 'Holiday'} set for ${dStr}.`);
 };
 
@@ -1225,6 +1239,7 @@ function loadAssignments(){
           const cardStyle = document.getElementById('asg-color').value;
           if(!title) return alert('Enter a title!');
           await addDoc(collection(db,'classes',classCode,'assignments'), { title, emoji, link, desc, cardStyle, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
+          pushNotifyEveryone('📚 New Task Posted', title);
         };
       }
       el.querySelectorAll('.btn-del-asg').forEach(btn=>{
@@ -1365,6 +1380,7 @@ function loadAnnouncements(){
           const val = document.getElementById('ann-in').value.trim(); if(!val) return;
           await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
           document.getElementById('ann-in').value='';
+          pushNotifyEveryone('📢 New Announcement', val.slice(0,120));
         };
       }
       el.querySelectorAll('.btn-del-ann').forEach(btn=>{
