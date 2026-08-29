@@ -141,8 +141,7 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer"> by Kavyansh 🚀</footer>
-    <footer class="dev-footer"> version 1.0.5 </footer>
+    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
   </main>
 
   <nav class="tabbar">
@@ -181,6 +180,12 @@
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">💬 Chat Color:</label>
       <div id="chat-color-swatches" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+    </div>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🔔 Push Notifications:</label>
+      <p id="notif-status" style="font-size:11px; opacity:.7; margin:4px 0 8px;">Not enabled on this device yet.</p>
+      <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
     </div>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
@@ -240,6 +245,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBURkftN68dMpRFrnWBdca0qs1QmpQlzQ0",
@@ -255,6 +261,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
+
+// Get this from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
 let user = null;
 let classCode = 'CSE-B-2026';
@@ -426,6 +435,7 @@ async function syncMemberDoc(){
 document.getElementById('settings-btn').onclick = ()=>{
   document.getElementById('vibe-tag-input').value = profile.vibeTag || '';
   renderChatColorSwatches();
+  updateNotifStatusUI();
   document.getElementById('settings-modal').classList.remove('hidden');
 };
 document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
@@ -456,6 +466,52 @@ function renderChatColorSwatches(){
 
 document.getElementById('logout-btn').onclick = ()=>{
   if(confirm("Log out of CampusHub?")) signOut(auth);
+};
+
+async function updateNotifStatusUI(){
+  const statusEl = document.getElementById('notif-status');
+  if(!statusEl) return;
+  if(!('Notification' in window)){
+    statusEl.textContent = "This browser doesn't support push notifications.";
+  } else if(Notification.permission === 'granted' && localStorage.getItem('ch_fcm_token')){
+    statusEl.textContent = '✅ Notifications are enabled on this device.';
+  } else if(Notification.permission === 'denied'){
+    statusEl.textContent = '🚫 Notifications are blocked for this site in your browser settings.';
+  } else {
+    statusEl.textContent = 'Not enabled on this device yet.';
+  }
+}
+
+document.getElementById('notif-enable-btn').onclick = async ()=>{
+  if(VAPID_KEY === "PASTE_YOUR_VAPID_KEY_HERE"){
+    alert("VAPID key not set up yet. Get it from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates, then paste it into the VAPID_KEY constant in index.html.");
+    return;
+  }
+  try {
+    const supported = await isMessagingSupported();
+    if(!supported){ alert("Push notifications aren't supported in this browser."); return; }
+
+    const permission = await Notification.requestPermission();
+    if(permission !== 'granted'){ alert('Notification permission was not granted.'); return; }
+
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = getMessaging(app);
+    const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+
+    if(token){
+      localStorage.setItem('ch_fcm_token', token);
+      await setDoc(doc(db, 'classes', classCode, 'members', user.uid), { fcmTokens: { [token]: true } }, { merge: true });
+      onMessage(messaging, (payload)=>{
+        alert(`${payload.notification?.title || 'CampusHub'}: ${payload.notification?.body || ''}`);
+      });
+      alert('Notifications enabled!');
+      updateNotifStatusUI();
+    } else {
+      alert('Could not get a notification token. Try again.');
+    }
+  } catch(e){
+    alert('Error enabling notifications: ' + e.message);
+  }
 };
 
 document.getElementById('dark-toggle-btn').onclick = ()=>{
