@@ -9,18 +9,18 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root[data-theme="1"] {
-    --bg:#514874; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
+  body[data-theme="1"] {
+    --bg:#F4F2FC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --primary-ink:#ffffff;
     --accent2:#FFB65C; --pink:#FF6FA5; --danger:#FF5A5F; --good:#22B07D; --border:#241645; --chip:#E7E1FF;
     --lab-bg:#FFE5D9; --lab-border:#FF9E7D; --weekend-bg:#E2DFEE; --weekend-ink:#4A3F6B;
   }
-  :root[data-theme="2"] {
+  body[data-theme="2"] {
     --bg:#FFF9F0; --panel:#ffffff; --ink:#1F1924; --primary:#FF6B6B; --primary-ink:#ffffff;
     --accent2:#4ECDC4; --pink:#FFE66D; --danger:#FF5A5F; --good:#10B981; --border:#1F1924; --chip:#F7FFF7;
     --lab-bg:#FFE3E3; --lab-border:#FF6B6B; --weekend-bg:#F0E6D8; --weekend-ink:#4F4552;
   }
-  :root[data-theme="3"] {
-    --bg:#5f8896; --panel:#ffffff; --ink:#0F172A; --primary:#0284C7; --primary-ink:#ffffff;
+  body[data-theme="3"] {
+    --bg:#E8F4F8; --panel:#ffffff; --ink:#0F172A; --primary:#0284C7; --primary-ink:#ffffff;
     --accent2:#38BDF8; --pink:#F472B6; --danger:#EF4444; --good:#10B981; --border:#0F172A; --chip:#E0F2FE;
     --lab-bg:#FEF3C7; --lab-border:#F59E0B; --weekend-bg:#D1E2EC; --weekend-ink:#334E68;
   }
@@ -31,26 +31,26 @@
   button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
 
   #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
-  .card{background:var(--panel); border:2.5px solid var(--border); border-radius:18px; padding:22px; max-width:420px; width:100%; box-shadow:4px 4px 0 var(--border); margin-bottom:14px; color:var(--ink);}
-  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:2.5px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:3px 3px 0 var(--border);}
-  input,select,textarea{width:100%; padding:10px 12px; border:2px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
+  .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
+  .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
+  input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
   
   header.topbar{display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--panel); border-bottom:3px solid var(--border); position:sticky; top:0; z-index:10;}
-  main{padding:16px; max-width:760px; margin:0 auto; padding-bottom:90px;}
+  main{padding:16px; max-width:760px; margin:14px auto; padding-bottom:90px; background:var(--panel); border:3px solid var(--border); border-radius:20px; box-shadow:5px 5px 0 var(--border);}
   
   .pill{background:var(--chip); border:2px solid var(--border); border-radius:999px; padding:3px 8px; font-size:10px; font-weight:700; color:var(--ink);}
-  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:#000; box-shadow:2px 2px 0 var(--border);}
+  .icon-btn{background:#fff; border:2px solid var(--border); border-radius:10px; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; font-size:19px; color:#000; box-shadow:2px 2px 0 var(--border);}
   
-  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px dashed var(--border); padding-bottom:6px;}
+  .section-title{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
   .add-btn{background:var(--accent2); border:2px solid var(--border); border-radius:10px; padding:7px 12px; font-weight:700; font-size:13px; color:#1F1924; box-shadow:2px 2px 0 var(--border);}
   .del-btn{background:var(--danger); color:#fff; border:2px solid var(--border); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
 
-  .row{border:2px solid var(--border); border-radius:14px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
+  .row{border:2px solid var(--border); border-radius:12px; padding:12px; margin-bottom:10px; background:var(--panel); font-size:13px; box-shadow:3px 3px 0 var(--border); display:flex; flex-direction:column; gap:4px; color:var(--ink);}
   .row.lab-row{background:var(--lab-bg); border-color:var(--border);}
   .row-subject-tag{display:inline-block; padding:3px 8px; border-radius:6px; font-weight:700; font-size:11px; border:1.5px solid var(--border); margin-right:6px; color:#1F1924;}
 
   .chat-log{background:#fff; border:2px solid var(--border); border-radius:12px; padding:12px; height:320px; overflow-y:auto; margin-bottom:10px; color:#0F172A; box-shadow:3px 3px 0 var(--border);}
-  .msg{margin-bottom:10px; font-size:13px; border-bottom:1px solid #eee; padding-bottom:6px;} .msg b{font-size:11px;}
+  .msg{margin-bottom:10px; font-size:13px; border:2px solid var(--border); border-radius:10px; padding:8px 10px; background:var(--chip);} .msg b{font-size:11px;}
   .chat-input-row{display:flex; gap:7px;}
   .chat-input-row input{flex:1; margin:0; background:#fff; color:#0F172A;}
   .send-btn{background:var(--primary); color:var(--primary-ink); border:2px solid var(--border); border-radius:10px; padding:0 16px; font-weight:700; box-shadow:2px 2px 0 var(--border);}
@@ -60,32 +60,32 @@
 
   /* Calendar Grid */
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:10px;}
-  .cal-day{background:#8bb5bd; border:2px solid var(--border); border-radius:10px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
+  .cal-day{background:#949191; border:2px solid var(--border); border-radius:8px; padding:6px 2px; text-align:center; font-size:11px; position:relative; cursor:pointer; user-select:none; min-height:50px; display:flex; flex-direction:column; justify-content:space-between; color:var(--ink); box-shadow:2px 2px 0 var(--border);}
   .cal-day.weekend-day{background:var(--weekend-bg); color:var(--weekend-ink); border-color:var(--border); font-weight:700; opacity:0.85;}
   .cal-day.mst-day{background:#f52525; border-color:#D32F2F; font-weight:700; color:#5C0000;}
   .cal-day.hol-day{background:#ffea48; border-color:#CA8A04; font-weight:700; color:#422006;}
-  .cal-day.has-leave{background:#4f4cf1; border-color:var(--border); color:#fff;}
+  .cal-day.has-leave{background:#4f4cf1; border-color:var(--danger);}
   .cal-day.has-half{background:#FFF3D6; border-color:var(--accent2);}
   .cal-day.has-skip{background:#FFEBF2; border-color:var(--pink);}
 
-  /* Attendance Progress Bars & Range Indicators */
-  .prog-container{background:#e2dfec; border:2px solid var(--border); border-radius:999px; height:14px; overflow:hidden; width:100%; margin:6px 0; position:relative; box-shadow:inset 1px 1px 0 rgba(0,0,0,0.1);}
+  /* Attendance Progress Bars */
+  .prog-container{background:var(--chip); border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
   .prog-fill{height:100%; width:0%; transition:width 0.3s;}
   .prog-good{background:var(--good);}
   .prog-mid{background:var(--accent2);}
   .prog-bad{background:var(--danger);}
-  .target-line{position:absolute; top:0; bottom:0; left:75%; width:2px; background:var(--ink); z-index:2; opacity:0.7;}
+  .prog-container.prog-lg{height:18px;}
 
-/* Calendar Weekend Styling */
-.calendar-day.weekend {
-  background-color: #e2e8f0;
-  color: #334155;
-}
+  /* Section segregation helpers */
+  .section-title{border-bottom:3px solid var(--border); padding-bottom:8px;}
+  .day-block{border:2px solid var(--border); border-radius:14px; padding:10px 12px 4px; margin-bottom:14px; background:var(--panel); box-shadow:3px 3px 0 var(--border);}
+  .day-block h3{margin-top:0; margin-bottom:10px; display:inline-block; border-bottom:2px solid var(--primary); padding-bottom:2px;}
+  .stat-block{border:2px solid var(--border); border-radius:14px; padding:14px; background:var(--panel); box-shadow:3px 3px 0 var(--border); margin-bottom:14px;}
 
   /* Compact Bottom Navigation */
   nav.tabbar{position:fixed; bottom:0; left:0; right:0; background:var(--panel); border-top:3px solid var(--border); display:flex; z-index:10; height:60px;}
   nav.tabbar button{flex:1; background:none; border:none; padding:4px 2px; font-size:10px; font-weight:700; opacity:.7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--ink);}
-  nav.tabbar button .t-icon{font-size:18px;}
+  nav.tabbar button .t-icon{font-size:24px;}
   nav.tabbar button.active{opacity:1; color:var(--primary); background:var(--chip); border-top:3px solid var(--primary);}
   
   footer.dev-footer{text-align:center; opacity:0.75; font-size:11px; margin-top:20px; font-weight:700;}
@@ -127,7 +127,7 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer"> by Kavyansh 🚀</footer>
+    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
   </main>
 
   <nav class="tabbar">
@@ -156,7 +156,7 @@
       <option value="3">Ocean Blue 💙</option>
     </select>
 
-    <div style="border-top:2px dashed var(--border); margin:12px 0; padding-top:10px;">
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
       <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
       <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
@@ -395,14 +395,14 @@ function loadTimetable(){
     el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
     ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
       const periods = (currentTimetableData && currentTimetableData[d]) || [];
-      el.innerHTML += `<h3>${d}</h3>` + (periods.length? periods.map(p=>{
+      el.innerHTML += `<div class="day-block"><h3>${d}</h3>` + (periods.length? periods.map(p=>{
         const chipColor = getSubjectColor(p.subject);
         return `<div class="row ${p.isLab ? 'lab-row' : ''}">
           <span class="row-subject-tag" style="background:${chipColor};">${p.subject}</span>
           <b>${p.time}</b>
           <div style="font-size:11px; opacity:.8;">Faculty: ${p.teacher||'N/A'} | Venue: ${p.room||'M-309'}</div>
         </div>`;
-      }).join('') : `<div style="font-size:12px; opacity:0.6;">No classes scheduled.</div>`);
+      }).join('') : `<div style="font-size:12px; opacity:0.6;">No classes scheduled.</div>`) + `</div>`;
     });
     
     if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
@@ -491,17 +491,13 @@ function loadAttendance(){
   el.innerHTML = `
     <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
-      <h3>📈 Semester Attendance Overview</h3>
-      <div id="att-semester-summary"></div>
-    </div>
-    <div class="card" style="max-width:100%;">
       <label style="font-size:12px; font-weight:700;">Select Date:</label>
       <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
       <div id="att-classes-container" style="margin-top:12px;"></div>
     </div>
     <div class="card" style="max-width:100%;">
-      <h3>📚 Subject-wise Attendance (%)</h3>
-      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026). Black marker line indicates the 75% target.</p>
+      <h3>📊 Subject-wise Attendance (%)</h3>
+      <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
       <div id="att-stats-container"></div>
     </div>`;
 
@@ -515,27 +511,20 @@ async function renderDayAttendanceForm(){
   const dateStr = document.getElementById('att-date').value;
   const container = document.getElementById('att-classes-container');
   
-  const isWeekend = (dateString) => {
-    const day = new Date(dateString).getDay();
-    return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
-  };
-
-  const holiday = Object.entries(fixedHolidays).find(([d]) => d === dateStr);
-  const weekend = isWeekend(dateStr);
-
-  if (weekend || holiday || fixedMSTDates[dateStr]) {
-    const label = fixedMSTDates[dateStr] || (holiday ? holiday[1] : '(Weekend)');
-    container.innerHTML = `
-      <div class="holiday-banner" style="text-align: center; padding: 20px; font-weight: bold; color: var(--danger);">
-        HOLIDAYYY!!! ${holiday || fixedMSTDates[dateStr] ? `- ${label}` : '(Weekend)'}
-      </div>
-    `;
+  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
+    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
+    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
     return;
   }
 
   const dObj = new Date(dateStr);
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const dayName = dayNames[dObj.getDay()];
+  
+  if(dayName === 'Sun' || dayName === 'Sat'){
+    container.innerHTML = `<div style="font-size:13px; opacity:.7; text-align:center; padding:10px;">Weekend! No scheduled classes on ${dayName}.</div>`;
+    return;
+  }
 
   const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
   onSnapshot(planSnap, async (pSnap)=>{
@@ -598,7 +587,6 @@ async function renderDayAttendanceForm(){
 
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
-  const semesterSummaryContainer = document.getElementById('att-semester-summary');
   const startDate = new Date('2026-08-05');
   const today = new Date();
   
@@ -646,8 +634,6 @@ async function renderAttendanceStats(){
           curr.setDate(curr.getDate() + 1);
         }
 
-        let totalClassesAll = 0;
-        let totalAttendedAll = 0;
         let statsHtml = '';
         const subjects = Object.keys(totals);
         if(!subjects.length){
@@ -658,37 +644,18 @@ async function renderAttendanceStats(){
         subjects.forEach(subj => {
           const tot = totals[subj];
           const att = attended[subj] || 0;
-          totalClassesAll += tot;
-          totalAttendedAll += att;
-          const percentage = tot > 0 ? Math.round((att / tot) * 100) : 0;
-          const colorClass = percentage >= 75 ? 'prog-good' : percentage >= 65 ? 'prog-mid' : 'prog-bad';
+          const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
+          const badge = getBadgeClass(pct);
           
           statsHtml += `
-            <div style="margin-bottom:12px; font-size:12px;">
+            <div style="margin-bottom:10px; font-size:12px;">
               <div style="display:flex; justify-content:space-between; font-weight:700;">
                 <span>${subj}</span>
-                <span>${att} / ${tot} (${percentage}%)</span>
+                <span>${att} / ${tot} (${pct}%)</span>
               </div>
-              <div class="prog-container">
-                <div class="target-line"></div>
-                <div class="prog-fill ${colorClass}" style="width:${percentage}%;"></div>
-              </div>
+              <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
             </div>`;
         });
-
-        const semPct = totalClassesAll > 0 ? Math.round((totalAttendedAll / totalClassesAll) * 100) : 100;
-        const semBadge = getBadgeClass(semPct);
-        
-        semesterSummaryContainer.innerHTML = `
-          <div style="font-size:13px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Overall Semester Attendance</span>
-            <span>${totalAttendedAll} / ${totalClassesAll} (${semPct}%)</span>
-          </div>
-          <div class="prog-container" style="height:16px;">
-            <div class="target-line" title="75% Target"></div>
-            <div class="prog-fill ${semBadge}" style="width:${semPct}%;"></div>
-          </div>
-          <div style="font-size:11px; opacity:.7; margin-top:4px;">Target threshold line is marked at 75% range. Green = &ge;75%, Orange = 65-74%, Red = &lt;65%.</div>`;
 
         statsContainer.innerHTML = statsHtml;
       });
@@ -701,6 +668,11 @@ function loadCalendar(){
   const monthNames = ["", "August 2026", "September 2026", "October 2026", "November 2026", "December 2026"];
   
   el.innerHTML = `<div class="section-title"><h2>📅 Calendar Planner</h2></div>
+    <div class="stat-block">
+      <h3 style="margin-top:0;">📈 Semester Attendance</h3>
+      <p style="font-size:11px; opacity:.7; margin-bottom:8px;">Overall attendance across all subjects · 75% target</p>
+      <div id="sem-att-bar-container"><div style="font-size:12px; opacity:.6;">Calculating…</div></div>
+    </div>
     <div class="card" style="max-width:100%;">
       <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
         <span style="background:#FFD1D1; color:#5C0000; padding:2px 6px; border:1px solid #D32F2F; border-radius:4px;">Red = MST Exams</span> 
@@ -722,6 +694,67 @@ function loadCalendar(){
   };
   
   renderCalendarGrid();
+  renderSemesterAttendanceBar();
+}
+
+async function renderSemesterAttendanceBar(){
+  const container = document.getElementById('sem-att-bar-container');
+  const startDate = new Date('2026-08-05');
+  const today = new Date();
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
+  onSnapshot(ttSnap, (tSnap)=>{
+    const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
+
+    const planRef = collection(db, 'users', user.uid, 'calendar_plans');
+    onSnapshot(planRef, (planSnapShot)=>{
+      const plans = {};
+      planSnapShot.forEach(d => plans[d.id] = d.data().type);
+
+      const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
+      onSnapshot(attLogSnap, (logSnap)=>{
+        const logs = {};
+        logSnap.forEach(d => logs[d.id] = d.data().status);
+
+        let total = 0, attended = 0;
+        let curr = new Date(startDate);
+        while(curr <= today){
+          const dStr = curr.toISOString().split('T')[0];
+          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
+            const dName = dayNames[curr.getDay()];
+            const slots = tData[dName] || [];
+            const plan = plans[dStr];
+
+            slots.forEach((slot, idx)=>{
+              total++;
+              const logKey = `${dStr}_${idx}`;
+              let stat = logs[logKey];
+              if(!stat) stat = (plan === 'leave' || plan === 'skip') ? 'Absent' : 'Present';
+              if(stat === 'Present') attended++;
+            });
+          }
+          curr.setDate(curr.getDate() + 1);
+        }
+
+        if(!container) return;
+        if(total === 0){
+          container.innerHTML = `<div style="font-size:12px; opacity:.6;">No attendance data yet.</div>`;
+          return;
+        }
+
+        const pct = Math.round((attended / total) * 100);
+        const badge = getBadgeClass(pct);
+        container.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px; margin-bottom:4px;">
+            <span>Overall</span>
+            <span>${attended} / ${total} (${pct}%)</span>
+          </div>
+          <div class="prog-container prog-lg"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
+          <div style="font-size:11px; opacity:.75; margin-top:4px;">${pct >= 75 ? '✅ You are above the 75% target.' : pct >= 65 ? '⚠️ Getting close to the 75% cutoff — attend upcoming classes.' : '🚨 Below safe range — you need to attend regularly to recover.'}</div>`;
+      });
+    });
+  });
 }
 
 async function renderCalendarGrid(){
@@ -1050,6 +1083,7 @@ function loadChat(){
       }
     });
 
+    // Render recently texted bar
     const recentList = document.getElementById('recent-threads-list');
     if(recentList){
       onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
