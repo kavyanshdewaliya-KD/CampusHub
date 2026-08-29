@@ -141,8 +141,8 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">by Kavyansh 🚀</footer>
-    <footer class="dev-footer">version 0.1.4</footer>
+    <footer class="dev-footer"> by Kavyansh 🚀</footer>
+    <footer class="dev-footer"> version 1.0.5 </footer>
   </main>
 
   <nav class="tabbar">
@@ -166,10 +166,10 @@
     
     <label style="font-size:12px; font-weight:700;">Select Theme:</label>
     <select id="theme-select">
-      <option value="1">Bainganiii 💜</option>
-      <option value="2">Naarangii 🧡</option>
-      <option value="3">Nilaaa 💙</option>
-      <option value="4">Kalaa andhera 🌙</option>
+      <option value="1">Purple Dream 💜</option>
+      <option value="2">Sunset Coral 🧡</option>
+      <option value="3">Ocean Blue 💙</option>
+      <option value="4">Dark Mode 🌙</option>
     </select>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
@@ -179,9 +179,14 @@
     </div>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">💬 Chat Color:</label>
+      <div id="chat-color-swatches" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
+    </div>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
       <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
-      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Nerd stay away</button>
+      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
     </div>
   </div>
 </div>
@@ -233,7 +238,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -258,6 +263,7 @@ let lastPrivateTarget = null;
 let currentTimetableData = {};
 let currentCalMonth = 9; // September 2026 default
 let adminOverrides = {}; // admin-set Holiday / GT (Group Tadi) days: { 'YYYY-MM-DD': {type:'holiday'|'gt', label:''} }
+let classOverrides = {}; // admin-set per-date class cancellations/extras: { 'YYYY-MM-DD': {cancelled:[idx,...], extra:[{subject,time,teacher,room},...]} }
 
 let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
 let activeTheme = localStorage.getItem('ch_theme') || '1';
@@ -288,6 +294,40 @@ function getHolidayLabel(dStr){
   return null;
 }
 function getMstLabel(dStr){ return fixedMSTDates[dStr] || null; }
+
+function getEffectiveSlots(dName, dStr, baseSlots){
+  const ov = classOverrides[dStr] || {};
+  const cancelled = new Set(ov.cancelled || []);
+  const extra = ov.extra || [];
+  const result = [];
+  baseSlots.forEach((slot, idx) => {
+    if(!cancelled.has(idx)) result.push({ slot, idx, isExtra:false });
+  });
+  extra.forEach((slot, i) => {
+    result.push({ slot, idx: `e${i}`, isExtra:true });
+  });
+  return result;
+}
+
+const chatColorPalette = [
+  {bg:'#FFD9D9', text:'#8C2F2F'},
+  {bg:'#FFE1C4', text:'#7A4A16'},
+  {bg:'#FFF3C4', text:'#6B5A16'},
+  {bg:'#D7F5DE', text:'#1D5C36'},
+  {bg:'#D3E6FB', text:'#1E4F82'},
+  {bg:'#E4DFFB', text:'#4A3B8C'},
+  {bg:'#FBD9F0', text:'#8C2F6B'},
+  {bg:'#D9FBF3', text:'#136B57'}
+];
+let recentChatList = JSON.parse(localStorage.getItem('ch_recent_chats') || '[]'); // [{uid,name}]
+let allMembersCache = {}; // uid -> name, refreshed whenever the chat tab's member listener fires
+
+function addToRecentChats(uid, name){
+  recentChatList = recentChatList.filter(r => r.uid !== uid);
+  recentChatList.unshift({ uid, name });
+  if(recentChatList.length > 20) recentChatList = recentChatList.slice(0, 20);
+  localStorage.setItem('ch_recent_chats', JSON.stringify(recentChatList));
+}
 
 const subjectThemeColors = {
   'Applied Chemistry': 'background:#d1fae5; border-color:#34d399; color:#065f46;',
@@ -377,6 +417,7 @@ async function syncMemberDoc(){
     await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
       name: user.displayName, email: user.email, role: profile.role,
       isAdmin: profile.isAdmin, photoURL: user.photoURL, vibeTag: profile.vibeTag || '',
+      chatColor: profile.chatColor || null,
       updatedAt: serverTimestamp()
     }, { merge: true });
   } catch(e){ console.warn(e); }
@@ -384,6 +425,7 @@ async function syncMemberDoc(){
 
 document.getElementById('settings-btn').onclick = ()=>{
   document.getElementById('vibe-tag-input').value = profile.vibeTag || '';
+  renderChatColorSwatches();
   document.getElementById('settings-modal').classList.remove('hidden');
 };
 document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
@@ -395,6 +437,22 @@ document.getElementById('vibe-save-btn').onclick = ()=>{
   syncMemberDoc();
   alert('Vibe tag saved!');
 };
+
+function renderChatColorSwatches(){
+  const wrap = document.getElementById('chat-color-swatches');
+  wrap.innerHTML = chatColorPalette.map((c, i) => {
+    const isSelected = profile.chatColor && profile.chatColor.bg === c.bg;
+    return `<button class="chat-swatch-btn" data-idx="${i}" style="width:34px; height:34px; border-radius:10px; background:${c.bg}; border:3px solid ${isSelected ? c.text : 'var(--border)'}; box-shadow:2px 2px 0 var(--border); cursor:pointer; ${isSelected ? 'transform:scale(1.1);':''}"></button>`;
+  }).join('');
+  wrap.querySelectorAll('.chat-swatch-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      profile.chatColor = chatColorPalette[Number(btn.dataset.idx)];
+      localStorage.setItem('ch_profile', JSON.stringify(profile));
+      syncMemberDoc();
+      renderChatColorSwatches();
+    };
+  });
+}
 
 document.getElementById('logout-btn').onclick = ()=>{
   if(confirm("Log out of CampusHub?")) signOut(auth);
@@ -461,6 +519,12 @@ function boot(){
     adminOverrides = (snap.exists() && snap.data().dates) || {};
     renderCalendarGrid();
     renderSemesterAttendanceBar();
+    renderDayAttendanceForm();
+    renderAttendanceStats();
+  });
+
+  onSnapshot(doc(db, 'classes', classCode, 'meta', 'classOverrides'), (snap)=>{
+    classOverrides = (snap.exists() && snap.data().perDate) || {};
     renderDayAttendanceForm();
     renderAttendanceStats();
   });
@@ -656,6 +720,11 @@ async function renderDayAttendanceForm(){
     return;
   }
 
+  if(isGTDate(dateStr)){
+    container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">GT (Group Tadi) — mass bunk planned by CR/Admin. Excluded from attendance.</div>`;
+    return;
+  }
+
   const dObj = new Date(dateStr);
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const dayName = dayNames[dObj.getDay()];
@@ -672,10 +741,12 @@ async function renderDayAttendanceForm(){
     const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
     onSnapshot(ttSnap, async (tSnap)=>{
       const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-      const daySlots = (tData && tData[dayName]) || [];
+      const baseSlots = (tData && tData[dayName]) || [];
+      const effectiveSlots = getEffectiveSlots(dayName, dateStr, baseSlots);
       
-      if(!daySlots.length){
-        container.innerHTML = `<div style="font-size:12px; opacity:.6;">No periods listed for ${dayName}.</div>`;
+      if(!effectiveSlots.length){
+        container.innerHTML = `<div style="font-size:12px; opacity:.6;">No periods listed for ${dayName}.</div>` + (profile.isAdmin ? renderExtraClassForm(dateStr) : '');
+        if(profile.isAdmin) wireExtraClassForm(dateStr);
         return;
       }
 
@@ -686,15 +757,14 @@ async function renderDayAttendanceForm(){
           if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
         });
 
-        const gtDay = isGTDate(dateStr);
-        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''} ${gtDay ? `<span style="color:var(--danger)">[GT: Group Tadi planned]</span>`:''}</div>`;
+        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
         
-        daySlots.forEach((slot, idx)=>{
+        effectiveSlots.forEach(({slot, idx, isExtra})=>{
           const logKey = `${dateStr}_${idx}`;
           let currentStatus = logs[logKey];
           if(!currentStatus){
             if(dateStr === todayStr) currentStatus = 'Absent'; // must explicitly confirm today's classes
-            else if(planType === 'leave' || gtDay) currentStatus = 'Absent';
+            else if(planType === 'leave') currentStatus = 'Absent';
             else currentStatus = 'Present';
           }
           const isChecked = currentStatus === 'Present';
@@ -703,14 +773,27 @@ async function renderDayAttendanceForm(){
             <div class="row" style="flex-direction:row; justify-content:space-between; align-items:center; padding:8px 12px;">
               <div>
                 <span class="row-subject-tag" style="background:${getSubjectColor(slot.subject)};">${slot.subject}</span>
-                <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room}</div>
+                ${isExtra ? '<span class="pill" style="background:var(--chip);">Extra</span>' : ''}
+                <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room||''}</div>
               </div>
-              <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <span>${isChecked ? 'Present ✅' : 'Absent ❌'}</span>
-                <input type="checkbox" class="att-checkbox" data-slotidx="${idx}" data-date="${dateStr}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; margin:0;">
-              </label>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label style="font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <span>${isChecked ? 'Present ✅' : 'Absent ❌'}</span>
+                  <input type="checkbox" class="att-checkbox" data-slotidx="${idx}" data-date="${dateStr}" data-subject="${slot.subject}" ${isChecked ? 'checked' : ''} style="width:18px; height:18px; margin:0;">
+                </label>
+                ${profile.isAdmin ? (isExtra 
+                  ? `<button class="del-btn btn-remove-extra" data-date="${dateStr}" data-extraidx="${idx.slice(1)}" style="padding:3px 7px; font-size:10px;">Remove</button>`
+                  : `<button class="del-btn btn-cancel-class" data-date="${dateStr}" data-slotidx="${idx}" style="padding:3px 7px; font-size:10px;">Cancel</button>`
+                ) : ''}
+              </div>
             </div>`;
         });
+
+        if(classOverrides[dateStr] && (classOverrides[dateStr].cancelled||[]).length){
+          html += `<div style="font-size:11px; opacity:.6; margin:6px 0;">Cancelled classes today (excluded from totals): ${(classOverrides[dateStr].cancelled||[]).map(i => (baseSlots[i]?.subject)||'?').join(', ')} — <button class="del-btn btn-restore-all" data-date="${dateStr}" style="padding:2px 6px; font-size:10px;">Restore all</button></div>`;
+        }
+
+        if(profile.isAdmin) html += renderExtraClassForm(dateStr);
 
         container.innerHTML = html;
 
@@ -718,16 +801,78 @@ async function renderDayAttendanceForm(){
           chk.onchange = async (e) => {
             const sIdx = e.target.dataset.slotidx;
             const dStr = e.target.dataset.date;
+            const subj = e.target.dataset.subject;
             const status = e.target.checked ? 'Present' : 'Absent';
             await setDoc(doc(db, 'users', user.uid, 'attendance_logs', `${dStr}_${sIdx}`), {
-              date: dStr, slotIdx: Number(sIdx), status, subject: daySlots[sIdx].subject, ts: serverTimestamp()
+              date: dStr, slotIdx: sIdx, status, subject: subj, ts: serverTimestamp()
             });
             renderAttendanceStats();
           };
         });
+
+        if(profile.isAdmin){
+          container.querySelectorAll('.btn-cancel-class').forEach(btn=>{
+            btn.onclick = async (e)=>{
+              const dStr = e.target.dataset.date;
+              const sIdx = Number(e.target.dataset.slotidx);
+              const ov = classOverrides[dStr] || {};
+              const cancelled = Array.from(new Set([...(ov.cancelled||[]), sIdx]));
+              const updated = { ...classOverrides, [dStr]: { ...ov, cancelled } };
+              await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+            };
+          });
+          container.querySelectorAll('.btn-restore-all').forEach(btn=>{
+            btn.onclick = async (e)=>{
+              const dStr = e.target.dataset.date;
+              const ov = { ...(classOverrides[dStr]||{}) };
+              delete ov.cancelled;
+              const updated = { ...classOverrides, [dStr]: ov };
+              await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+            };
+          });
+          container.querySelectorAll('.btn-remove-extra').forEach(btn=>{
+            btn.onclick = async (e)=>{
+              const dStr = e.target.dataset.date;
+              const exIdx = Number(e.target.dataset.extraidx);
+              const ov = classOverrides[dStr] || {};
+              const extra = (ov.extra||[]).filter((_, i)=> i !== exIdx);
+              const updated = { ...classOverrides, [dStr]: { ...ov, extra } };
+              await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+            };
+          });
+          wireExtraClassForm(dateStr);
+        }
       });
     });
   });
+}
+
+function renderExtraClassForm(dateStr){
+  return `
+    <div class="edit-item-box" style="margin-top:10px;">
+      <b style="font-size:12px;">➕ Add Extra Class (${dateStr})</b>
+      <input id="ec-subject" placeholder="Subject" style="margin-top:8px;">
+      <input id="ec-time" placeholder="Time (e.g. 04:00 - 05:00)">
+      <input id="ec-teacher" placeholder="Teacher (optional)">
+      <input id="ec-room" placeholder="Room (optional)">
+      <button class="add-btn" id="ec-add-btn" style="width:100%;">Add Extra Class</button>
+    </div>`;
+}
+
+function wireExtraClassForm(dateStr){
+  const btn = document.getElementById('ec-add-btn');
+  if(!btn) return;
+  btn.onclick = async ()=>{
+    const subject = document.getElementById('ec-subject').value.trim();
+    const time = document.getElementById('ec-time').value.trim();
+    const teacher = document.getElementById('ec-teacher').value.trim();
+    const room = document.getElementById('ec-room').value.trim();
+    if(!subject) return alert('Enter a subject!');
+    const ov = classOverrides[dateStr] || {};
+    const extra = [...(ov.extra||[]), { subject, time, teacher, room }];
+    const updated = { ...classOverrides, [dateStr]: { ...ov, extra } };
+    await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+  };
 }
 
 async function renderAttendanceStats(){
@@ -758,13 +903,12 @@ async function renderAttendanceStats(){
         curr = new Date(startDate);
         while(curr <= today){
           const dStr = curr.toISOString().split('T')[0];
-          if(!isMstDate(dStr) && !isHolidayDate(dStr)){
+          if(!isMstDate(dStr) && !isHolidayDate(dStr) && !isGTDate(dStr)){
             const dName = dayNames[curr.getDay()];
-            const slots = tData[dName] || [];
+            const slots = getEffectiveSlots(dName, dStr, tData[dName] || []);
             const plan = plans[dStr];
-            const gtDay = isGTDate(dStr);
             
-            slots.forEach((slot, idx)=>{
+            slots.forEach(({slot, idx})=>{
               const subj = slot.subject;
               totals[subj] = (totals[subj] || 0) + 1;
               
@@ -772,7 +916,7 @@ async function renderAttendanceStats(){
               let stat = logs[logKey];
               if(!stat){
                 if(dStr === todayStr) stat = 'Absent'; // must explicitly confirm today's classes
-                else if(plan === 'leave' || gtDay) stat = 'Absent';
+                else if(plan === 'leave') stat = 'Absent';
                 else stat = 'Present';
               }
               if(stat === 'Present'){
@@ -875,11 +1019,11 @@ async function renderSemesterAttendanceBar(){
       const dName = dayNames[curr.getDay()];
       const isWeekend = (dName === 'Sun' || dName === 'Sat');
 
-      if(!isWeekend && !isMstDate(dStr) && !isHolidayDate(dStr)){
+      if(isGTDate(dStr)) gtDays++;
+      else if(!isWeekend && !isMstDate(dStr) && !isHolidayDate(dStr)){
         teachingDays++;
         const plan = plans[dStr];
-        if(isGTDate(dStr)) gtDays++;
-        else if(plan === 'leave') leaveDays++;
+        if(plan === 'leave') leaveDays++;
         else if(plan === 'attended') attendedConfirmed++;
       }
       curr.setDate(curr.getDate() + 1);
@@ -890,7 +1034,7 @@ async function renderSemesterAttendanceBar(){
       return;
     }
 
-    const attendedDays = teachingDays - leaveDays - gtDays;
+    const attendedDays = teachingDays - leaveDays;
     const pct = Math.round((attendedDays / teachingDays) * 100);
     const badge = getBadgeClass(pct);
     container.innerHTML = `
@@ -899,7 +1043,7 @@ async function renderSemesterAttendanceBar(){
         <span>${attendedDays} / ${teachingDays} (${pct}%)</span>
       </div>
       <div class="prog-container prog-lg"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
-      <div style="font-size:11px; opacity:.75; margin-top:4px;">${leaveDays} leave day${leaveDays===1?'':'s'} planned${gtDays?` · ${gtDays} GT (Group Tadi) day${gtDays===1?'':'s'}`:''}${attendedConfirmed?` · ${attendedConfirmed} day${attendedConfirmed===1?'':'s'} confirmed attended`:''} · ${pct >= 75 ? '✅ Above the 75% target.' : pct >= 65 ? '⚠️ Getting close to the cutoff — watch upcoming leaves.' : '🚨 Below safe range — reduce planned leaves to recover.'}</div>`;
+      <div style="font-size:11px; opacity:.75; margin-top:4px;">${leaveDays} leave day${leaveDays===1?'':'s'} planned${gtDays?` · ${gtDays} GT day${gtDays===1?'':'s'} excluded`:''}${attendedConfirmed?` · ${attendedConfirmed} day${attendedConfirmed===1?'':'s'} confirmed attended`:''} · ${pct >= 75 ? '✅ Above the 75% target.' : pct >= 65 ? '⚠️ Getting close to the cutoff — watch upcoming leaves.' : '🚨 Below safe range — reduce planned leaves to recover.'}</div>`;
   });
 }
 
@@ -1209,7 +1353,7 @@ function loadChat(){
     const log = document.getElementById('chat-log'); if(!log) return;
 
     if(activeChatTarget === 'NONE'){
-      log.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:20px 10px;">Pick a member below to start (or continue) a private 1:1 chat.</div>`;
+      log.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:20px 10px;">Pick a member below (or tap + Add) to start a private 1:1 chat.</div>`;
       renderRecentBar();
       return;
     }
@@ -1225,10 +1369,13 @@ function loadChat(){
         const m = d.data();
         const hue = getUserHue(m.uid || m.name || 'x');
         const label = (m.role === 'CR / Admin') ? m.role : (m.vibeTag || 'Student');
+        const bg = m.color ? m.color.bg : 'var(--chip)';
+        const borderCol = m.color ? m.color.text : `hsl(${hue},65%,45%)`;
+        const nameCol = m.color ? m.color.text : `hsl(${hue},70%,42%)`;
         log.innerHTML += `
-          <div class="msg" style="border-left:6px solid hsl(${hue},65%,45%);">
+          <div class="msg" style="background:${bg}; border-left:6px solid ${borderCol};">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:hsl(${hue},70%,42%);">${label} · ${m.name}</b>
+              <b style="color:${nameCol};">${label} · ${m.name}</b>
               ${profile.isAdmin ? `<button class="del-btn btn-del-msg" data-id="${d.id}" style="padding:2px 6px; font-size:10px;">Revoke</button>` : ''}
             </div>
             <div>${m.text}</div>
@@ -1249,6 +1396,7 @@ function loadChat(){
       }
     });
 
+    if(activeChatTarget !== 'ALL') addToRecentChats(activeChatTarget, allMembersCache[activeChatTarget] || 'Member');
     renderRecentBar();
   };
 
@@ -1256,21 +1404,38 @@ function loadChat(){
     const recentList = document.getElementById('recent-threads-list');
     if(!recentList) return;
     onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
+      allMembersCache = {};
+      memSnap.forEach(d => { if(d.id !== user.uid) allMembersCache[d.id] = d.data().name; });
+
       recentList.innerHTML = '';
-      memSnap.forEach(d => {
-        if(d.id !== user.uid){
-          const mem = d.data();
-          const isActive = activeChatTarget === d.id;
-          recentList.innerHTML += `<button class="add-btn" data-uid="${d.id}" style="padding:4px 8px; font-size:11px; background:${isActive ? 'var(--primary)' : '#fff'}; color:${isActive ? '#fff' : ''};">${mem.name}</button>`;
-        }
+      recentChatList.forEach(r => {
+        if(!allMembersCache[r.uid]) return; // member no longer exists
+        const isActive = activeChatTarget === r.uid;
+        recentList.innerHTML += `<button class="add-btn" data-uid="${r.uid}" style="padding:4px 8px; font-size:11px; background:${isActive ? 'var(--primary)' : '#fff'}; color:${isActive ? '#fff' : ''};">${allMembersCache[r.uid]}</button>`;
       });
-      recentList.querySelectorAll('button').forEach(btn => {
+      recentList.innerHTML += `<button class="add-btn" id="btn-add-private" style="padding:4px 10px; font-size:11px; background:var(--accent2); font-weight:700;">+ Add</button>`;
+
+      recentList.querySelectorAll('button[data-uid]').forEach(btn => {
         btn.onclick = () => {
           activeChatTarget = btn.dataset.uid;
           lastPrivateTarget = btn.dataset.uid;
           renderLog();
         };
       });
+
+      document.getElementById('btn-add-private').onclick = () => {
+        const q = prompt("Enter the member's name to chat with:");
+        if(!q) return;
+        const qLower = q.trim().toLowerCase();
+        const matches = Object.entries(allMembersCache).filter(([uid, name]) => name && name.toLowerCase().includes(qLower));
+        if(matches.length === 0){ alert('No member found with that name.'); return; }
+        if(matches.length > 1){ alert('Multiple matches: ' + matches.map(m=>m[1]).join(', ') + '. Try a more specific name.'); return; }
+        const [uid, name] = matches[0];
+        addToRecentChats(uid, name);
+        activeChatTarget = uid;
+        lastPrivateTarget = uid;
+        renderLog();
+      };
     });
   };
 
@@ -1287,10 +1452,10 @@ function loadChat(){
       return;
     }
     if(activeChatTarget === 'ALL'){
-      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', ts: serverTimestamp() });
+      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
     } else {
       const threadId = [user.uid, activeChatTarget].sort().join('_');
-      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', ts: serverTimestamp() });
+      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
     }
     inp.value='';
   };
@@ -1312,19 +1477,51 @@ function loadMembers(){
       const active = entries.filter(e=> presence[e.uid]?.state==='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
       const offline = entries.filter(e=> presence[e.uid]?.state!=='online').sort((a,b)=>(a.name||'').localeCompare(b.name||''));
       
+      const memberRow = (e) => `<div class="row" style="flex-direction:row; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span style="color:${presence[e.uid]?.state==='online' ? 'var(--good)' : '#999'}">●</span>
+          <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''}
+          ${e.vibeTag ? `<span style="font-size:11px; opacity:.75; font-style:italic;">${e.vibeTag}</span>` : ''}
+          ${(profile.isAdmin && e.uid !== user.uid) ? `<button class="del-btn btn-remove-member" data-uid="${e.uid}" data-name="${e.name}" style="margin-left:auto; padding:2px 8px; font-size:10px;">Remove</button>` : ''}
+        </div>`;
+
       el.innerHTML = `<div class="section-title"><h2>👥 Members (${entries.length})</h2></div>
         <div class="members-container">
           <div>
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">🟢 ACTIVE NOW (${active.length})</div>
-            ${active.length ? active.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px; flex-wrap:wrap;"><span style="color:var(--good)">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''} ${e.vibeTag ? `<span style="font-size:11px; opacity:.75; font-style:italic;">${e.vibeTag}</span>` : ''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No members online</div>'}
+            ${active.length ? active.map(memberRow).join('') : '<div style="font-size:12px; opacity:0.6;">No members online</div>'}
           </div>
           <div>
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
-            ${offline.length ? offline.map(e => `<div class="row" style="flex-direction:row; align-items:center; gap:6px; flex-wrap:wrap;"><span style="color:#999">●</span> <b>${e.name}</b> <span class="pill">${e.role||'Student'}</span> ${e.isAdmin?'🔑':''} ${e.vibeTag ? `<span style="font-size:11px; opacity:.75; font-style:italic;">${e.vibeTag}</span>` : ''}</div>`).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
+            ${offline.length ? offline.map(memberRow).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
           </div>
         </div>`;
+
+      if(profile.isAdmin){
+        el.querySelectorAll('.btn-remove-member').forEach(btn=>{
+          btn.onclick = ()=> removeMember(btn.dataset.uid, btn.dataset.name);
+        });
+      }
     });
   });
+}
+
+async function removeMember(uid, name){
+  if(!confirm(`Remove ${name} from CampusHub? This deletes their member record, attendance logs, and calendar plans. This cannot be undone.`)) return;
+  try {
+    await deleteDoc(doc(db, 'classes', classCode, 'members', uid));
+
+    const logsSnap = await getDocs(collection(db, 'users', uid, 'attendance_logs'));
+    for(const d of logsSnap.docs) await deleteDoc(d.ref);
+
+    const plansSnap = await getDocs(collection(db, 'users', uid, 'calendar_plans'));
+    for(const d of plansSnap.docs) await deleteDoc(d.ref);
+
+    await rtdbSet(ref(rtdb, `presence/${classCode}/${uid}`), null);
+
+    alert(`${name} has been removed.`);
+  } catch(e){
+    alert('Error removing member: ' + e.message);
+  }
 }
 </script>
 </body>
