@@ -78,6 +78,7 @@
   .cal-day.hol-day{background:#FFF3C4; border-color:#E3C55C; font-weight:700; color:#6B5A16;}
   .cal-day.has-leave{background:#D3E6FB; border-color:#8FB8E8; font-weight:700; color:#1E4F82;}
   .cal-day.has-attended{background:#D7F5DE; border-color:#7FCB98; font-weight:700; color:#1D5C36;}
+  .cal-day.gt-day{background:#FFE1C4; border-color:#E3A55C; font-weight:700; color:#7A4A16;}
 
   /* Attendance Progress Bars */
   .prog-container{background:var(--chip); border:2px solid var(--border); border-radius:999px; height:12px; overflow:hidden; width:100%; margin:6px 0;}
@@ -207,6 +208,27 @@
   </div>
 </div>
 
+<!-- CR/Admin-only: Manage Holidays & GT (Group Tadi) days -->
+<div id="override-modal" class="modal-overlay hidden">
+  <div class="modal-body">
+    <div class="section-title">
+      <h3 style="margin:0;">🛠 Manage Holidays / GT Days</h3>
+      <button id="override-modal-close" class="del-btn">✕ Close</button>
+    </div>
+    <p style="font-size:11px; opacity:.7;">Sets a locked day visible to everyone. Students can't tap or change these days.</p>
+    <label style="font-size:12px; font-weight:700;">Date:</label>
+    <input type="date" id="ov-date" min="2026-08-05" max="2026-11-27">
+    <label style="font-size:12px; font-weight:700;">Type:</label>
+    <select id="ov-type">
+      <option value="holiday">Holiday (no classes — excluded from totals)</option>
+      <option value="gt">GT — Group Tadi / planned mass bunk (counted as absent)</option>
+    </select>
+    <input id="ov-label" placeholder="Optional label (e.g. Diwali Break)">
+    <button class="add-btn" id="ov-add-btn" style="width:100%; margin-bottom:14px;">+ Add / Update</button>
+    <div id="ov-list"></div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -231,8 +253,10 @@ const rtdb = getDatabase(app);
 let user = null;
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
+let lastPrivateTarget = null;
 let currentTimetableData = {};
 let currentCalMonth = 9; // September 2026 default
+let adminOverrides = {}; // admin-set Holiday / GT (Group Tadi) days: { 'YYYY-MM-DD': {type:'holiday'|'gt', label:''} }
 
 let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
 let activeTheme = localStorage.getItem('ch_theme') || '1';
@@ -253,6 +277,16 @@ const fixedHolidays = {
   '2026-11-24': 'Guru Nanak Jayanti',
   '2026-12-25': 'Christmas'
 };
+
+function isMstDate(dStr){ return !!fixedMSTDates[dStr]; }
+function isHolidayDate(dStr){ return !!fixedHolidays[dStr] || (adminOverrides[dStr] && adminOverrides[dStr].type === 'holiday'); }
+function isGTDate(dStr){ return !!(adminOverrides[dStr] && adminOverrides[dStr].type === 'gt'); }
+function getHolidayLabel(dStr){
+  if(fixedHolidays[dStr]) return fixedHolidays[dStr];
+  if(adminOverrides[dStr] && adminOverrides[dStr].type === 'holiday') return adminOverrides[dStr].label || 'Holiday';
+  return null;
+}
+function getMstLabel(dStr){ return fixedMSTDates[dStr] || null; }
 
 const subjectThemeColors = {
   'Applied Chemistry': 'background:#d1fae5; border-color:#34d399; color:#065f46;',
@@ -421,6 +455,14 @@ function boot(){
   loadChat();
   loadMembers();
   showTab('timetable');
+
+  onSnapshot(doc(db, 'classes', classCode, 'meta', 'calendarOverrides'), (snap)=>{
+    adminOverrides = (snap.exists() && snap.data().dates) || {};
+    renderCalendarGrid();
+    renderSemesterAttendanceBar();
+    renderDayAttendanceForm();
+    renderAttendanceStats();
+  });
 }
 
 document.querySelectorAll('nav.tabbar button').forEach(b=> b.onclick = ()=> showTab(b.dataset.tab));
@@ -470,6 +512,47 @@ function openTimetableEditor(){
 
 document.getElementById('tt-modal-close').onclick = ()=> document.getElementById('tt-modal').classList.add('hidden');
 document.getElementById('tt-edit-day').onchange = renderEditorDayList;
+
+function openOverrideModal(){
+  document.getElementById('override-modal').classList.remove('hidden');
+  renderOverrideList();
+}
+document.getElementById('override-modal-close').onclick = ()=> document.getElementById('override-modal').classList.add('hidden');
+
+document.getElementById('ov-add-btn').onclick = async ()=>{
+  const dStr = document.getElementById('ov-date').value;
+  const type = document.getElementById('ov-type').value;
+  const label = document.getElementById('ov-label').value.trim();
+  if(!dStr) return alert('Pick a date first!');
+  const updated = { ...adminOverrides, [dStr]: { type, label } };
+  await setDoc(doc(db, 'classes', classCode, 'meta', 'calendarOverrides'), { dates: updated });
+  document.getElementById('ov-date').value = '';
+  document.getElementById('ov-label').value = '';
+  alert(`${type === 'gt' ? 'GT (Group Tadi)' : 'Holiday'} set for ${dStr}.`);
+};
+
+function renderOverrideList(){
+  const list = document.getElementById('ov-list');
+  const entries = Object.entries(adminOverrides);
+  if(!entries.length){
+    list.innerHTML = `<div style="font-size:12px; opacity:.6;">No custom holidays or GT days set yet.</div>`;
+    return;
+  }
+  list.innerHTML = entries.sort((a,b)=>a[0].localeCompare(b[0])).map(([dStr, info])=>`
+    <div class="edit-item-box" style="display:flex; justify-content:space-between; align-items:center;">
+      <div><b>${dStr}</b> · ${info.type === 'gt' ? 'GT / Group Tadi' : 'Holiday'}${info.label ? ' · '+info.label : ''}</div>
+      <button class="del-btn btn-del-override" data-date="${dStr}">Remove</button>
+    </div>`).join('');
+  list.querySelectorAll('.btn-del-override').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      const dStr = e.target.dataset.date;
+      const updated = { ...adminOverrides };
+      delete updated[dStr];
+      await setDoc(doc(db, 'classes', classCode, 'meta', 'calendarOverrides'), { dates: updated });
+      renderOverrideList();
+    };
+  });
+}
 
 function renderEditorDayList(){
   const selDay = document.getElementById('tt-edit-day').value;
@@ -560,11 +643,14 @@ function loadAttendance(){
 }
 
 async function renderDayAttendanceForm(){
-  const dateStr = document.getElementById('att-date').value;
+  const dateInpEl = document.getElementById('att-date');
+  if(!dateInpEl) return;
+  const dateStr = dateInpEl.value;
   const container = document.getElementById('att-classes-container');
+  const todayStr = new Date().toISOString().split('T')[0];
   
-  if(fixedMSTDates[dateStr] || fixedHolidays[dateStr]){
-    const label = fixedMSTDates[dateStr] || fixedHolidays[dateStr];
+  if(isMstDate(dateStr) || isHolidayDate(dateStr)){
+    const label = getMstLabel(dateStr) || getHolidayLabel(dateStr);
     container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">Official Event: ${label} (No regular classes)</div>`;
     return;
   }
@@ -599,11 +685,17 @@ async function renderDayAttendanceForm(){
           if(d.id.startsWith(dateStr)) logs[d.id] = d.data().status;
         });
 
-        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''}</div>`;
+        const gtDay = isGTDate(dateStr);
+        let html = `<div style="font-size:12px; margin-bottom:8px; font-weight:700;">Classes for ${dayName} (${dateStr}): ${planType ? `<span style="color:var(--danger)">[Leave Status: ${planType.toUpperCase()}]</span>`:''} ${gtDay ? `<span style="color:var(--danger)">[GT: Group Tadi planned]</span>`:''}</div>`;
         
         daySlots.forEach((slot, idx)=>{
           const logKey = `${dateStr}_${idx}`;
-          const currentStatus = logs[logKey] || (planType === 'leave' ? 'Absent' : 'Present');
+          let currentStatus = logs[logKey];
+          if(!currentStatus){
+            if(dateStr === todayStr) currentStatus = 'Absent'; // must explicitly confirm today's classes
+            else if(planType === 'leave' || gtDay) currentStatus = 'Absent';
+            else currentStatus = 'Present';
+          }
           const isChecked = currentStatus === 'Present';
           
           html += `
@@ -639,8 +731,10 @@ async function renderDayAttendanceForm(){
 
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
+  if(!statsContainer) return;
   const startDate = new Date('2026-08-05');
   const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
   
   const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ttSnap, async (tSnap)=>{
@@ -663,10 +757,11 @@ async function renderAttendanceStats(){
         curr = new Date(startDate);
         while(curr <= today){
           const dStr = curr.toISOString().split('T')[0];
-          if(!fixedMSTDates[dStr] && !fixedHolidays[dStr]){
+          if(!isMstDate(dStr) && !isHolidayDate(dStr)){
             const dName = dayNames[curr.getDay()];
             const slots = tData[dName] || [];
             const plan = plans[dStr];
+            const gtDay = isGTDate(dStr);
             
             slots.forEach((slot, idx)=>{
               const subj = slot.subject;
@@ -675,7 +770,8 @@ async function renderAttendanceStats(){
               const logKey = `${dStr}_${idx}`;
               let stat = logs[logKey];
               if(!stat){
-                if(plan === 'leave') stat = 'Absent';
+                if(dStr === todayStr) stat = 'Absent'; // must explicitly confirm today's classes
+                else if(plan === 'leave' || gtDay) stat = 'Absent';
                 else stat = 'Present';
               }
               if(stat === 'Present'){
@@ -729,10 +825,12 @@ function loadCalendar(){
       <p style="font-size:11px; opacity:.8; margin-bottom:8px;">
         <span style="background:#FFD9D9; color:#8C2F2F; padding:2px 6px; border:1px solid #E88A8A; border-radius:4px;">Red = MST Exams</span> 
         <span style="background:#FFF3C4; color:#6B5A16; padding:2px 6px; border:1px solid #E3C55C; border-radius:4px;">Yellow = College Holidays</span>
+        <span style="background:#FFE1C4; color:#7A4A16; padding:2px 6px; border:1px solid #E3A55C; border-radius:4px;">Orange = GT (Group Tadi)</span>
         <span style="background:#D3E6FB; color:#1E4F82; padding:2px 6px; border:1px solid #8FB8E8; border-radius:4px;">Blue = Planned Leave</span>
         <span style="background:#D7F5DE; color:#1D5C36; padding:2px 6px; border:1px solid #7FCB98; border-radius:4px;">Green = Attended</span>
       </p>
-      <p style="font-size:10.5px; opacity:.65; margin-bottom:10px;">Tap a regular day to cycle: default (to-be-attending) → Leave → Attended → default.</p>
+      <p style="font-size:10.5px; opacity:.65; margin-bottom:10px;">Tap a regular (working) day to cycle: default (to-be-attending) → Leave → Attended → default. MST, Holiday, and GT days are locked.</p>
+      ${profile.isAdmin ? '<button class="add-btn" id="cal-override-btn" style="width:100%; margin-bottom:10px; background:var(--primary); color:#fff;">🛠 Manage Holidays / GT Days (CR/Admin)</button>' : ''}
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <button class="icon-btn" id="cal-prev-btn">⟨</button>
         <b id="cal-month-title" style="font-size:14px;">September 2026</b>
@@ -747,6 +845,9 @@ function loadCalendar(){
   document.getElementById('cal-next-btn').onclick = () => {
     if(currentCalMonth < 12) { currentCalMonth++; renderCalendarGrid(); }
   };
+  if(profile.isAdmin && document.getElementById('cal-override-btn')){
+    document.getElementById('cal-override-btn').onclick = openOverrideModal;
+  }
   
   renderCalendarGrid();
   renderSemesterAttendanceBar();
@@ -754,6 +855,7 @@ function loadCalendar(){
 
 async function renderSemesterAttendanceBar(){
   const container = document.getElementById('sem-att-bar-container');
+  if(!container) return;
   const startDate = new Date('2026-08-05');
   const semesterEnd = new Date('2026-11-27'); // practicals start after this, excluded
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -765,18 +867,19 @@ async function renderSemesterAttendanceBar(){
 
     if(!container) return;
 
-    let teachingDays = 0, leaveDays = 0, attendedConfirmed = 0;
+    let teachingDays = 0, leaveDays = 0, attendedConfirmed = 0, gtDays = 0;
     let curr = new Date(startDate);
     while(curr <= semesterEnd){
       const dStr = curr.toISOString().split('T')[0];
       const dName = dayNames[curr.getDay()];
       const isWeekend = (dName === 'Sun' || dName === 'Sat');
 
-      if(!isWeekend && !fixedMSTDates[dStr] && !fixedHolidays[dStr]){
+      if(!isWeekend && !isMstDate(dStr) && !isHolidayDate(dStr)){
         teachingDays++;
         const plan = plans[dStr];
-        if(plan === 'leave') leaveDays++;
-        if(plan === 'attended') attendedConfirmed++;
+        if(isGTDate(dStr)) gtDays++;
+        else if(plan === 'leave') leaveDays++;
+        else if(plan === 'attended') attendedConfirmed++;
       }
       curr.setDate(curr.getDate() + 1);
     }
@@ -786,7 +889,7 @@ async function renderSemesterAttendanceBar(){
       return;
     }
 
-    const attendedDays = teachingDays - leaveDays;
+    const attendedDays = teachingDays - leaveDays - gtDays;
     const pct = Math.round((attendedDays / teachingDays) * 100);
     const badge = getBadgeClass(pct);
     container.innerHTML = `
@@ -795,7 +898,7 @@ async function renderSemesterAttendanceBar(){
         <span>${attendedDays} / ${teachingDays} (${pct}%)</span>
       </div>
       <div class="prog-container prog-lg"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
-      <div style="font-size:11px; opacity:.75; margin-top:4px;">${leaveDays} leave day${leaveDays===1?'':'s'} planned${attendedConfirmed?` · ${attendedConfirmed} day${attendedConfirmed===1?'':'s'} confirmed attended`:''} · ${pct >= 75 ? '✅ Above the 75% target.' : pct >= 65 ? '⚠️ Getting close to the cutoff — watch upcoming leaves.' : '🚨 Below safe range — reduce planned leaves to recover.'}</div>`;
+      <div style="font-size:11px; opacity:.75; margin-top:4px;">${leaveDays} leave day${leaveDays===1?'':'s'} planned${gtDays?` · ${gtDays} GT (Group Tadi) day${gtDays===1?'':'s'}`:''}${attendedConfirmed?` · ${attendedConfirmed} day${attendedConfirmed===1?'':'s'} confirmed attended`:''} · ${pct >= 75 ? '✅ Above the 75% target.' : pct >= 65 ? '⚠️ Getting close to the cutoff — watch upcoming leaves.' : '🚨 Below safe range — reduce planned leaves to recover.'}</div>`;
   });
 }
 
@@ -821,19 +924,19 @@ async function renderCalendarGrid(){
       const dayOfWeek = dateObj.getDay();
       const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
       
-      const isMst = fixedMSTDates[dStr];
-      const isHol = fixedHolidays[dStr];
+      const isMst = isMstDate(dStr);
+      const isHol = isHolidayDate(dStr);
+      const isGT = isGTDate(dStr);
       const planVal = plans[dStr];
       
       let cls = '';
-      let badgeText = `${i}`;
       
       if(isMst){
         cls = 'mst-day';
-        badgeText = `${i} (MST)`;
       } else if(isHol){
         cls = 'hol-day';
-        badgeText = `${i} (Hol)`;
+      } else if(isGT){
+        cls = 'gt-day';
       } else if(isWeekend) {
         cls = 'weekend-day';
       } else if(planVal === 'leave') {
@@ -843,16 +946,16 @@ async function renderCalendarGrid(){
       }
       
       grid.innerHTML += `
-        <div class="cal-day ${cls}" data-date="${dStr}" data-fixed="${isMst || isHol ? 'yes':'no'}">
+        <div class="cal-day ${cls}" data-date="${dStr}" data-fixed="${isMst || isHol || isGT ? 'yes':'no'}">
           <b>${i}</b>
-          <span style="font-size:8.5px; opacity:.9;">${isMst ? 'MST' : (isHol ? 'Hol' : (isWeekend ? 'Off' : (planVal === 'leave' ? 'LEAVE' : (planVal === 'attended' ? 'DONE' : ''))))}</span>
+          <span style="font-size:8.5px; opacity:.9;">${isMst ? 'MST' : (isHol ? 'Hol' : (isGT ? 'GT' : (isWeekend ? 'Off' : (planVal === 'leave' ? 'LEAVE' : (planVal === 'attended' ? 'DONE' : '')))))}</span>
         </div>`;
     }
     
     grid.querySelectorAll('.cal-day').forEach(box => {
       box.onclick = async () => {
         if(box.dataset.fixed === 'yes'){
-          alert("MST exams and official college holidays are fixed and unchangeable!");
+          alert("This day is locked by your CR/Admin (MST, holiday, or Group Tadi) and can't be changed.");
           return;
         }
         const dStr = box.dataset.date;
@@ -1083,7 +1186,7 @@ function loadChat(){
       <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Chats</button>
     </div>
     <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
-      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Recently Messaged 1:1 Threads:</div>
+      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Chat privately with:</div>
       <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
     </div>
     <div class="chat-log" id="chat-log"></div>
@@ -1091,8 +1194,24 @@ function loadChat(){
   
   const renderLog = () => {
     const privBar = document.getElementById('private-recent-bar');
-    if(activeChatTarget !== 'ALL') privBar.classList.remove('hidden');
+    const btnAll = document.getElementById('btn-chat-all');
+    const btnPriv = document.getElementById('btn-chat-priv');
+    const isPrivate = activeChatTarget !== 'ALL';
+    if(isPrivate) privBar.classList.remove('hidden');
     else privBar.classList.add('hidden');
+
+    btnAll.style.background = isPrivate ? '#fff' : 'var(--primary)';
+    btnAll.style.color = isPrivate ? '' : '#fff';
+    btnPriv.style.background = isPrivate ? 'var(--primary)' : '#fff';
+    btnPriv.style.color = isPrivate ? '#fff' : '';
+
+    const log = document.getElementById('chat-log'); if(!log) return;
+
+    if(activeChatTarget === 'NONE'){
+      log.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:20px 10px;">Pick a member below to start (or continue) a private 1:1 chat.</div>`;
+      renderRecentBar();
+      return;
+    }
 
     const qCol = activeChatTarget === 'ALL' 
       ? query(collection(db,'classes',classCode,'chat'), orderBy('ts','asc'), limit(200))
@@ -1129,35 +1248,43 @@ function loadChat(){
       }
     });
 
-    // Render recently texted bar
+    renderRecentBar();
+  };
+
+  const renderRecentBar = () => {
     const recentList = document.getElementById('recent-threads-list');
-    if(recentList){
-      onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
-        recentList.innerHTML = '';
-        memSnap.forEach(d => {
-          if(d.id !== user.uid){
-            const mem = d.data();
-            recentList.innerHTML += `<button class="add-btn" data-uid="${d.id}" style="padding:4px 8px; font-size:11px; background:${activeChatTarget === d.id ? 'var(--primary); color:#fff;' : '#fff'};">${mem.name}</button>`;
-          }
-        });
-        recentList.querySelectorAll('button').forEach(btn => {
-          btn.onclick = () => {
-            activeChatTarget = btn.dataset.uid;
-            renderLog();
-          };
-        });
+    if(!recentList) return;
+    onSnapshot(collection(db,'classes',classCode,'members'), (memSnap)=>{
+      recentList.innerHTML = '';
+      memSnap.forEach(d => {
+        if(d.id !== user.uid){
+          const mem = d.data();
+          const isActive = activeChatTarget === d.id;
+          recentList.innerHTML += `<button class="add-btn" data-uid="${d.id}" style="padding:4px 8px; font-size:11px; background:${isActive ? 'var(--primary)' : '#fff'}; color:${isActive ? '#fff' : ''};">${mem.name}</button>`;
+        }
       });
-    }
+      recentList.querySelectorAll('button').forEach(btn => {
+        btn.onclick = () => {
+          activeChatTarget = btn.dataset.uid;
+          lastPrivateTarget = btn.dataset.uid;
+          renderLog();
+        };
+      });
+    });
   };
 
   document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
   document.getElementById('btn-chat-priv').onclick = ()=>{
-    const targetUid = prompt("Enter Member User ID / Name or pick from the recent bar below:");
-    if(targetUid) { activeChatTarget = targetUid; renderLog(); }
+    activeChatTarget = lastPrivateTarget || 'NONE';
+    renderLog();
   };
 
   const sendMsg = async () => {
     const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
+    if(activeChatTarget === 'NONE'){
+      alert('Pick a member below first to start a private chat.');
+      return;
+    }
     if(activeChatTarget === 'ALL'){
       await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', ts: serverTimestamp() });
     } else {
