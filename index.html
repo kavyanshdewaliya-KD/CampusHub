@@ -243,7 +243,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, deleteField, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, updateDoc, deleteDoc, deleteField, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
@@ -289,6 +289,8 @@ let user = null;
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
 let lastPrivateTarget = null;
+let chatSubView = 'chat'; // 'chat' | 'polls'
+let pollVoteUnsubs = {}; // pollId -> unsubscribe fn, so we don't stack listeners on re-render
 let currentTimetableData = {};
 let currentCalMonth = 9; // September 2026 default
 let adminOverrides = {}; // admin-set Holiday / GT (Group Tadi) days: { 'YYYY-MM-DD': {type:'holiday'|'gt', label:''} }
@@ -779,7 +781,7 @@ function loadAttendance(){
     <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
       <label style="font-size:12px; font-weight:700;">Select Date:</label>
-      <input type="date" id="att-date" min="2026-08-05" max="2026-12-15" value="${todayStr}">
+      <input type="date" id="att-date" min="2026-08-05" max="${todayStr}" value="${todayStr}">
       <div id="att-classes-container" style="margin-top:12px;"></div>
     </div>
     <div class="card" style="max-width:100%;">
@@ -850,9 +852,7 @@ async function renderDayAttendanceForm(){
           const logKey = `${dateStr}_${idx}`;
           let currentStatus = logs[logKey];
           if(!currentStatus){
-            if(dateStr === todayStr) currentStatus = 'Absent'; // must explicitly confirm today's classes
-            else if(planType === 'leave') currentStatus = 'Absent';
-            else currentStatus = 'Present';
+            currentStatus = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
           }
           const isChecked = currentStatus === 'Present';
           
@@ -1005,9 +1005,7 @@ async function renderAttendanceStats(){
               const logKey = `${dStr}_${idx}`;
               let stat = logs[logKey];
               if(!stat){
-                if(dStr === todayStr) stat = 'Absent'; // must explicitly confirm today's classes
-                else if(plan === 'leave') stat = 'Absent';
-                else stat = 'Present';
+                stat = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
               }
               if(stat === 'Present'){
                 attended[subj] = (attended[subj] || 0) + 1;
@@ -1420,29 +1418,45 @@ function loadChat(){
   const el = document.getElementById('tab-chat');
   el.innerHTML = `
     <div class="section-title"><h2>💬 Chat</h2></div>
-    <div style="display:flex; gap:6px; margin-bottom:10px;" id="chat-tabs-bar">
+    <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;" id="chat-tabs-bar">
       <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class Chat</button>
       <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Chats</button>
+      <button class="add-btn" id="btn-chat-polls" style="background:#fff;">📊 Polls</button>
     </div>
-    <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
-      <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Chat privately with:</div>
-      <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
+    <div id="chat-classic-view">
+      <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
+        <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Chat privately with:</div>
+        <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
+      </div>
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>
     </div>
-    <div class="chat-log" id="chat-log"></div>
-    <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>`;
-  
-  const renderLog = () => {
-    const privBar = document.getElementById('private-recent-bar');
+    <div id="polls-view" class="hidden"></div>`;
+
+  const setTabStyles = () => {
     const btnAll = document.getElementById('btn-chat-all');
     const btnPriv = document.getElementById('btn-chat-priv');
+    const btnPolls = document.getElementById('btn-chat-polls');
+    const classicView = document.getElementById('chat-classic-view');
+    const pollsView = document.getElementById('polls-view');
+    [btnAll, btnPriv, btnPolls].forEach(b => { b.style.background = '#fff'; b.style.color = ''; });
+    if(chatSubView === 'polls'){
+      btnPolls.style.background = 'var(--primary)'; btnPolls.style.color = '#fff';
+      classicView.classList.add('hidden'); pollsView.classList.remove('hidden');
+    } else {
+      classicView.classList.remove('hidden'); pollsView.classList.add('hidden');
+      if(activeChatTarget === 'ALL'){ btnAll.style.background = 'var(--primary)'; btnAll.style.color = '#fff'; }
+      else { btnPriv.style.background = 'var(--primary)'; btnPriv.style.color = '#fff'; }
+    }
+  };
+  
+  const renderLog = () => {
+    chatSubView = 'chat';
+    setTabStyles();
+    const privBar = document.getElementById('private-recent-bar');
     const isPrivate = activeChatTarget !== 'ALL';
     if(isPrivate) privBar.classList.remove('hidden');
     else privBar.classList.add('hidden');
-
-    btnAll.style.background = isPrivate ? '#fff' : 'var(--primary)';
-    btnAll.style.color = isPrivate ? '' : '#fff';
-    btnPriv.style.background = isPrivate ? 'var(--primary)' : '#fff';
-    btnPriv.style.color = isPrivate ? '#fff' : '';
 
     const log = document.getElementById('chat-log'); if(!log) return;
 
@@ -1538,6 +1552,11 @@ function loadChat(){
     activeChatTarget = lastPrivateTarget || 'NONE';
     renderLog();
   };
+  document.getElementById('btn-chat-polls').onclick = ()=>{
+    chatSubView = 'polls';
+    setTabStyles();
+    renderPolls();
+  };
 
   const sendMsg = async () => {
     const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
@@ -1557,6 +1576,227 @@ function loadChat(){
   document.getElementById('chat-send').onclick = sendMsg;
   document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
   renderLog();
+}
+
+const pollThemes = [
+  { label: 'Purple Pop 💜', style: 'background:#ede9fe; border-color:#a78bfa; color:#4c1d95;', fill: '#a78bfa' },
+  { label: 'Sunny Yellow 🌞', style: 'background:#fef9c3; border-color:#facc15; color:#713f12;', fill: '#facc15' },
+  { label: 'Ocean Teal 🌊', style: 'background:#ccfbf1; border-color:#2dd4bf; color:#134e4a;', fill: '#2dd4bf' },
+  { label: 'Hot Pink 🌸', style: 'background:#fce7f3; border-color:#f472b6; color:#831843;', fill: '#f472b6' },
+  { label: 'Fresh Mint 🌿', style: 'background:#d1fae5; border-color:#34d399; color:#065f46;', fill: '#34d399' },
+  { label: 'Fire Orange 🔥', style: 'background:#ffedd5; border-color:#fb923c; color:#9a3412;', fill: '#fb923c' },
+];
+
+function isPollRevealed(p){
+  return !!p.revealedManually || (p.revealAt && Date.now() >= p.revealAt.toDate().getTime());
+}
+
+function renderPolls(){
+  const pollsView = document.getElementById('polls-view');
+  if(!pollsView) return;
+
+  let builderHtml = '';
+  if(profile.isAdmin){
+    builderHtml = `
+      <div class="card" style="max-width:100%; border-color:var(--primary); background:var(--chip);">
+        <h3 style="margin-top:0; color:var(--primary);">👑 Create a Poll</h3>
+        <textarea id="poll-question" placeholder="Ask your class something…" rows="2"></textarea>
+        <label style="font-size:12px; font-weight:700; margin-top:6px; display:block;">Options:</label>
+        <div id="poll-options-list">
+          <div class="row" style="flex-direction:row; gap:6px; margin-bottom:6px;">
+            <input class="poll-opt-input" placeholder="Option 1" style="flex:1;">
+          </div>
+          <div class="row" style="flex-direction:row; gap:6px; margin-bottom:6px;">
+            <input class="poll-opt-input" placeholder="Option 2" style="flex:1;">
+          </div>
+        </div>
+        <button class="add-btn" id="poll-add-option" style="margin-bottom:10px; font-size:12px;">+ Add Option</button>
+        <label style="font-size:12px; font-weight:700;">Poll Vibe / Color Theme:</label>
+        <select id="poll-theme" style="margin-bottom:10px;">
+          ${pollThemes.map((t,i)=>`<option value="${i}">${t.label}</option>`).join('')}
+        </select>
+        <label style="font-size:12px; font-weight:700;">Results Reveal:</label>
+        <select id="poll-reveal-mode" style="margin-bottom:6px;">
+          <option value="manual">🔒 I'll reveal results manually whenever I want</option>
+          <option value="scheduled">⏰ Auto-reveal at a specific date & time</option>
+        </select>
+        <input type="datetime-local" id="poll-reveal-at" class="hidden" style="margin-bottom:10px;">
+        <button class="add-btn" id="poll-launch-btn" style="width:100%; background:var(--primary); color:#fff; font-weight:700;">🚀 Launch Poll</button>
+      </div>`;
+  }
+
+  pollsView.innerHTML = `${builderHtml}<div id="polls-list" style="margin-top:12px;"></div>`;
+
+  if(profile.isAdmin){
+    const optList = document.getElementById('poll-options-list');
+    document.getElementById('poll-add-option').onclick = () => {
+      const count = optList.querySelectorAll('.poll-opt-input').length;
+      if(count >= 6){ alert('Max 6 options per poll — keep it snappy! 😄'); return; }
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.cssText = 'flex-direction:row; gap:6px; margin-bottom:6px;';
+      row.innerHTML = `<input class="poll-opt-input" placeholder="Option ${count+1}" style="flex:1;"><button class="del-btn poll-remove-opt" style="padding:4px 8px;">✕</button>`;
+      optList.appendChild(row);
+      row.querySelector('.poll-remove-opt').onclick = () => row.remove();
+    };
+
+    document.getElementById('poll-reveal-mode').onchange = (e) => {
+      document.getElementById('poll-reveal-at').classList.toggle('hidden', e.target.value !== 'scheduled');
+    };
+
+    document.getElementById('poll-launch-btn').onclick = async () => {
+      const question = document.getElementById('poll-question').value.trim();
+      const options = Array.from(document.querySelectorAll('.poll-opt-input')).map(i=>i.value.trim()).filter(Boolean);
+      if(!question) return alert('Type a question first!');
+      if(options.length < 2) return alert('Add at least 2 options!');
+      const themeIdx = document.getElementById('poll-theme').value;
+      const revealMode = document.getElementById('poll-reveal-mode').value;
+      const revealAtVal = document.getElementById('poll-reveal-at').value;
+      if(revealMode === 'scheduled' && !revealAtVal) return alert('Pick a reveal date & time, or switch to manual reveal.');
+
+      await addDoc(collection(db,'classes',classCode,'polls'), {
+        question, options,
+        cardStyle: pollThemes[themeIdx].style,
+        fillColor: pollThemes[themeIdx].fill,
+        createdBy: user.displayName, createdByUid: user.uid,
+        ts: serverTimestamp(),
+        revealAt: revealMode === 'scheduled' ? Timestamp.fromDate(new Date(revealAtVal)) : null,
+        revealedManually: false
+      });
+      pushNotifyEveryone('📊 New Poll!', `${question} — go cast your vote 👀`);
+      renderPolls();
+    };
+  }
+
+  Object.values(pollVoteUnsubs).forEach(fn => fn());
+  pollVoteUnsubs = {};
+
+  const q = query(collection(db,'classes',classCode,'polls'), orderBy('ts','desc'), limit(30));
+  onSnapshot(q, (snap)=>{
+    const list = document.getElementById('polls-list');
+    if(!list) return;
+    if(snap.empty){ list.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:16px;">No polls yet${profile.isAdmin ? ' — create one above!' : '.'}</div>`; return; }
+
+    const seenIds = new Set();
+    list.innerHTML = '';
+    snap.forEach(d=>{
+      const p = d.data(); const pollId = d.id;
+      seenIds.add(pollId);
+      const revealed = isPollRevealed(p);
+      const fill = p.fillColor || '#a78bfa';
+      const revealNote = revealed
+        ? `<div style="font-size:11px; font-weight:700; margin-top:6px;">🔓 Results are live!</div>`
+        : (p.revealAt
+            ? `<div style="font-size:11px; opacity:.75; margin-top:6px;">⏰ Results reveal on ${p.revealAt.toDate().toLocaleString()}</div>`
+            : `<div style="font-size:11px; opacity:.75; margin-top:6px;">🔒 Results will be revealed by your CR</div>`);
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.cssText = `max-width:100%; ${p.cardStyle || ''}`;
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <b style="font-size:15px;">📊 ${p.question}</b>
+          ${profile.isAdmin ? `<button class="del-btn poll-del-btn" data-id="${pollId}" style="font-size:10px; padding:3px 7px; flex-shrink:0;">🗑️</button>` : ''}
+        </div>
+        <div style="font-size:10px; opacity:.7; margin-bottom:6px;">by ${p.createdBy || 'CR'}</div>
+        <div class="poll-options" id="poll-opts-${pollId}"></div>
+        ${revealNote}
+        <div id="poll-total-${pollId}" style="font-size:11px; opacity:.7; margin-top:4px;"></div>
+        ${profile.isAdmin ? `
+          <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+            <button class="add-btn poll-tally-toggle" data-id="${pollId}" style="font-size:11px; padding:4px 8px;">👑 Live Tally</button>
+            ${!revealed ? `<button class="add-btn poll-reveal-btn" data-id="${pollId}" style="font-size:11px; padding:4px 8px; background:var(--primary); color:#fff;">📣 Reveal Now</button>` : ''}
+          </div>
+          <div id="poll-admin-tally-${pollId}" class="hidden" style="margin-top:8px;"></div>
+        ` : ''}`;
+      list.appendChild(card);
+
+      // Live vote listener for this specific poll
+      const votesQ = collection(db,'classes',classCode,'polls',pollId,'votes');
+      pollVoteUnsubs[pollId] = onSnapshot(votesQ, (voteSnap)=>{
+        const counts = new Array(p.options.length).fill(0);
+        let myVote = -1;
+        voteSnap.forEach(vd=>{
+          const v = vd.data();
+          if(typeof v.optionIdx === 'number' && v.optionIdx < counts.length) counts[v.optionIdx]++;
+          if(vd.id === user.uid) myVote = v.optionIdx;
+        });
+        const total = counts.reduce((a,b)=>a+b,0);
+
+        const optsEl = document.getElementById(`poll-opts-${pollId}`);
+        if(optsEl){
+          if(revealed){
+            const maxCount = Math.max(...counts);
+            optsEl.innerHTML = p.options.map((opt,i)=>{
+              const pct = total ? Math.round((counts[i]/total)*100) : 0;
+              const isWinner = counts[i] === maxCount && total > 0;
+              return `<div style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:${myVote===i?'800':'600'};">
+                  <span>${isWinner ? '🏆 ' : ''}${opt} ${myVote===i ? '✓' : ''}</span>
+                  <span>${counts[i]} (${pct}%)</span>
+                </div>
+                <div class="prog-container"><div class="prog-fill" style="width:${pct}%; background:${fill};"></div></div>
+              </div>`;
+            }).join('');
+          } else {
+            optsEl.innerHTML = p.options.map((opt,i)=>`
+              <button class="add-btn poll-vote-btn" data-poll="${pollId}" data-opt="${i}" style="display:block; width:100%; text-align:left; margin-bottom:6px; font-size:13px; ${myVote===i ? 'background:var(--primary); color:#fff; font-weight:700;' : 'background:#fff;'}">
+                ${myVote===i ? '✓ ' : ''}${opt}
+              </button>`).join('');
+          }
+        }
+        const totalEl = document.getElementById(`poll-total-${pollId}`);
+        if(totalEl) totalEl.textContent = `${total} response${total===1?'':'s'} so far`;
+
+        const tallyEl = document.getElementById(`poll-admin-tally-${pollId}`);
+        if(tallyEl){
+          tallyEl.innerHTML = p.options.map((opt,i)=>{
+            const pct = total ? Math.round((counts[i]/total)*100) : 0;
+            return `<div style="font-size:11px; margin-bottom:4px;">
+              <div style="display:flex; justify-content:space-between;"><span>${opt}</span><span>${counts[i]} (${pct}%)</span></div>
+              <div class="prog-container" style="height:8px;"><div class="prog-fill" style="width:${pct}%; background:${fill};"></div></div>
+            </div>`;
+          }).join('');
+        }
+
+        if(!revealed){
+          optsEl.querySelectorAll('.poll-vote-btn').forEach(btn=>{
+            btn.onclick = async () => {
+              await setDoc(doc(db,'classes',classCode,'polls',pollId,'votes',user.uid), {
+                optionIdx: Number(btn.dataset.opt), name: user.displayName, ts: serverTimestamp()
+              });
+            };
+          });
+        }
+      });
+    });
+
+    // Clean up listeners for polls that no longer exist (deleted)
+    Object.keys(pollVoteUnsubs).forEach(pid=>{
+      if(!seenIds.has(pid)){ pollVoteUnsubs[pid](); delete pollVoteUnsubs[pid]; }
+    });
+
+    if(profile.isAdmin){
+      list.querySelectorAll('.poll-tally-toggle').forEach(btn=>{
+        btn.onclick = () => document.getElementById(`poll-admin-tally-${btn.dataset.id}`).classList.toggle('hidden');
+      });
+      list.querySelectorAll('.poll-reveal-btn').forEach(btn=>{
+        btn.onclick = async () => {
+          const pollId = btn.dataset.id;
+          const pd = snap.docs.find(d=>d.id===pollId).data();
+          await updateDoc(doc(db,'classes',classCode,'polls',pollId), { revealedManually: true });
+          pushNotifyEveryone('📊 Poll Results Are In!', `${pd.question} — see how everyone voted 🎉`);
+        };
+      });
+      list.querySelectorAll('.poll-del-btn').forEach(btn=>{
+        btn.onclick = async () => {
+          if(confirm('Delete this poll for everyone?')){
+            await deleteDoc(doc(db,'classes',classCode,'polls',btn.dataset.id));
+          }
+        };
+      });
+    }
+  });
 }
 
 function loadMembers(){
