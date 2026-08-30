@@ -14,7 +14,9 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification.title || "Campusmate Notice";
   const notificationOptions = {
     body: payload.notification.body || "New update posted for IET DAVV CSE-B",
-    icon: "/icon.png"
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: "campushub-notify"
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);

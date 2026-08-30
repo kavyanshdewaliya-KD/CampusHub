@@ -243,7 +243,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, deleteField, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
@@ -519,6 +519,12 @@ document.getElementById('notif-enable-btn').onclick = async ()=>{
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
 
     if(token){
+      const oldToken = localStorage.getItem('ch_fcm_token');
+      if(oldToken && oldToken !== token){
+        // Remove the stale token from a previous Enable Notifications click on this same device,
+        // so notifications don't get sent to it multiple times.
+        await setDoc(doc(db, 'classes', classCode, 'members', user.uid), { fcmTokens: { [oldToken]: deleteField() } }, { merge: true }).catch(()=>{});
+      }
       localStorage.setItem('ch_fcm_token', token);
       await setDoc(doc(db, 'classes', classCode, 'members', user.uid), { fcmTokens: { [token]: true } }, { merge: true });
       onMessage(messaging, (payload)=>{
