@@ -270,11 +270,18 @@ const NOTIFY_SECRET = "CampusHubsecrate.xyz";
 
 async function pushNotifyEveryone(title, body){
   try {
-    await fetch('/api/send-notification', {
+    const r = await fetch('/api/send-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, body, secret: NOTIFY_SECRET })
     });
+    const data = await r.json().catch(()=>({}));
+    if(!r.ok){
+      console.error('Notify failed:', r.status, data);
+      alert(`⚠️ Notification send failed (${r.status}): ${data.error || 'unknown error'}`);
+    } else {
+      console.log('Notify sent:', data);
+    }
   } catch(e){ console.warn('Notify failed:', e); }
 }
 
