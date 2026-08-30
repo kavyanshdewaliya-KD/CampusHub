@@ -662,7 +662,11 @@ document.getElementById('ov-add-btn').onclick = async ()=>{
   await setDoc(doc(db, 'classes', classCode, 'meta', 'calendarOverrides'), { dates: updated });
   document.getElementById('ov-date').value = '';
   document.getElementById('ov-label').value = '';
-  pushNotifyEveryone('📅 Calendar Update', `${type === 'gt' ? 'GT (Group Tadi) planned' : (label || 'Holiday declared')} on ${dStr}`);
+  if(type === 'gt'){
+    pushNotifyEveryone('🌀 GT Alert!', `Group Tadi declared for ${dStr} — mass bunk mode ON 😎`);
+  } else {
+    pushNotifyEveryone('🎉 Holiday!', `No classes on ${dStr}${label ? ' — ' + label : ''}. Sleep in 🥳`);
+  }
   alert(`${type === 'gt' ? 'GT (Group Tadi)' : 'Holiday'} set for ${dStr}.`);
 };
 
@@ -889,6 +893,8 @@ async function renderDayAttendanceForm(){
               const cancelled = Array.from(new Set([...(ov.cancelled||[]), sIdx]));
               const updated = { ...classOverrides, [dStr]: { ...ov, cancelled } };
               await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+              const cancelledSubj = (baseSlots[sIdx] && baseSlots[sIdx].subject) || 'Class';
+              pushNotifyEveryone('🚫 Class Cancelled', `${cancelledSubj} on ${dStr} is cancelled — enjoy the free period 🎉`);
             };
           });
           container.querySelectorAll('.btn-restore-all').forEach(btn=>{
@@ -942,6 +948,7 @@ function wireExtraClassForm(dateStr){
     const extra = [...(ov.extra||[]), { subject, time, teacher, room }];
     const updated = { ...classOverrides, [dateStr]: { ...ov, extra } };
     await setDoc(doc(db, 'classes', classCode, 'meta', 'classOverrides'), { perDate: updated });
+    pushNotifyEveryone('➕ Extra Class Added', `${subject}${time ? ' (' + time + ')' : ''} just got added on ${dateStr}. Don't skip it 👀`);
   };
 }
 
@@ -1239,7 +1246,7 @@ function loadAssignments(){
           const cardStyle = document.getElementById('asg-color').value;
           if(!title) return alert('Enter a title!');
           await addDoc(collection(db,'classes',classCode,'assignments'), { title, emoji, link, desc, cardStyle, byName: user.displayName, isAdminPost: true, ts: serverTimestamp() });
-          pushNotifyEveryone('📚 New Task Posted', title);
+          pushNotifyEveryone('📚 New Task Dropped', `${title} — get on it before the deadline sneaks up ⏰`);
         };
       }
       el.querySelectorAll('.btn-del-asg').forEach(btn=>{
@@ -1337,6 +1344,8 @@ function loadResources(){
           const subjectTheme = document.getElementById('res-subj-color').value;
           if(!title) return alert('Enter a resource title!');
           await addDoc(collection(db,'classes',classCode,'resources'), { title, type, subject: currentSubj, desc, subjectTheme, link, ts: serverTimestamp() });
+          document.getElementById('res-title').value = '';
+          pushNotifyEveryone('📂 New Resource Dropped', `${title} just landed in ${currentSubj} — go check it out 🔥`);
         };
       }
 
@@ -1380,7 +1389,7 @@ function loadAnnouncements(){
           const val = document.getElementById('ann-in').value.trim(); if(!val) return;
           await addDoc(collection(db,'classes',classCode,'announcements'), { text: val, byName: user.displayName, byUid: user.uid, ts: serverTimestamp() });
           document.getElementById('ann-in').value='';
-          pushNotifyEveryone('📢 New Announcement', val.slice(0,120));
+          pushNotifyEveryone('📢 Fresh Announcement', val.slice(0,120));
         };
       }
       el.querySelectorAll('.btn-del-ann').forEach(btn=>{
@@ -1440,7 +1449,7 @@ function loadChat(){
       snap.forEach(d=>{
         const m = d.data();
         const hue = getUserHue(m.uid || m.name || 'x');
-        const label = (m.role === 'CR / Admin') ? m.role : (m.vibeTag || 'Student');
+        const label = `${m.role === 'CR / Admin' ? '👑 ' : ''}${m.vibeTag || 'Student'}`;
         const bg = m.color ? m.color.bg : 'var(--chip)';
         const borderCol = m.color ? m.color.text : `hsl(${hue},65%,45%)`;
         const nameCol = m.color ? m.color.text : `hsl(${hue},70%,42%)`;
