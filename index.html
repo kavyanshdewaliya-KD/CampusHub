@@ -42,7 +42,7 @@
   h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif; font-weight:700; margin-top:8px; margin-bottom:6px; color:var(--ink);}
   button{font-family:'Poppins',sans-serif; cursor:pointer;} .hidden{display:none !important;}
 
-  #login-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
+  #login-screen, #pending-screen, #blocked-screen{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;}
   .card{background:var(--panel); border:3px solid var(--border); border-radius:20px; padding:22px; max-width:420px; width:100%; box-shadow:6px 6px 0 var(--border); margin-bottom:14px; color:var(--ink);}
   .btn-primary{width:100%; background:var(--primary); color:var(--primary-ink); border:3px solid var(--border); border-radius:12px; padding:13px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border);}
   input,select,textarea{width:100%; padding:10px 12px; border:3px solid var(--border); border-radius:12px; font-size:14px; margin-bottom:10px; font-family:inherit; background:#ffffff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
@@ -118,17 +118,32 @@
   </div>
 </div>
 
+<div id="pending-screen" class="hidden">
+  <div class="card" style="text-align:center;">
+    <h1 style="margin-top:0;">⏳ Almost there!</h1>
+    <p style="font-size:13px; opacity:.85;">Your request to join <b>CSE-B CampusHub</b> is waiting for your CR/Admin to approve it. This usually doesn't take long — check back soon!</p>
+    <button class="add-btn" id="pending-signout-btn" style="margin-top:10px;">🚪 Sign Out</button>
+  </div>
+</div>
+
+<div id="blocked-screen" class="hidden">
+  <div class="card" style="text-align:center; border-color:var(--danger);">
+    <h1 style="margin-top:0;">🚫 Access Denied</h1>
+    <p style="font-size:13px; opacity:.85;">Your access to this class portal has been revoked or was never approved. If you think this is a mistake, contact your CR.</p>
+    <button class="add-btn" id="blocked-signout-btn" style="margin-top:10px;">🚪 Sign Out</button>
+  </div>
+</div>
+
 <div id="app-screen" class="hidden">
   <header class="topbar">
     <div>
-      <b id="hdr-name" style="font-size:13px;"></b>
+      <b id="hdr-name" style="font-size:13px; cursor:pointer; text-decoration:underline dotted;" title="Tap to view your details"></b>
       <div style="font-size:10px; opacity:.7;" id="hdr-sub"></div>
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
       <button class="icon-btn" id="members-top-btn" title="Members">👥</button>
       <button class="icon-btn" id="dark-toggle-btn" title="Toggle Dark Mode">🌙</button>
       <button class="icon-btn" id="settings-btn" title="Settings & Theme">⚙️</button>
-      <button class="icon-btn" id="logout-btn" title="Logout" style="color:var(--danger);">🚪</button>
     </div>
   </header>
   
@@ -172,6 +187,13 @@
     </select>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">✏️ Edit Display Name:</label>
+      <p id="name-change-status" style="font-size:11px; opacity:.7; margin:4px 0 8px;"></p>
+      <input id="display-name-input" maxlength="30" placeholder="Your name">
+      <button class="btn-primary" id="name-save-btn" style="padding:10px; font-size:13px;">Save Name</button>
+    </div>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">✨ Your Vibe Tag:</label>
       <input id="vibe-tag-input" maxlength="24" placeholder="e.g. 🎮 grinding DSA">
       <button class="btn-primary" id="vibe-save-btn" style="padding:10px; font-size:13px;">Save Vibe Tag</button>
@@ -188,10 +210,20 @@
       <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
     </div>
 
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+    <div id="admin-key-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
       <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
       <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
+    </div>
+
+    <div id="access-control-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🛡️ Member Access Control</label>
+      <p style="font-size:10px; opacity:.65; margin:4px 0 8px;">Approve new sign-ins or block anyone from the class.</p>
+      <div id="access-control-list" style="max-height:260px; overflow-y:auto;"></div>
+    </div>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
     </div>
   </div>
 </div>
@@ -243,7 +275,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, updateDoc, deleteDoc, deleteField, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, deleteField, collection, addDoc, getDocs, onSnapshot, query, orderBy, limit, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getDatabase, ref, onValue, onDisconnect, set as rtdbSet, serverTimestamp as rtdbServerTs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
@@ -297,6 +329,9 @@ let adminOverrides = {}; // admin-set Holiday / GT (Group Tadi) days: { 'YYYY-MM
 let classOverrides = {}; // admin-set per-date class cancellations/extras: { 'YYYY-MM-DD': {cancelled:[idx,...], extra:[{subject,time,teacher,room},...]} }
 
 let profile = JSON.parse(localStorage.getItem('ch_profile') || '{"role":"Student","isAdmin":false}');
+if(profile.customName === undefined) profile.customName = '';
+if(profile.nameChangeCount === undefined) profile.nameChangeCount = 0;
+function getDisplayName(){ return (profile.customName && profile.customName.trim()) || (user && user.displayName) || 'Student'; }
 let activeTheme = localStorage.getItem('ch_theme') || '1';
 document.body.setAttribute('data-theme', activeTheme);
 
@@ -431,22 +466,78 @@ function getBadgeClass(pct){
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
-onAuthStateChanged(auth, (u)=>{
+function showOnlyScreen(id){
+  ['login-screen','pending-screen','blocked-screen','app-screen'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+let selfAccessUnsub = null;
+onAuthStateChanged(auth, async (u)=>{
   user = u;
-  if(u){
-    syncMemberDoc();
-    boot();
+  if(selfAccessUnsub){ selfAccessUnsub(); selfAccessUnsub = null; }
+  if(!u){ showOnlyScreen('login-screen'); return; }
+
+  const memberRef = doc(db, 'classes', classCode, 'members', u.uid);
+  const existing = await getDoc(memberRef).catch(()=>null);
+
+  if(!existing || !existing.exists()){
+    // Brand new sign-in — create their profile as pending, don't let them into the app yet.
+    await setDoc(memberRef, {
+      name: u.displayName, email: u.email, photoURL: u.photoURL,
+      role: 'Student', isAdmin: false, vibeTag: '', chatColor: null,
+      nameChangeCount: 0,
+      accessStatus: 'pending', updatedAt: serverTimestamp()
+    }, { merge: true });
+    showOnlyScreen('pending-screen');
   } else {
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('app-screen').classList.add('hidden');
+    const data = existing.data();
+    const status = data.accessStatus || 'approved'; // legacy members = grandfathered in as approved
+    profile.customName = data.name || u.displayName;
+    profile.nameChangeCount = data.nameChangeCount || 0;
+    localStorage.setItem('ch_profile', JSON.stringify(profile));
+    if(status === 'blocked'){
+      showOnlyScreen('blocked-screen');
+    } else if(status === 'pending'){
+      showOnlyScreen('pending-screen');
+    } else {
+      showOnlyScreen('app-screen');
+      syncMemberDoc();
+      boot();
+    }
   }
+
+  // Watch our own membership doc live — if an admin blocks us mid-session, kick out immediately.
+  // If someone was pending and just got approved, let them in without needing to refresh.
+  selfAccessUnsub = onSnapshot(memberRef, (snap)=>{
+    if(!snap.exists()) return;
+    const data = snap.data();
+    const status = data.accessStatus || 'approved';
+    const appVisible = !document.getElementById('app-screen').classList.contains('hidden');
+    if(status === 'blocked'){
+      showOnlyScreen('blocked-screen');
+    } else if(status === 'pending' && appVisible){
+      // Extremely rare edge case: someone was approved then reverted to pending mid-session.
+      showOnlyScreen('pending-screen');
+    } else if(status === 'approved' && !appVisible){
+      profile.customName = data.name || u.displayName;
+      profile.nameChangeCount = data.nameChangeCount || 0;
+      localStorage.setItem('ch_profile', JSON.stringify(profile));
+      showOnlyScreen('app-screen');
+      syncMemberDoc();
+      boot();
+    }
+  });
 });
+
+document.getElementById('pending-signout-btn').onclick = ()=> signOut(auth);
+document.getElementById('blocked-signout-btn').onclick = ()=> signOut(auth);
 
 async function syncMemberDoc(){
   if(!user) return;
   try {
     await setDoc(doc(db, 'classes', classCode, 'members', user.uid), {
-      name: user.displayName, email: user.email, role: profile.role,
+      name: getDisplayName(), email: user.email, role: profile.role,
       isAdmin: profile.isAdmin, photoURL: user.photoURL, vibeTag: profile.vibeTag || '',
       chatColor: profile.chatColor || null,
       updatedAt: serverTimestamp()
@@ -454,14 +545,119 @@ async function syncMemberDoc(){
   } catch(e){ console.warn(e); }
 }
 
-document.getElementById('settings-btn').onclick = ()=>{
+let accessControlUnsub = null;
+function renderAccessControlPanel(){
+  const list = document.getElementById('access-control-list');
+  if(!list) return;
+  if(accessControlUnsub) accessControlUnsub();
+  accessControlUnsub = onSnapshot(collection(db,'classes',classCode,'members'), (snap)=>{
+    const rows = [];
+    snap.forEach(d=>{
+      const m = d.data();
+      const status = m.accessStatus || 'approved'; // legacy members without the field are treated as approved
+      rows.push({ uid: d.id, name: m.name || 'Unknown', email: m.email || '', status });
+    });
+    // Pending requests first, then approved, then blocked — so the admin sees what needs action first.
+    const order = { pending: 0, approved: 1, blocked: 2 };
+    rows.sort((a,b)=> order[a.status] - order[b.status] || a.name.localeCompare(b.name));
+
+    if(!rows.length){ list.innerHTML = `<div style="font-size:12px; opacity:.6;">No members yet.</div>`; return; }
+
+    list.innerHTML = rows.map(r=>{
+      const badgeColor = r.status==='pending' ? '#f59e0b' : r.status==='blocked' ? 'var(--danger)' : 'var(--good)';
+      const badgeText = r.status==='pending' ? '⏳ Pending' : r.status==='blocked' ? '🚫 Blocked' : '✅ Approved';
+      return `<div style="display:flex; justify-content:space-between; align-items:center; gap:6px; padding:6px 0; border-bottom:1px solid var(--border);">
+        <div style="min-width:0;">
+          <div style="font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.name}</div>
+          <div style="font-size:10px; opacity:.65; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.email}</div>
+          <div style="font-size:10px; font-weight:700; color:${badgeColor};">${badgeText}</div>
+        </div>
+        <div style="display:flex; gap:4px; flex-shrink:0;">
+          ${r.status!=='approved' ? `<button class="add-btn acc-approve-btn" data-uid="${r.uid}" style="font-size:10px; padding:4px 6px; background:var(--good); color:#fff;">✅</button>` : ''}
+          ${r.status!=='blocked' ? `<button class="add-btn acc-block-btn" data-uid="${r.uid}" style="font-size:10px; padding:4px 6px; background:var(--danger); color:#fff;">🚫</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    list.querySelectorAll('.acc-approve-btn').forEach(btn=>{
+      btn.onclick = () => updateDoc(doc(db,'classes',classCode,'members',btn.dataset.uid), { accessStatus: 'approved' });
+    });
+    list.querySelectorAll('.acc-block-btn').forEach(btn=>{
+      btn.onclick = () => {
+        if(confirm('Block this person? They will be signed out immediately and cannot rejoin until you approve them again.')){
+          updateDoc(doc(db,'classes',classCode,'members',btn.dataset.uid), { accessStatus: 'blocked' });
+        }
+      };
+    });
+  });
+}
+
+function updateNameChangeStatusUI(){
+  const statusEl = document.getElementById('name-change-status');
+  const input = document.getElementById('display-name-input');
+  const btn = document.getElementById('name-save-btn');
+  const remaining = 3 - (profile.nameChangeCount || 0);
+  input.value = getDisplayName();
+  if(remaining <= 0){
+    statusEl.innerHTML = `⚠️ <b style="color:var(--danger);">You've used all 3 name changes allowed for your account. This can't be changed further — contact your CR/Admin if needed.</b>`;
+    input.disabled = true;
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+  } else {
+    statusEl.innerHTML = `You have <b>${remaining}</b> name change${remaining===1?'':'s'} left (out of 3, lifetime).`;
+    input.disabled = false;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+}
+
+function openSettings(){
   document.getElementById('vibe-tag-input').value = profile.vibeTag || '';
   renderChatColorSwatches();
   updateNotifStatusUI();
+  updateNameChangeStatusUI();
+  document.getElementById('access-control-section').classList.toggle('hidden', !profile.isAdmin);
+  if(profile.isAdmin) renderAccessControlPanel();
   document.getElementById('settings-modal').classList.remove('hidden');
-};
+}
+
+document.getElementById('settings-btn').onclick = openSettings;
+document.getElementById('hdr-name').onclick = openSettings;
 document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
-document.getElementById('members-top-btn').onclick = ()=> showTab('members');
+
+document.getElementById('name-save-btn').onclick = async ()=>{
+  if((profile.nameChangeCount || 0) >= 3){ alert("You've already used all 3 name changes."); return; }
+  const newName = document.getElementById('display-name-input').value.trim();
+  if(!newName){ alert('Name cannot be empty.'); return; }
+  if(newName === getDisplayName()){ alert('That\'s already your current name!'); return; }
+  if(!confirm(`Change your display name to "${newName}"? You'll have ${2 - (profile.nameChangeCount || 0)} change${(2 - (profile.nameChangeCount || 0))===1?'':'s'} left after this.`)) return;
+  profile.customName = newName;
+  profile.nameChangeCount = (profile.nameChangeCount || 0) + 1;
+  localStorage.setItem('ch_profile', JSON.stringify(profile));
+  try {
+    await updateDoc(doc(db, 'classes', classCode, 'members', user.uid), {
+      name: newName, nameChangeCount: profile.nameChangeCount, updatedAt: serverTimestamp()
+    });
+    document.getElementById('hdr-name').textContent = getDisplayName();
+    updateNameChangeStatusUI();
+    alert('Name updated! 🎉');
+  } catch(e){ alert('Error saving name: ' + e.message); }
+};
+
+// Secret trick: tap the Members icon 5 times quickly to reveal the admin key entry.
+let membersIconClicks = [];
+document.getElementById('members-top-btn').onclick = ()=>{
+  const now = Date.now();
+  membersIconClicks.push(now);
+  membersIconClicks = membersIconClicks.filter(t => now - t < 2500);
+  if(membersIconClicks.length >= 5){
+    membersIconClicks = [];
+    document.getElementById('admin-key-section').classList.remove('hidden');
+    openSettings();
+    return;
+  }
+  showTab('members');
+};
 
 document.getElementById('vibe-save-btn').onclick = ()=>{
   profile.vibeTag = document.getElementById('vibe-tag-input').value.trim().slice(0,24);
@@ -585,7 +781,7 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
 function boot(){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app-screen').classList.remove('hidden');
-  document.getElementById('hdr-name').textContent = user.displayName;
+  document.getElementById('hdr-name').textContent = getDisplayName();
   document.getElementById('hdr-sub').textContent = `${profile.role} · CSE-B`;
   
   setupPresence();
@@ -625,8 +821,8 @@ function setupPresence(){
   const connectedRef = ref(rtdb, '.info/connected');
   onValue(connectedRef, (snap)=>{
     if(snap.val()===false) return;
-    onDisconnect(myStatusRef).set({ name:user.displayName, state:'offline', last_changed: rtdbServerTs() })
-      .then(()=> rtdbSet(myStatusRef, { name:user.displayName, state:'online', last_changed: rtdbServerTs() }));
+    onDisconnect(myStatusRef).set({ name:getDisplayName(), state:'offline', last_changed: rtdbServerTs() })
+      .then(()=> rtdbSet(myStatusRef, { name:getDisplayName(), state:'online', last_changed: rtdbServerTs() }));
   });
 }
 
@@ -1565,10 +1761,10 @@ function loadChat(){
       return;
     }
     if(activeChatTarget === 'ALL'){
-      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
+      await addDoc(collection(db,'classes',classCode,'chat'), { text, name:getDisplayName(), uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
     } else {
       const threadId = [user.uid, activeChatTarget].sort().join('_');
-      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:user.displayName, uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
+      await addDoc(collection(db,'private_chats', threadId, 'messages'), { text, name:getDisplayName(), uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp() });
     }
     inp.value='';
   };
