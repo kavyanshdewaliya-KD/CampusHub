@@ -103,8 +103,6 @@
   footer.dev-footer{text-align:center; opacity:0.75; font-size:11px; margin-top:20px; font-weight:700;}
   
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
-  .modal-overlay .card{max-height:85vh; overflow-y:auto; display:flex; flex-direction:column;}
-  .modal-overlay .section-title{position:sticky; top:-22px; margin:-22px -22px 12px -22px; padding:22px 22px 8px 22px; background:var(--panel); z-index:2;}
   .modal-body{background:var(--panel); border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px; box-shadow:6px 6px 0 var(--border); color:var(--ink);}
   .edit-item-box{border:2px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
 </style>
@@ -122,11 +120,9 @@
 
 <div id="pending-screen" class="hidden">
   <div class="card" style="text-align:center;">
-    <h1 style="margin-top:0;">🎉 Heyy, welcome aboard!</h1>
-    <p style="font-size:13px; opacity:.85;">You've officially knocked on the door of <b>CSE-B CampusHub</b> 🚪✨ Your CR/Admin just needs to hit approve, and you're in — timetable, attendance, chat, the whole deal.</p>
-    <p style="font-size:13px; opacity:.85; margin-top:10px;">Not gonna lie, might take a few minutes. So here's a terrible joke to pass the time 👇</p>
-    <div style="background:var(--chip); border:2px solid var(--border); border-radius:12px; padding:12px; margin:12px 0; font-size:13px; font-weight:600;" id="pending-joke"></div>
-    <button class="add-btn" id="pending-signout-btn" style="margin-top:6px;">🚪 Sign Out</button>
+    <h1 style="margin-top:0;">⏳ Almost there!</h1>
+    <p style="font-size:13px; opacity:.85;">Your request to join <b>CSE-B CampusHub</b> is waiting for your CR/Admin to approve it. This usually doesn't take long — check back soon!</p>
+    <button class="add-btn" id="pending-signout-btn" style="margin-top:10px;">🚪 Sign Out</button>
   </div>
 </div>
 
@@ -160,7 +156,8 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">Built by Kavyansh 🚀</footer>
+    <footer class="dev-footer">by Kavyansh 🚀</footer>
+    <footer class="dev-footer">Version 1.0.67!!😝</footer>
   </main>
 
   <nav class="tabbar">
@@ -184,10 +181,10 @@
     
     <label style="font-size:12px; font-weight:700;">Select Theme:</label>
     <select id="theme-select">
-      <option value="1">Purple Dream 💜</option>
-      <option value="2">Sunset Coral 🧡</option>
-      <option value="3">Ocean Blue 💙</option>
-      <option value="4">Dark Mode 🌙</option>
+      <option value="1">Bainganiii 💜</option>
+      <option value="2">Naaaarangiii 🧡</option>
+      <option value="3">Aaasmaaniii 💙</option>
+      <option value="4">Kaaali ghataaa 🌙</option>
     </select>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
@@ -214,21 +211,21 @@
       <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
     </div>
 
+    <div id="admin-key-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
+      <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
+      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
+    </div>
+
+    <div id="access-control-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🛡️ Member Access Control</label>
+      <p style="font-size:10px; opacity:.65; margin:4px 0 8px;">Approve new sign-ins or block anyone from the class.</p>
+      <div id="access-control-list" style="max-height:260px; overflow-y:auto;"></div>
+    </div>
+
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
     </div>
-  </div>
-</div>
-
-<!-- Standalone, hidden-by-default admin key entry — only reachable via the 5-tap secret on the Members icon -->
-<div id="admin-key-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0; max-width:320px;">
-    <div class="section-title">
-      <h3 style="margin:0; font-size:15px;">🔑 Access Key</h3>
-      <button id="admin-key-close" class="del-btn">✕</button>
-    </div>
-    <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
-    <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
   </div>
 </div>
 
@@ -298,7 +295,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
 
-// Get this from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// Go away RETARDED!
 const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
 // Must exactly match the NOTIFY_SECRET environment variable set in Vercel
@@ -470,26 +467,10 @@ function getBadgeClass(pct){
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
-const waitingRoomJokes = [
-  "Why do programmers prefer dark mode? Because light attracts bugs. 🐛",
-  "Why did the student eat his homework? Because the teacher said it was a piece of cake. 🍰",
-  "I told my laptop I needed a break. It said 'Sure, I'll go to sleep too.' 😴",
-  "Why don't engineers ever get lost? They always follow the main() path. 🗺️",
-  "My attendance is like WiFi — sometimes there, mostly not. 📶",
-  "Why did the CR cross the road? To approve someone on the other side. 🐔",
-  "I'm not late to class, class is just early to me. ⏰",
-  "Why was the math book sad? Too many problems. ➗",
-  "Group project status: 1 person working, 4 people 'reviewing'. 👀",
-  "Why do Java developers wear glasses? Because they don't C#. 👓"
-];
 function showOnlyScreen(id){
   ['login-screen','pending-screen','blocked-screen','app-screen'].forEach(s=>{
     document.getElementById(s).classList.toggle('hidden', s !== id);
   });
-  if(id === 'pending-screen'){
-    const jokeEl = document.getElementById('pending-joke');
-    if(jokeEl) jokeEl.textContent = waitingRoomJokes[Math.floor(Math.random()*waitingRoomJokes.length)];
-  }
 }
 
 let selfAccessUnsub = null;
@@ -636,6 +617,8 @@ function openSettings(){
   renderChatColorSwatches();
   updateNotifStatusUI();
   updateNameChangeStatusUI();
+  document.getElementById('access-control-section').classList.toggle('hidden', !profile.isAdmin);
+  if(profile.isAdmin) renderAccessControlPanel();
   document.getElementById('settings-modal').classList.remove('hidden');
 }
 
@@ -670,13 +653,12 @@ document.getElementById('members-top-btn').onclick = ()=>{
   membersIconClicks = membersIconClicks.filter(t => now - t < 2500);
   if(membersIconClicks.length >= 5){
     membersIconClicks = [];
-    document.getElementById('admin-unlock-key').value = '';
-    document.getElementById('admin-key-modal').classList.remove('hidden');
+    document.getElementById('admin-key-section').classList.remove('hidden');
+    openSettings();
     return;
   }
   showTab('members');
 };
-document.getElementById('admin-key-close').onclick = ()=> document.getElementById('admin-key-modal').classList.add('hidden');
 
 document.getElementById('vibe-save-btn').onclick = ()=>{
   profile.vibeTag = document.getElementById('vibe-tag-input').value.trim().slice(0,24);
@@ -782,14 +764,14 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
     profile.isAdmin = true; profile.role = "CR / Admin";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('admin-key-modal').classList.add('hidden');
+    document.getElementById('settings-modal').classList.add('hidden');
     boot();
     alert("CR / Admin privileges unlocked!");
   } else if(k === "IETCSEB") {
     profile.isAdmin = false; profile.role = "Student";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('admin-key-modal').classList.add('hidden');
+    document.getElementById('settings-modal').classList.add('hidden');
     boot();
     alert("Switched to Student mode successfully!");
   } else {
@@ -1002,8 +984,14 @@ function loadAttendance(){
     <div class="card" style="max-width:100%;">
       <h3>📊 Subject-wise Attendance (%)</h3>
       <p style="font-size:11px; opacity:.7; margin-bottom:10px;">Calculated from semester start (Aug 5, 2026).</p>
+      ${profile.isAdmin ? `<button class="del-btn" id="reset-attendance-btn" style="margin-bottom:10px;">🗑️ Reset Attendance History for Everyone (Admin)</button>
+      <p id="reset-attendance-status" style="font-size:10.5px; opacity:.65; margin-bottom:10px;"></p>` : ''}
       <div id="att-stats-container"></div>
     </div>`;
+
+  if(profile.isAdmin && document.getElementById('reset-attendance-btn')){
+    document.getElementById('reset-attendance-btn').onclick = resetAllAttendanceHistory;
+  }
 
   const dateInp = document.getElementById('att-date');
   dateInp.onchange = renderDayAttendanceForm;
@@ -1041,6 +1029,11 @@ async function renderDayAttendanceForm(){
   const planSnap = await doc(db, 'users', user.uid, 'calendar_plans', dateStr);
   onSnapshot(planSnap, async (pSnap)=>{
     const planType = pSnap.exists() ? pSnap.data().type : null;
+
+    if(planType === 'leave'){
+      container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">🌴 Leave planned for this day (set on the Calendar tab) — no attendance to mark.</div>`;
+      return;
+    }
     
     const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
     onSnapshot(ttSnap, async (tSnap)=>{
@@ -2043,20 +2036,12 @@ function loadMembers(){
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
             ${offline.length ? offline.map(memberRow).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
           </div>
-        </div>
-        ${profile.isAdmin ? `
-          <div class="card" style="max-width:100%; margin-top:14px;">
-            <label style="font-size:12px; font-weight:700;">🛡️ Member Access Control</label>
-            <p style="font-size:10px; opacity:.65; margin:4px 0 8px;">Approve new sign-ins or block anyone from the class.</p>
-            <div id="access-control-list" style="max-height:320px; overflow-y:auto;"></div>
-          </div>
-        ` : ''}`;
+        </div>`;
 
       if(profile.isAdmin){
         el.querySelectorAll('.btn-remove-member').forEach(btn=>{
           btn.onclick = ()=> removeMember(btn.dataset.uid, btn.dataset.name);
         });
-        renderAccessControlPanel();
       }
     });
   });
@@ -2078,6 +2063,41 @@ async function removeMember(uid, name){
     alert(`${name} has been removed.`);
   } catch(e){
     alert('Error removing member: ' + e.message);
+  }
+}
+
+async function resetAllAttendanceHistory(){
+  const sure = confirm(
+    "Reset attendance history for EVERY member?\n\n" +
+    "This permanently deletes every logged Present/Absent checkbox for the whole class. " +
+    "After this, subject-wise attendance recalculates fresh from Aug 5 using the CURRENT timetable " +
+    "(optimistic Present by default, same as any new day). Planned Leave/Attended marks on the " +
+    "Calendar tab are NOT affected. This cannot be undone."
+  );
+  if(!sure) return;
+
+  const statusEl = document.getElementById('reset-attendance-status');
+  const setStatus = (msg) => { if(statusEl) statusEl.textContent = msg; };
+
+  try {
+    setStatus('Fetching members…');
+    const membersSnap = await getDocs(collection(db, 'classes', classCode, 'members'));
+    const uids = membersSnap.docs.map(d => d.id);
+
+    let done = 0;
+    for(const uid of uids){
+      setStatus(`Clearing logs… (${done}/${uids.length} members)`);
+      const logsSnap = await getDocs(collection(db, 'users', uid, 'attendance_logs'));
+      for(const d of logsSnap.docs) await deleteDoc(d.ref);
+      done++;
+    }
+
+    setStatus(`✅ Done — cleared attendance logs for ${done} member(s).`);
+    alert(`Attendance history reset for ${done} member(s). Subject-wise attendance now recalculates fresh under the current timetable.`);
+    renderAttendanceStats();
+  } catch(e){
+    setStatus('');
+    alert('Error resetting attendance history: ' + e.message);
   }
 }
 </script>
