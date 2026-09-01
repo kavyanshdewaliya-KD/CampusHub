@@ -122,6 +122,14 @@
   <div class="card" style="text-align:center;">
     <h1 style="margin-top:0;">⏳ Almost there!</h1>
     <p style="font-size:13px; opacity:.85;">Your request to join <b>CSE-B CampusHub</b> is waiting for your CR/Admin to approve it. This usually doesn't take long — check back soon!</p>
+    <a id="pending-insta-btn" href="https://www.instagram.com/campushub6.7/?hl=en" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:14px; padding:13px; border:3px solid var(--border); border-radius:12px; font-weight:700; font-size:15px; box-shadow:4px 4px 0 var(--border); text-decoration:none; color:#fff; background:linear-gradient(45deg,#405DE6,#5B51D8,#833AB4,#C13584,#E1306C,#FD1D1D,#F56040,#FCAF45,#FFDC80);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <rect x="2" y="2" width="20" height="20" rx="6" stroke="#fff" stroke-width="2"/>
+        <circle cx="12" cy="12" r="5" stroke="#fff" stroke-width="2"/>
+        <circle cx="17.5" cy="6.5" r="1.3" fill="#fff"/>
+      </svg>
+      Follow us on Instagram
+    </a>
     <button class="add-btn" id="pending-signout-btn" style="margin-top:10px;">🚪 Sign Out</button>
   </div>
 </div>
@@ -156,8 +164,7 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">by Kavyansh 🚀</footer>
-    <footer class="dev-footer">Version 1.0.67!!😝</footer>
+    <footer class="dev-footer">by kavyansh<br>version 1.0.67!!😝</footer>
   </main>
 
   <nav class="tabbar">
@@ -182,9 +189,9 @@
     <label style="font-size:12px; font-weight:700;">Select Theme:</label>
     <select id="theme-select">
       <option value="1">Bainganiii 💜</option>
-      <option value="2">Naaaarangiii 🧡</option>
-      <option value="3">Aaasmaaniii 💙</option>
-      <option value="4">Kaaali ghataaa 🌙</option>
+      <option value="2">Naarangiii 🧡</option>
+      <option value="3">Aasmaaniii 💙</option>
+      <option value="4">Kaaali Ghata 🌙</option>
     </select>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
@@ -217,12 +224,6 @@
       <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
     </div>
 
-    <div id="access-control-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <label style="font-size:12px; font-weight:700;">🛡️ Member Access Control</label>
-      <p style="font-size:10px; opacity:.65; margin:4px 0 8px;">Approve new sign-ins or block anyone from the class.</p>
-      <div id="access-control-list" style="max-height:260px; overflow-y:auto;"></div>
-    </div>
-
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
     </div>
@@ -251,6 +252,10 @@
     <button class="btn-primary" id="tt-save-cloud-btn">Save Changes to Cloud ☁️</button>
   </div>
 </div>
+
+<!-- Shared subject name suggestions — picking from this instead of free-typing keeps
+     one subject from splitting into multiple stat bars over a stray typo. -->
+<datalist id="subject-datalist"></datalist>
 
 <!-- CR/Admin-only: Manage Holidays & GT (Group Tadi) days -->
 <div id="override-modal" class="modal-overlay hidden">
@@ -295,7 +300,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
 
-// Go away RETARDED!
+// Get this from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
 const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
 // Must exactly match the NOTIFY_SECRET environment variable set in Vercel
@@ -617,8 +622,6 @@ function openSettings(){
   renderChatColorSwatches();
   updateNotifStatusUI();
   updateNameChangeStatusUI();
-  document.getElementById('access-control-section').classList.toggle('hidden', !profile.isAdmin);
-  if(profile.isAdmin) renderAccessControlPanel();
   document.getElementById('settings-modal').classList.remove('hidden');
 }
 
@@ -645,7 +648,7 @@ document.getElementById('name-save-btn').onclick = async ()=>{
   } catch(e){ alert('Error saving name: ' + e.message); }
 };
 
-// Secret trick: tap the Members icon 5 times quickly to reveal the admin key entry.
+// Secret trick: to reveal the admin key entry.
 let membersIconClicks = [];
 document.getElementById('members-top-btn').onclick = ()=>{
   const now = Date.now();
@@ -832,6 +835,7 @@ function loadTimetable(){
   const ref_ = doc(db, 'classes', classCode, 'meta', 'timetable');
   onSnapshot(ref_, (snap)=>{
     currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
+    populateSubjectDatalist();
     el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
     ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
       const periods = (currentTimetableData && currentTimetableData[d]) || [];
@@ -851,7 +855,22 @@ function loadTimetable(){
   });
 }
 
+// Collects every distinct subject name currently in use across the live timetable,
+// so subject-name inputs can suggest exact existing spellings instead of admins
+// free-typing a near-duplicate ("Basic Elcectronics" vs "Basic Electronics") that
+// silently splits one subject into two separate attendance bars.
+function populateSubjectDatalist(){
+  const dl = document.getElementById('subject-datalist');
+  if(!dl) return;
+  const names = new Set();
+  Object.values(currentTimetableData || {}).forEach(day=>{
+    (day || []).forEach(slot=>{ if(slot && slot.subject) names.add(slot.subject.trim()); });
+  });
+  dl.innerHTML = Array.from(names).sort().map(n => `<option value="${n}"></option>`).join('');
+}
+
 function openTimetableEditor(){
+  populateSubjectDatalist();
   document.getElementById('tt-modal').classList.remove('hidden');
   renderEditorDayList();
 }
@@ -919,7 +938,7 @@ function renderEditorDayList(){
           <button class="del-btn btn-remove-slot">Remove</button>
         </div>
         <input class="inp-time" value="${item.time||''}" placeholder="Time (09:00 - 10:00)">
-        <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name">
+        <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name" list="subject-datalist">
         <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher Code">
         <input class="inp-room" value="${item.room||''}" placeholder="Room No.">
         <label style="font-size:12px; font-weight:600; color:#0F172A;">
@@ -1148,7 +1167,7 @@ function renderExtraClassForm(dateStr){
   return `
     <div class="edit-item-box" style="margin-top:10px;">
       <b style="font-size:12px;">➕ Add Extra Class (${dateStr})</b>
-      <input id="ec-subject" placeholder="Subject" style="margin-top:8px;">
+      <input id="ec-subject" placeholder="Subject" list="subject-datalist" style="margin-top:8px;">
       <input id="ec-time" placeholder="Time (e.g. 04:00 - 05:00)">
       <input id="ec-teacher" placeholder="Teacher (optional)">
       <input id="ec-room" placeholder="Room (optional)">
@@ -1206,6 +1225,14 @@ async function renderAttendanceStats(){
             const slots = getEffectiveSlots(dName, dStr, tData[dName] || []);
             const plan = plans[dStr];
             
+            // A day planned as "leave" is fully excluded from every subject's totals —
+            // its periods never happened for attendance-counting purposes, so they
+            // shouldn't drag down (or count toward) that subject's percentage.
+            if(plan === 'leave'){
+              curr.setDate(curr.getDate() + 1);
+              continue;
+            }
+
             slots.forEach(({slot, idx})=>{
               const subj = slot.subject;
               totals[subj] = (totals[subj] || 0) + 1;
@@ -2036,12 +2063,19 @@ function loadMembers(){
             <div style="font-size:11px; opacity:.6; margin-bottom:6px; font-weight:700;">⚪ ALL MEMBERS (${offline.length})</div>
             ${offline.length ? offline.map(memberRow).join('') : '<div style="font-size:12px; opacity:0.6;">No offline members</div>'}
           </div>
-        </div>`;
+        </div>` +
+        (profile.isAdmin ? `
+        <div class="stat-block" style="margin-top:14px;">
+          <label style="font-size:12px; font-weight:700;">🛡️ Member Access Control</label>
+          <p style="font-size:10px; opacity:.65; margin:4px 0 8px;">Approve new sign-ins or block anyone from the class.</p>
+          <div id="access-control-list" style="max-height:260px; overflow-y:auto;"></div>
+        </div>` : '');
 
       if(profile.isAdmin){
         el.querySelectorAll('.btn-remove-member').forEach(btn=>{
           btn.onclick = ()=> removeMember(btn.dataset.uid, btn.dataset.name);
         });
+        renderAccessControlPanel();
       }
     });
   });
