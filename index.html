@@ -519,6 +519,38 @@ canonicalSubjects.forEach(name => {
   const slug = _subjectSlug(base);
   if(!_canonicalSlugMap[slug]) _canonicalSlugMap[slug] = base;
 });
+// Plain-old typos ("Elcectronics" instead of "Electronics") won't match any alias —
+// they need a fuzzy fallback. Levenshtein edit distance between the typed slug and
+// every canonical slug; if the closest one is within a tight, length-scaled tolerance
+// AND clearly the best match, treat it as the same subject rather than spinning up a
+// second bar for a single mistyped letter.
+function _editDistance(a, b){
+  const m = a.length, n = b.length;
+  const dp = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
+  for(let i = 0; i <= m; i++) dp[i][0] = i;
+  for(let j = 0; j <= n; j++) dp[0][j] = j;
+  for(let i = 1; i <= m; i++){
+    for(let j = 1; j <= n; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
+    }
+  }
+  return dp[m][n];
+}
+function _fuzzyCanonicalMatch(slug){
+  if(!slug || slug.length < 5) return null; // too short to fuzzy-match safely
+  let best = null, bestDist = Infinity, secondBestDist = Infinity;
+  for(const [canonSlug, canonName] of Object.entries(_canonicalSlugMap)){
+    const d = _editDistance(slug, canonSlug);
+    if(d < bestDist){ secondBestDist = bestDist; bestDist = d; best = canonName; }
+    else if(d < secondBestDist){ secondBestDist = d; }
+  }
+  const tolerance = Math.min(2, Math.max(1, Math.round(slug.length * 0.12)));
+  // Only accept if it's close enough AND unambiguously the single best match —
+  // guards against merging two genuinely different subjects that happen to be similar.
+  if(best && bestDist <= tolerance && bestDist < secondBestDist) return best;
+  return null;
+}
 function canonicalizeSubject(raw){
   const s = (raw || '').trim();
   // Detect "remedial" in any form — literal "(Remedial)" or just the bare word —
@@ -526,7 +558,7 @@ function canonicalizeSubject(raw){
   const isRemedial = /remedial/i.test(s);
   const base = s.replace(/\(?\s*remedial\s*\)?/gi, '').replace(/\s{2,}/g, ' ').trim();
   const slug = _subjectSlug(base);
-  const canonicalBase = _canonicalSlugMap[slug] || base; // unknown subject: keep as-is (e.g. a genuinely new one)
+  const canonicalBase = _canonicalSlugMap[slug] || _fuzzyCanonicalMatch(slug) || base; // unknown subject: keep as-is (e.g. a genuinely new one)
   return isRemedial ? `${canonicalBase} (Remedial)` : canonicalBase;
 }
 // ---------------------------------------------------------------------------------
@@ -1192,7 +1224,7 @@ async function renderDayAttendanceForm(){
     const planType = pSnap.exists() ? pSnap.data().type : null;
 
     if(planType === 'leave'){
-      container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">🌴 Leave planned for this day (set on the Calendar tab) — no attendance to mark.</div>`;
+      container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">🌴 Leave planned for this day (set on the Calendar tab) — every class today counts as Absent in your subject totals.</div>`;
       return;
     }
     
@@ -1378,7 +1410,8 @@ async function renderAttendanceStats(){
 
   const startDate = _dateOnly(ATTENDANCE_SEM_START);
   const semEnd = _dateOnly(ATTENDANCE_SEM_END);
-  const now = _dateOnly(new Date().toISOString().split('T')[0]); // today, local, time-of-day zeroed out
+  const nowRaw = new Date();
+  const now = new Date(nowRaw.getFullYear(), nowRaw.getMonth(), nowRaw.getDate()); // today, LOCAL date, time-of-day zeroed out — never use toISOString() here, it reports the UTC date
   const endDate = now < semEnd ? now : semEnd; // never count beyond today or beyond the semester
 
   const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -1411,26 +1444,29 @@ async function renderAttendanceStats(){
           if(!isMstDate(dKey) && !isHolidayDate(dKey) && !isGTDate(dKey)){
             const dName = dayNames[curr.getDay()];
             const slots = getEffectiveSlots(dName, dKey, tData[dName] || []);
-            const plan = plans[dKey];
+            const isLeaveDay = plans[dKey] === 'leave';
 
-            // A day planned as "leave" is fully excluded from every subject's totals —
-            // its periods never happened for attendance-counting purposes, so they
-            // shouldn't drag down (or count toward) that subject's percentage.
-            if(plan !== 'leave'){
-              slots.forEach(({slot, idx})=>{
-                const subj = canonicalizeSubject(slot.subject); // folds spelling variants ("Applied Math 1", "Applied Maths-I", ...) into one bucket
-                totals[subj] = (totals[subj] || 0) + 1;
+            slots.forEach(({slot, idx})=>{
+              const subj = canonicalizeSubject(slot.subject); // folds spelling variants ("Applied Math 1", "Applied Maths-I", ...) into one bucket
+              totals[subj] = (totals[subj] || 0) + 1; // the class still happened today, on leave or not — it always counts toward the total
 
-                const logKey = `${dKey}_${idx}`;
-                let stat = logs[logKey];
-                if(!stat){
-                  stat = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
-                }
-                if(stat === 'Present'){
-                  attended[subj] = (attended[subj] || 0) + 1;
-                }
-              });
-            }
+              if(isLeaveDay){
+                // A day planned as leave means the student didn't attend — every period
+                // that day is automatically Absent, regardless of any stale Present mark
+                // from before the leave was planned. It still counts in the denominator
+                // above; it just never adds to "attended".
+                return;
+              }
+
+              const logKey = `${dKey}_${idx}`;
+              let stat = logs[logKey];
+              if(!stat){
+                stat = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
+              }
+              if(stat === 'Present'){
+                attended[subj] = (attended[subj] || 0) + 1;
+              }
+            });
           }
           curr.setDate(curr.getDate() + 1);
         }
