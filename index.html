@@ -480,6 +480,57 @@ const remedialDisplayOrder = [
   'Applied Chem (Remedial)','Applied Math-I (Remedial)','Tech English (Remedial)','Basic Electronics (Remedial)','Gen Mech Engg (Remedial)'
 ];
 
+// --- Subject name normalization -------------------------------------------------
+// The timetable editor lets an admin free-type a subject (the datalist is a
+// suggestion, not an enforced choice), so the SAME real subject can end up saved
+// under different spellings over time — "Applied Math-I", "Applied Math 1",
+// "Applied Maths-I", "Applied Mat I", etc. Because attendance totals used to be
+// keyed on the raw string, each spelling became its own separate bar with its own
+// (wrong) percentage, and a remedial class typed without literal "(Remedial)"
+// parentheses (e.g. "Applied Math I Remedial") fell through into the main list
+// instead of the remedial section. canonicalizeSubject() maps any reasonable
+// spelling of a known subject back to one exact display name before it's ever
+// used as a bucket key, so every variant of "Applied Math-I" folds into a single bar.
+const _ROMAN_TO_DIGIT = { i:'1', ii:'2', iii:'3', iv:'4', v:'5' };
+// Common shorthand/typo variants seen in a free-typed timetable, folded to one word
+// before comparison — e.g. "Applied Mat 1", "Applied Maths-I", and "Applied Math-I"
+// all reduce to the same token stream.
+const _WORD_ALIASES = {
+  maths:'math', mathematic:'math', mathematics:'math', mat:'math',
+  electronic:'electronics', elec:'electronics',
+  chemistry:'chem', chm:'chem',
+  mechanical:'mech',
+  engineering:'engg', eng:'engg',
+  technical:'tech'
+};
+function _subjectSlug(str){
+  let s = (str || '').trim().toLowerCase();
+  s = s.replace(/[.,]/g, '');
+  const tokens = s.split(/[\s\-_/]+/).filter(Boolean).map(t => _WORD_ALIASES[t] || t);
+  if(tokens.length && _ROMAN_TO_DIGIT[tokens[tokens.length - 1]]){
+    tokens[tokens.length - 1] = _ROMAN_TO_DIGIT[tokens[tokens.length - 1]];
+  }
+  return tokens.join('');
+}
+// slug (of the base name, remedial marker stripped) -> canonical base display name
+const _canonicalSlugMap = {};
+canonicalSubjects.forEach(name => {
+  const base = name.replace(/\s*\(remedial\)\s*$/i, '').trim();
+  const slug = _subjectSlug(base);
+  if(!_canonicalSlugMap[slug]) _canonicalSlugMap[slug] = base;
+});
+function canonicalizeSubject(raw){
+  const s = (raw || '').trim();
+  // Detect "remedial" in any form — literal "(Remedial)" or just the bare word —
+  // then strip it out before matching the base subject name.
+  const isRemedial = /remedial/i.test(s);
+  const base = s.replace(/\(?\s*remedial\s*\)?/gi, '').replace(/\s{2,}/g, ' ').trim();
+  const slug = _subjectSlug(base);
+  const canonicalBase = _canonicalSlugMap[slug] || base; // unknown subject: keep as-is (e.g. a genuinely new one)
+  return isRemedial ? `${canonicalBase} (Remedial)` : canonicalBase;
+}
+// ---------------------------------------------------------------------------------
+
 function getSubjectColor(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -1173,11 +1224,12 @@ async function renderDayAttendanceForm(){
             currentStatus = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
           }
           const isChecked = currentStatus === 'Present';
-          
+          const displaySubj = canonicalizeSubject(slot.subject); // shows the same folded name used on the stats bar below
+
           html += `
             <div class="row" style="flex-direction:row; justify-content:space-between; align-items:center; padding:8px 12px;">
               <div>
-                <span class="row-subject-tag" style="background:${getSubjectColor(slot.subject)};">${slot.subject}</span>
+                <span class="row-subject-tag" style="background:${getSubjectColor(displaySubj)};">${displaySubj}</span>
                 ${isExtra ? '<span class="pill" style="background:var(--chip);">Extra</span>' : ''}
                 <div style="font-size:11px; opacity:.7;">${slot.time} · ${slot.room||''}</div>
               </div>
@@ -1366,7 +1418,7 @@ async function renderAttendanceStats(){
             // shouldn't drag down (or count toward) that subject's percentage.
             if(plan !== 'leave'){
               slots.forEach(({slot, idx})=>{
-                const subj = (slot.subject || '').trim(); // guard against stray whitespace splitting one subject into two bars
+                const subj = canonicalizeSubject(slot.subject); // folds spelling variants ("Applied Math 1", "Applied Maths-I", ...) into one bucket
                 totals[subj] = (totals[subj] || 0) + 1;
 
                 const logKey = `${dKey}_${idx}`;
