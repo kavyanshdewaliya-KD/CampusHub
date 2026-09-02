@@ -164,7 +164,7 @@
     <section id="tab-announce" class="hidden"></section>
     <section id="tab-chat" class="hidden"></section>
     <section id="tab-members" class="hidden"></section>
-    <footer class="dev-footer">by kavyansh<br>version 1.0.67!!😝</footer>
+    <footer class="dev-footer">by Kavyansh🚀<br>version 1.0.67!!😝</footer>
   </main>
 
   <nav class="tabbar">
@@ -218,15 +218,21 @@
       <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
     </div>
 
-    <div id="admin-key-section" class="hidden" style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <label style="font-size:12px; font-weight:700;">🔑 Enter Access Key:</label>
-      <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
-      <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
-    </div>
-
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
       <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
     </div>
+  </div>
+</div>
+
+<!-- Standalone admin-key modal, . -->
+<div id="admin-key-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0;">
+    <div class="section-title">
+      <h3 style="margin:0;">🔑 Access Key</h3>
+      <button id="admin-key-modal-close" class="del-btn">✕</button>
+    </div>
+    <input id="admin-unlock-key" type="password" placeholder=" Nerd ">
+    <button class="btn-primary" id="unlock-submit-btn" style="padding:10px; font-size:13px;">Verify & Update Role</button>
   </div>
 </div>
 
@@ -437,7 +443,7 @@ const defaultTimetable = {
   "Thu": [
     {"time": "09:00 - 10:00", "subject": "Design Thinking", "teacher": "VF-1VV", "room": "M-309"},
     {"time": "10:00 - 12:00", "subject": "Workshop Practice (Batch B2)", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"},
+    {"time": "12:00 - 01:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"},
     {"time": "01:00 - 02:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"}
   ],
@@ -450,6 +456,27 @@ const defaultTimetable = {
     {"time": "04:00 - 05:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"}
   ]
 };
+
+// Canonical lists power the click-to-pick dropdowns in the timetable editor and the
+// extra-class form — picking from these instead of free-typing is what stops one real
+// subject from silently splitting into two attendance bars over a spelling variant.
+const canonicalSubjects = [
+  'Applied Chem','Applied Math-I','Basic Electronics','Tech English','Gen Mech Engg','Design Thinking',
+  'Workshop Practice (Batch B1)','Workshop Practice (Batch B2)',
+  'LAB: B2-Applied Chem / B1-Basic Elec','LAB: B2-Basic Elec / B1-Mech Engg','LAB: B1-Applied Chem / B2-Mech Engg',
+  'Applied Chem (Remedial)','Applied Math-I (Remedial)','Tech English (Remedial)','Basic Electronics (Remedial)','Gen Mech Engg (Remedial)'
+];
+const canonicalTeachers = ['VF-SB','VF-1SM','VF-1SS','VF-SA','VF-VS','1SK','4JS','2AS','VF-1VV','Faculty'];
+
+// Display-order priority for the Subject-wise Attendance list — subjects not in this
+// list (e.g. the combined LAB slot names above) fall after, alphabetically.
+const subjectDisplayOrder = [
+  'Applied Chem','Applied Math-I','Basic Electronics','Tech English','Gen Mech Engg','Design Thinking',
+  'Workshop Practice (Batch B1)','Workshop Practice (Batch B2)'
+];
+const remedialDisplayOrder = [
+  'Applied Chem (Remedial)','Applied Math-I (Remedial)','Tech English (Remedial)','Basic Electronics (Remedial)','Gen Mech Engg (Remedial)'
+];
 
 function getSubjectColor(str) {
   let hash = 0;
@@ -473,10 +500,27 @@ function getBadgeClass(pct){
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
+const waitingRoomJokes = [
+  "Why do programmers prefer dark mode? Because light attracts bugs. 🐛",
+  "Why did the student eat his homework? Because the teacher said it was a piece of cake. 🍰",
+  "I told my laptop I needed a break. It said 'Sure, I'll go to sleep too.' 😴",
+  "Why don't engineers ever get lost? They always follow the main() path. 🗺️",
+  "My attendance is like WiFi — sometimes there, mostly not. 📶",
+  "Why did the CR cross the road? To approve someone on the other side. 🐔",
+  "I'm not late to class, class is just early to me. ⏰",
+  "Why was the math book sad? Too many problems. ➗",
+  "Group project status: 1 person working, 4 people 'reviewing'. 👀",
+  "Why do Java developers wear glasses? Because they don't C#. 👓"
+];
+
 function showOnlyScreen(id){
   ['login-screen','pending-screen','blocked-screen','app-screen'].forEach(s=>{
     document.getElementById(s).classList.toggle('hidden', s !== id);
   });
+  if(id === 'pending-screen'){
+    const jokeEl = document.getElementById('pending-joke');
+    if(jokeEl) jokeEl.textContent = waitingRoomJokes[Math.floor(Math.random()*waitingRoomJokes.length)];
+  }
 }
 
 let selfAccessUnsub = null;
@@ -649,7 +693,7 @@ document.getElementById('name-save-btn').onclick = async ()=>{
   } catch(e){ alert('Error saving name: ' + e.message); }
 };
 
-// Secret trick: to reveal the admin key entry.
+// Secret trick: tap the Members icon 5 times quickly to reveal the admin key entry.
 let membersIconClicks = [];
 document.getElementById('members-top-btn').onclick = ()=>{
   const now = Date.now();
@@ -657,12 +701,12 @@ document.getElementById('members-top-btn').onclick = ()=>{
   membersIconClicks = membersIconClicks.filter(t => now - t < 2500);
   if(membersIconClicks.length >= 5){
     membersIconClicks = [];
-    document.getElementById('admin-key-section').classList.remove('hidden');
-    openSettings();
+    document.getElementById('admin-key-modal').classList.remove('hidden');
     return;
   }
   showTab('members');
 };
+document.getElementById('admin-key-modal-close').onclick = ()=> document.getElementById('admin-key-modal').classList.add('hidden');
 
 document.getElementById('vibe-save-btn').onclick = ()=>{
   profile.vibeTag = document.getElementById('vibe-tag-input').value.trim().slice(0,24);
@@ -768,14 +812,14 @@ document.getElementById('unlock-submit-btn').onclick = ()=>{
     profile.isAdmin = true; profile.role = "CR / Admin";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
+    document.getElementById('admin-key-modal').classList.add('hidden');
     boot();
     alert("CR / Admin privileges unlocked!");
   } else if(k === "IETCSEB") {
     profile.isAdmin = false; profile.role = "Student";
     localStorage.setItem('ch_profile', JSON.stringify(profile));
     syncMemberDoc();
-    document.getElementById('settings-modal').classList.add('hidden');
+    document.getElementById('admin-key-modal').classList.add('hidden');
     boot();
     alert("Switched to Student mode successfully!");
   } else {
@@ -837,7 +881,7 @@ function loadTimetable(){
   onSnapshot(ref_, (snap)=>{
     currentTimetableData = snap.exists() ? snap.data().days : defaultTimetable;
     populateSubjectDatalist();
-    el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2>${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button>':''}</div>`;
+    el.innerHTML = `<div class="section-title"><h2>🗓️ Schedule (M-309)</h2><div style="display:flex; gap:6px;">${profile.isAdmin? '<button class="add-btn" id="tt-open-editor-btn">✏️ Edit</button><button class="add-btn" id="tt-load-default-btn" style="background:var(--danger); color:#fff;">🧹 Load Clean Default</button>':''}</div></div>`;
     ['Mon','Tue','Wed','Thu','Fri'].forEach(d=>{
       const periods = (currentTimetableData && currentTimetableData[d]) || [];
       el.innerHTML += `<div class="day-block"><h3>${d}</h3>` + (periods.length? periods.map(p=>{
@@ -852,6 +896,23 @@ function loadTimetable(){
     
     if(profile.isAdmin && document.getElementById('tt-open-editor-btn')){
       document.getElementById('tt-open-editor-btn').onclick = openTimetableEditor;
+    }
+    if(profile.isAdmin && document.getElementById('tt-load-default-btn')){
+      document.getElementById('tt-load-default-btn').onclick = async ()=>{
+        if(!confirm(
+          "Overwrite the ENTIRE live schedule with the clean default (exact spellings, no typos)?\n\n" +
+          "This replaces every day's timetable as currently saved. Past attendance may look " +
+          "different afterward if any subject names change position or spelling — use the " +
+          "'Reset Attendance History' button on the Attendance tab afterward if numbers look off. " +
+          "This cannot be undone."
+        )) return;
+        try {
+          await setDoc(doc(db, 'classes', classCode, 'meta', 'timetable'), { days: defaultTimetable });
+          alert('Clean default schedule loaded! Every subject now uses one exact, consistent name.');
+        } catch(e){
+          alert('Error loading default schedule: ' + e.message);
+        }
+      };
     }
   });
 }
@@ -925,6 +986,28 @@ function renderOverrideList(){
   });
 }
 
+// Builds a <select> that fills a paired text input on choice — 'Custom / Other' just
+// leaves the text input free to type in, exactly like before.
+function pickerSelectHTML(cls, options, currentValue){
+  const isKnown = options.includes(currentValue);
+  const opts = options.map(o => `<option value="${o}" ${o===currentValue?'selected':''}>${o}</option>`).join('');
+  return `<select class="${cls}" style="margin-bottom:4px;">
+      <option value="">— tap to pick —</option>
+      ${opts}
+      <option value="__custom__" ${(!isKnown && currentValue) ? 'selected' : ''}>✏️ Custom / Other…</option>
+    </select>`;
+}
+function wirePicker(scopeEl, pickerCls, targetCls, options){
+  scopeEl.querySelectorAll('.'+pickerCls).forEach(sel=>{
+    sel.onchange = ()=>{
+      const box = sel.closest('.edit-item-box') || scopeEl;
+      const target = box.querySelector('.'+targetCls);
+      if(sel.value === '__custom__'){ target.value=''; target.focus(); }
+      else if(sel.value) target.value = sel.value;
+    };
+  });
+}
+
 function renderEditorDayList(){
   const selDay = document.getElementById('tt-edit-day').value;
   const list = document.getElementById('tt-editor-list');
@@ -939,7 +1022,9 @@ function renderEditorDayList(){
           <button class="del-btn btn-remove-slot">Remove</button>
         </div>
         <input class="inp-time" value="${item.time||''}" placeholder="Time (09:00 - 10:00)">
+        ${pickerSelectHTML('subj-picker', canonicalSubjects, item.subject||'')}
         <input class="inp-subject" value="${item.subject||''}" placeholder="Subject Name" list="subject-datalist">
+        ${pickerSelectHTML('teacher-picker', canonicalTeachers, item.teacher||'')}
         <input class="inp-teacher" value="${item.teacher||''}" placeholder="Teacher Code">
         <input class="inp-room" value="${item.room||''}" placeholder="Room No.">
         <label style="font-size:12px; font-weight:600; color:#0F172A;">
@@ -955,6 +1040,9 @@ function renderEditorDayList(){
       renderEditorDayList();
     };
   });
+
+  wirePicker(list, 'subj-picker', 'inp-subject', canonicalSubjects);
+  wirePicker(list, 'teacher-picker', 'inp-teacher', canonicalTeachers);
 }
 
 document.getElementById('tt-add-slot-btn').onclick = ()=>{
@@ -1168,9 +1256,11 @@ function renderExtraClassForm(dateStr){
   return `
     <div class="edit-item-box" style="margin-top:10px;">
       <b style="font-size:12px;">➕ Add Extra Class (${dateStr})</b>
-      <input id="ec-subject" placeholder="Subject" list="subject-datalist" style="margin-top:8px;">
+      ${pickerSelectHTML('subj-picker', canonicalSubjects, '')}
+      <input id="ec-subject" class="inp-subject" placeholder="Subject" list="subject-datalist" style="margin-top:0;">
       <input id="ec-time" placeholder="Time (e.g. 04:00 - 05:00)">
-      <input id="ec-teacher" placeholder="Teacher (optional)">
+      ${pickerSelectHTML('teacher-picker', canonicalTeachers, '')}
+      <input id="ec-teacher" class="inp-teacher" placeholder="Teacher (optional)">
       <input id="ec-room" placeholder="Room (optional)">
       <button class="add-btn" id="ec-add-btn" style="width:100%;">Add Extra Class</button>
     </div>`;
@@ -1179,6 +1269,11 @@ function renderExtraClassForm(dateStr){
 function wireExtraClassForm(dateStr){
   const btn = document.getElementById('ec-add-btn');
   if(!btn) return;
+
+  const formBox = btn.closest('.edit-item-box');
+  wirePicker(formBox, 'subj-picker', 'inp-subject', canonicalSubjects);
+  wirePicker(formBox, 'teacher-picker', 'inp-teacher', canonicalTeachers);
+
   btn.onclick = async ()=>{
     const subject = document.getElementById('ec-subject').value.trim();
     const time = document.getElementById('ec-time').value.trim();
@@ -1258,13 +1353,24 @@ async function renderAttendanceStats(){
           return;
         }
 
-        subjects.forEach(subj => {
+        const isRemedial = (s) => remedialDisplayOrder.includes(s) || /\(Remedial\)/i.test(s);
+        const sortByPriority = (arr, priorityList) => arr.sort((a,b)=>{
+          const ai = priorityList.indexOf(a), bi = priorityList.indexOf(b);
+          if(ai !== -1 && bi !== -1) return ai - bi;
+          if(ai !== -1) return -1;
+          if(bi !== -1) return 1;
+          return a.localeCompare(b); // not in the priority list (e.g. combined LAB names) — sort after, alphabetically
+        });
+
+        const mainSubjects = sortByPriority(subjects.filter(s => !isRemedial(s)), subjectDisplayOrder);
+        const remedialSubjects = sortByPriority(subjects.filter(s => isRemedial(s)), remedialDisplayOrder);
+
+        const renderBar = (subj) => {
           const tot = totals[subj];
           const att = attended[subj] || 0;
           const pct = tot > 0 ? Math.round((att / tot) * 100) : 100;
           const badge = getBadgeClass(pct);
-          
-          statsHtml += `
+          return `
             <div style="margin-bottom:10px; font-size:12px;">
               <div style="display:flex; justify-content:space-between; font-weight:700;">
                 <span>${subj}</span>
@@ -1272,7 +1378,16 @@ async function renderAttendanceStats(){
               </div>
               <div class="prog-container"><div class="prog-fill ${badge}" style="width:${pct}%;"></div></div>
             </div>`;
-        });
+        };
+
+        statsHtml += mainSubjects.map(renderBar).join('');
+
+        if(remedialSubjects.length){
+          statsHtml += `<div style="border-top:3px dashed var(--border); margin:16px 0 12px; padding-top:10px;">
+            <div style="font-size:11px; font-weight:700; opacity:.7; margin-bottom:8px;">📘 REMEDIAL CLASSES</div>
+          </div>`;
+          statsHtml += remedialSubjects.map(renderBar).join('');
+        }
 
         statsContainer.innerHTML = statsHtml;
       });
