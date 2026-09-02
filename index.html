@@ -1290,60 +1290,95 @@ function wireExtraClassForm(dateStr){
   };
 }
 
+// Holds the live unsubscribe fns for the attendance-stats listener tree, so a fresh
+// call to renderAttendanceStats() (e.g. on every checkbox toggle) tears down the
+// PREVIOUS tree first instead of stacking a new one on top of it forever. Without this,
+// every checkbox click left an old listener alive that kept recomputing and re-writing
+// the container on every future Firestore change — wasted work, and a real risk of a
+// stale/late-arriving old listener overwriting the container with an outdated render.
+let _attStatsUnsub = [];
+function _clearAttStatsListeners(){
+  _attStatsUnsub.forEach(fn => { try{ fn(); }catch(e){} });
+  _attStatsUnsub = [];
+}
+
+// Semester bounds — attendance is only ever counted inside this window, cycling the
+// timetable week over week from the start date up to whichever is earlier: today, or
+// the semester end date. This stops the denominator from ever including days that
+// haven't happened yet, and stops it running past the semester once it's over.
+const ATTENDANCE_SEM_START = '2026-08-05';
+const ATTENDANCE_SEM_END = '2026-11-27';
+
+function _dateOnly(dStr){
+  // Build the date from its Y/M/D parts (local time) rather than parsing the ISO
+  // string directly — parsing 'YYYY-MM-DD' produces UTC midnight, and mixing that with
+  // the local-time getDate()/getDay()/setDate() calls used below is what causes subtle
+  // day-boundary drift. Constructing from parts keeps everything in local time throughout.
+  const [y, m, d] = dStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 async function renderAttendanceStats(){
   const statsContainer = document.getElementById('att-stats-container');
   if(!statsContainer) return;
-  const startDate = new Date('2026-08-05');
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  
-  const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
-  onSnapshot(ttSnap, async (tSnap)=>{
+
+  _clearAttStatsListeners();
+
+  const startDate = _dateOnly(ATTENDANCE_SEM_START);
+  const semEnd = _dateOnly(ATTENDANCE_SEM_END);
+  const now = _dateOnly(new Date().toISOString().split('T')[0]); // today, local, time-of-day zeroed out
+  const endDate = now < semEnd ? now : semEnd; // never count beyond today or beyond the semester
+
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  const ttSnap = doc(db, 'classes', classCode, 'meta', 'timetable');
+  const unsubTT = onSnapshot(ttSnap, (tSnap)=>{
     const tData = tSnap.exists() ? tSnap.data().days : defaultTimetable;
-    let curr = new Date(startDate);
-    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    
+
     const planSnap = collection(db, 'users', user.uid, 'calendar_plans');
-    onSnapshot(planSnap, async (planSnapShot)=>{
+    const unsubPlan = onSnapshot(planSnap, (planSnapShot)=>{
       const plans = {};
       planSnapShot.forEach(d => plans[d.id] = d.data().type);
-      
+
       const attLogSnap = collection(db, 'users', user.uid, 'attendance_logs');
-      onSnapshot(attLogSnap, async (logSnap)=>{
+      const unsubLog = onSnapshot(attLogSnap, (logSnap)=>{
         const logs = {};
         logSnap.forEach(d => logs[d.id] = d.data().status);
 
         const totals = {};
         const attended = {};
-        curr = new Date(startDate);
-        while(curr <= today){
-          const dStr = curr.toISOString().split('T')[0];
-          if(!isMstDate(dStr) && !isHolidayDate(dStr) && !isGTDate(dStr)){
+        let curr = new Date(startDate);
+        while(curr <= endDate){
+          // Build the key from local Y/M/D parts (matches _dateOnly) instead of
+          // toISOString(), which would re-introduce the UTC-vs-local mismatch this fix avoids.
+          const yStr = curr.getFullYear();
+          const mStr = String(curr.getMonth()+1).padStart(2,'0');
+          const dDay = String(curr.getDate()).padStart(2,'0');
+          const dKey = `${yStr}-${mStr}-${dDay}`;
+
+          if(!isMstDate(dKey) && !isHolidayDate(dKey) && !isGTDate(dKey)){
             const dName = dayNames[curr.getDay()];
-            const slots = getEffectiveSlots(dName, dStr, tData[dName] || []);
-            const plan = plans[dStr];
-            
+            const slots = getEffectiveSlots(dName, dKey, tData[dName] || []);
+            const plan = plans[dKey];
+
             // A day planned as "leave" is fully excluded from every subject's totals —
             // its periods never happened for attendance-counting purposes, so they
             // shouldn't drag down (or count toward) that subject's percentage.
-            if(plan === 'leave'){
-              curr.setDate(curr.getDate() + 1);
-              continue;
-            }
+            if(plan !== 'leave'){
+              slots.forEach(({slot, idx})=>{
+                const subj = (slot.subject || '').trim(); // guard against stray whitespace splitting one subject into two bars
+                totals[subj] = (totals[subj] || 0) + 1;
 
-            slots.forEach(({slot, idx})=>{
-              const subj = slot.subject;
-              totals[subj] = (totals[subj] || 0) + 1;
-              
-              const logKey = `${dStr}_${idx}`;
-              let stat = logs[logKey];
-              if(!stat){
-                stat = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
-              }
-              if(stat === 'Present'){
-                attended[subj] = (attended[subj] || 0) + 1;
-              }
-            });
+                const logKey = `${dKey}_${idx}`;
+                let stat = logs[logKey];
+                if(!stat){
+                  stat = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
+                }
+                if(stat === 'Present'){
+                  attended[subj] = (attended[subj] || 0) + 1;
+                }
+              });
+            }
           }
           curr.setDate(curr.getDate() + 1);
         }
@@ -1393,8 +1428,11 @@ async function renderAttendanceStats(){
 
         statsContainer.innerHTML = statsHtml;
       });
+      _attStatsUnsub.push(unsubLog);
     });
+    _attStatsUnsub.push(unsubPlan);
   });
+  _attStatsUnsub.push(unsubTT);
 }
 
 function loadCalendar(){
