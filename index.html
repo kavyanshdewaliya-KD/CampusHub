@@ -365,6 +365,13 @@ const fixedHolidays = {
   '2026-12-25': 'Christmas'
 };
 
+function getLocalDateStr(d = new Date()){
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function isMstDate(dStr){ return !!fixedMSTDates[dStr]; }
 function isHolidayDate(dStr){ return !!fixedHolidays[dStr] || (adminOverrides[dStr] && adminOverrides[dStr].type === 'holiday'); }
 function isGTDate(dStr){ return !!(adminOverrides[dStr] && adminOverrides[dStr].type === 'gt'); }
@@ -422,40 +429,39 @@ const subjectThemeColors = {
 const defaultTimetable = {
   "Mon": [
     {"time": "09:00 - 10:00", "subject": "Applied Chem", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "11:00 - 12:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "01:00 - 03:00", "subject": "LAB: B2-Applied Chem / B1-Basic Elec", "teacher": "VF-SA / VF-1SS", "room": "Lab A-206 / A-205", "isLab": true},
+    {"time": "10:00 - 11:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
+    {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
+    {"time": "01:00 - 03:00", "subject": "LAB: B1-Basic Elec / B2-Applied Chem", "teacher": "VF-1SS / VF-SA", "room": "Lab A-205 / A-206", "isLab": true},
     {"time": "03:00 - 04:00", "subject": "Applied Chem", "teacher": "VF-SB", "room": "M-309"}
   ],
   "Tue": [
     {"time": "09:00 - 10:00", "subject": "Applied Chem", "teacher": "VF-SB", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "LAB: B2-Basic Elec / B1-Mech Engg", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
-    {"time": "01:00 - 02:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
+    {"time": "10:00 - 12:00", "subject": "LAB: B1-Mech Engg / B2-Basic Elec", "teacher": "Faculty", "room": "Lab D-107", "isLab": true},
+    {"time": "01:00 - 02:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
+    {"time": "02:00 - 03:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "03:00 - 05:00", "subject": "LAB: B1-Applied Chem / B2-Mech Engg", "teacher": "VF-SA / VF-VS", "room": "Lab A-206 / A-205", "isLab": true}
   ],
   "Wed": [
-    {"time": "09:00 - 10:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
-    {"time": "10:00 - 11:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
+    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
+    {"time": "10:00 - 11:00", "subject": "Applied Math-I (Remedial)", "teacher": "VF-1SM", "room": "M-309"},
     {"time": "11:00 - 12:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
-    {"time": "01:00 - 02:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
-    {"time": "02:00 - 03:00", "subject": "Tech English (Remedial)", "teacher": "2AS", "room": "M-309"},
-    {"time": "03:00 - 04:00", "subject": "Applied Chem (Remedial)", "teacher": "VF-SB", "room": "M-309"}
+    {"time": "12:00 - 01:00", "subject": "Workshop Practice (Batch B2) / Design Thinking (Batch B1)", "teacher": "4JS / VF-1VV", "room": "Workshop / M-309", "isLab": true},
+    {"time": "02:00 - 03:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"}
   ],
   "Thu": [
-    {"time": "09:00 - 10:00", "subject": "Design Thinking", "teacher": "VF-1VV", "room": "M-309"},
-    {"time": "10:00 - 12:00", "subject": "Workshop Practice (Batch B2)", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "12:00 - 01:00", "subject": "Gen Mech Engg", "teacher": "4JS", "room": "M-309"},
-    {"time": "01:00 - 02:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
+    {"time": "09:00 - 10:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
+    {"time": "10:00 - 11:00", "subject": "Tech English (Remedial)", "teacher": "2AS", "room": "M-309"},
+    {"time": "11:00 - 12:00", "subject": "Tech English", "teacher": "2AS", "room": "M-309"},
+    {"time": "01:00 - 02:00", "subject": "Applied Chem (Remedial)", "teacher": "VF-SB", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"}
   ],
   "Fri": [
-    {"time": "09:00 - 11:00", "subject": "Workshop Practice (Batch B1)", "teacher": "4JS", "room": "Workshop", "isLab": true},
-    {"time": "11:00 - 12:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
+    {"time": "09:00 - 10:00", "subject": "Applied Math-I", "teacher": "VF-1SM", "room": "M-309"},
+    {"time": "10:00 - 12:00", "subject": "Workshop Practice (Batch B1)", "teacher": "4JS", "room": "Workshop", "isLab": true},
     {"time": "01:00 - 02:00", "subject": "Gen Mech Engg", "teacher": "1SK", "room": "M-309"},
     {"time": "02:00 - 03:00", "subject": "Basic Electronics", "teacher": "VF-1SS", "room": "M-309"},
-    {"time": "03:00 - 04:00", "subject": "Gen Mech Engg (Remedial)", "teacher": "4JS", "room": "M-309"},
-    {"time": "04:00 - 05:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"}
+    {"time": "03:00 - 04:00", "subject": "Basic Electronics (Remedial)", "teacher": "VF-1SS", "room": "M-309"},
+    {"time": "04:00 - 05:00", "subject": "Gen Mech Engg (Remedial)", "teacher": "4JS", "room": "M-309"}
   ]
 };
 
@@ -465,7 +471,8 @@ const defaultTimetable = {
 const canonicalSubjects = [
   'Applied Chem','Applied Math-I','Basic Electronics','Tech English','Gen Mech Engg','Design Thinking',
   'Workshop Practice (Batch B1)','Workshop Practice (Batch B2)',
-  'LAB: B2-Applied Chem / B1-Basic Elec','LAB: B2-Basic Elec / B1-Mech Engg','LAB: B1-Applied Chem / B2-Mech Engg',
+  'LAB: B1-Basic Elec / B2-Applied Chem','LAB: B1-Mech Engg / B2-Basic Elec','LAB: B1-Applied Chem / B2-Mech Engg',
+  'Workshop Practice (Batch B2) / Design Thinking (Batch B1)',
   'Applied Chem (Remedial)','Applied Math-I (Remedial)','Tech English (Remedial)','Basic Electronics (Remedial)','Gen Mech Engg (Remedial)'
 ];
 const canonicalTeachers = ['VF-SB','VF-1SM','VF-1SS','VF-SA','VF-VS','1SK','4JS','2AS','VF-1VV','Faculty'];
@@ -1165,8 +1172,8 @@ document.getElementById('tt-save-cloud-btn').onclick = async ()=>{
 
 function loadAttendance(){
   const el = document.getElementById('tab-attendance');
-  const todayStr = new Date().toISOString().split('T')[0];
-  
+  const todayStr = getLocalDateStr();
+
   el.innerHTML = `
     <div class="section-title"><h2>📋 Attendance</h2></div>
     <div class="card" style="max-width:100%;">
@@ -1197,7 +1204,7 @@ async function renderDayAttendanceForm(){
   if(!dateInpEl) return;
   const dateStr = dateInpEl.value;
   const container = document.getElementById('att-classes-container');
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateStr();
   
   if(isMstDate(dateStr) || isHolidayDate(dateStr)){
     const label = getMstLabel(dateStr) || getHolidayLabel(dateStr);
@@ -1223,10 +1230,7 @@ async function renderDayAttendanceForm(){
   onSnapshot(planSnap, async (pSnap)=>{
     const planType = pSnap.exists() ? pSnap.data().type : null;
 
-    if(planType === 'leave'){
-      container.innerHTML = `<div style="font-size:13px; color:var(--danger); font-weight:700; text-align:center; padding:10px;">🌴 Leave planned for this day (set on the Calendar tab) — every class today counts as Absent in your subject totals.</div>`;
-      return;
-    }
+    const isLeaveDay = planType === 'leave';
     
     const ttSnap = await doc(db, 'classes', classCode, 'meta', 'timetable');
     onSnapshot(ttSnap, async (tSnap)=>{
@@ -1254,6 +1258,10 @@ async function renderDayAttendanceForm(){
           let currentStatus = logs[logKey];
           if(!currentStatus){
             currentStatus = 'Absent'; // every unmarked class defaults to Absent — must explicitly check Present
+          }
+          // Override to Absent if it's a leave day, regardless of any existing Present mark
+          if(isLeaveDay){
+            currentStatus = 'Absent';
           }
           const isChecked = currentStatus === 'Present';
           const displaySubj = canonicalizeSubject(slot.subject); // shows the same folded name used on the stats bar below
@@ -1582,7 +1590,7 @@ async function renderSemesterAttendanceBar(){
     let teachingDays = 0, leaveDays = 0, attendedConfirmed = 0, gtDays = 0;
     let curr = new Date(startDate);
     while(curr <= semesterEnd){
-      const dStr = curr.toISOString().split('T')[0];
+      const dStr = getLocalDateStr(curr);
       const dName = dayNames[curr.getDay()];
       const isWeekend = (dName === 'Sun' || dName === 'Sat');
 
