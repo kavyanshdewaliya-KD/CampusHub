@@ -105,6 +105,19 @@
   .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; padding:16px;}
   .modal-body{background:var(--panel); border:3px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:85vh; overflow-y:auto; padding:20px; box-shadow:6px 6px 0 var(--border); color:var(--ink);}
   .edit-item-box{border:2px solid var(--border); border-radius:10px; padding:10px; margin-bottom:10px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
+
+  /* Discussion-request & poll notification dots */
+  .notif-wrap{position:relative; display:inline-block;}
+  .notif-dot{position:absolute; top:-4px; right:-4px; width:11px; height:11px; border-radius:50%; background:var(--danger); border:2px solid var(--panel); pointer-events:none;}
+  .notif-dot.dot-green{background:var(--good);}
+  .notif-dot.dot-badge{position:absolute; top:-6px; right:-6px; width:auto; min-width:16px; height:16px; border-radius:8px; font-size:9px; font-weight:800; color:#fff; display:flex; align-items:center; justify-content:center; padding:0 3px; border:2px solid var(--panel); background:var(--danger);}
+
+  /* Discussion topic rows (kept compact so the Discuss window stays small) */
+  .discuss-card{border:2px solid var(--border); border-radius:12px; padding:8px 10px; margin-bottom:8px; background:var(--panel); box-shadow:2px 2px 0 var(--border); display:flex; align-items:center; gap:8px; color:var(--ink);}
+
+  /* Drag-to-reorder rows used by the private-chat list editor */
+  .drag-row{display:flex; align-items:center; gap:8px; border:2px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:8px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
+  .drag-row.dragging{opacity:0.4;}
 </style>
 </head>
 <body data-theme="1">
@@ -286,6 +299,74 @@
   </div>
 </div>
 
+<!-- Raise a Discussion Topic — any member, max 2 requests per 24h -->
+<div id="raise-topic-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0;">
+    <div class="section-title">
+      <h3 style="margin:0;">🙋 Raise a Discussion Topic</h3>
+      <button id="raise-topic-close" class="del-btn">✕</button>
+    </div>
+    <p style="font-size:11px; opacity:.7;">Your CR/Admin needs to approve this before it shows up for everyone. You can raise up to 2 topics every 24 hours.</p>
+    <label style="font-size:12px; font-weight:700;">Quick emoji:</label>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 10px;" id="raise-emoji-picker">
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="🎮">🎮</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="📚">📚</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="🍕">🍕</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="🎉">🎉</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="⚽">⚽</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="💻">💻</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="🎬">🎬</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="❓">❓</button>
+      <button type="button" class="icon-btn raise-emoji-btn" style="width:32px; height:32px; font-size:16px;" data-e="🔥">🔥</button>
+    </div>
+    <label style="font-size:12px; font-weight:700;">Topic Name:</label>
+    <input id="raise-title-input" maxlength="60" placeholder="e.g. 🎮 Valorant Tournament Chat">
+    <label style="font-size:12px; font-weight:700;">Description:</label>
+    <textarea id="raise-desc-input" maxlength="200" rows="3" placeholder="What's this discussion about?"></textarea>
+    <p id="raise-status" style="font-size:11px; opacity:.7; margin:4px 0 8px;"></p>
+    <button class="btn-primary" id="raise-submit-btn" style="padding:10px; font-size:13px;">🚀 Send Request</button>
+  </div>
+</div>
+
+<!-- CR/Admin-only: approve or deny raised discussion-topic requests -->
+<div id="discuss-approval-modal" class="modal-overlay hidden">
+  <div class="modal-body">
+    <div class="section-title">
+      <h3 style="margin:0;">🛡️ Discussion Requests</h3>
+      <button id="discuss-approval-close" class="del-btn">✕ Close</button>
+    </div>
+    <div id="discuss-approval-list"></div>
+  </div>
+</div>
+
+<!-- An open discussion topic's own mini chat thread -->
+<div id="discuss-thread-modal" class="modal-overlay hidden">
+  <div class="modal-body">
+    <div class="section-title">
+      <h3 style="margin:0;" id="discuss-thread-title">🗣️ Discussion</h3>
+      <div style="display:flex; gap:6px;">
+        <button id="discuss-thread-end-btn" class="del-btn hidden">🗑️ End</button>
+        <button id="discuss-thread-close" class="del-btn">✕ Close</button>
+      </div>
+    </div>
+    <p id="discuss-thread-desc" style="font-size:12px; opacity:.75; margin-top:-4px;"></p>
+    <div class="chat-log" id="discuss-thread-log" style="height:260px;"></div>
+    <div class="chat-input-row"><input id="discuss-thread-input" placeholder="Message…"><button class="send-btn" id="discuss-thread-send">Send</button></div>
+  </div>
+</div>
+
+<!-- Edit private-chat list: remove someone or drag to reorder -->
+<div id="edit-friends-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0;">
+    <div class="section-title">
+      <h3 style="margin:0;">✏️ Edit Chat List</h3>
+      <button id="edit-friends-close" class="del-btn">✕</button>
+    </div>
+    <p style="font-size:11px; opacity:.7;">Drag ⋮⋮ to reorder, or remove someone from your private chats list.</p>
+    <div id="edit-friends-list"></div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -335,8 +416,16 @@ let user = null;
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
 let lastPrivateTarget = null;
-let chatSubView = 'chat'; // 'chat' | 'polls'
+let chatSubView = 'chat'; // 'chat' | 'polls' | 'discuss'
 let pollVoteUnsubs = {}; // pollId -> unsubscribe fn, so we don't stack listeners on re-render
+let discussionsCache = []; // every discussion doc (pending/approved) from the shared listener, filtered client-side
+let latestPollTs = null; // ms timestamp of the newest poll — powers the 🔔 dot on the Polls button
+let latestApprovedDiscussionTs = null; // ms timestamp of the newest approval — powers the 🔔 dot on the Discuss button
+let activeDiscussionId = null;
+let discussionThreadUnsub = null;
+let renderRecentBarRef = null; // set inside loadChat() so the friend-list editor can refresh the private-chat bar
+const MAX_DISCUSS_RAISES = 2;
+const DISCUSS_RAISE_WINDOW_MS = 24 * 60 * 60 * 1000;
 let currentTimetableData = {};
 let currentCalMonth = 9; // September 2026 default
 let adminOverrides = {}; // admin-set Holiday / GT (Group Tadi) days: { 'YYYY-MM-DD': {type:'holiday'|'gt', label:''} }
@@ -1904,34 +1993,48 @@ function loadAnnouncements(){
 function loadChat(){
   const el = document.getElementById('tab-chat');
   el.innerHTML = `
-    <div class="section-title"><h2>💬 Chat</h2></div>
+    <div class="section-title">
+      <h2>💬 Chat</h2>
+      ${profile.isAdmin ? `<span class="notif-wrap"><button class="icon-btn" id="btn-discuss-requests" title="Discussion Requests">🛡️</button><span class="notif-dot dot-badge hidden" id="discuss-req-badge">0</span></span>` : ''}
+    </div>
     <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;" id="chat-tabs-bar">
       <button class="add-btn" id="btn-chat-all" style="background:var(--primary); color:#fff;">🌐 Class Chat</button>
       <button class="add-btn" id="btn-chat-priv" style="background:#fff;">🤫 Private Chats</button>
-      <button class="add-btn" id="btn-chat-polls" style="background:#fff;">📊 Polls</button>
+      <span class="notif-wrap"><button class="add-btn" id="btn-chat-polls" style="background:#fff;">📊 Polls</button><span class="notif-dot hidden" id="poll-nav-dot"></span></span>
+      <span class="notif-wrap"><button class="add-btn" id="btn-chat-discuss" style="background:#fff;">🗣️ Discuss</button><span class="notif-dot hidden" id="discuss-nav-dot"></span></span>
     </div>
     <div id="chat-classic-view">
       <div id="private-recent-bar" class="hidden" style="margin-bottom:10px; background:var(--chip); padding:8px; border:2px solid var(--border); border-radius:10px;">
-        <div style="font-size:11px; font-weight:700; margin-bottom:4px;">Chat privately with:</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <div style="font-size:11px; font-weight:700;">Chat privately with:</div>
+          <button class="icon-btn" id="btn-edit-friends" title="Edit list" style="width:26px; height:26px; font-size:12px;">✏️</button>
+        </div>
         <div id="recent-threads-list" style="display:flex; gap:6px; overflow-x:auto;"></div>
       </div>
       <div class="chat-log" id="chat-log"></div>
       <div class="chat-input-row"><input id="chat-in" placeholder="Message…"><button class="send-btn" id="chat-send">Send</button></div>
     </div>
-    <div id="polls-view" class="hidden"></div>`;
+    <div id="polls-view" class="hidden"></div>
+    <div id="discuss-view" class="hidden"></div>`;
 
   const setTabStyles = () => {
     const btnAll = document.getElementById('btn-chat-all');
     const btnPriv = document.getElementById('btn-chat-priv');
     const btnPolls = document.getElementById('btn-chat-polls');
+    const btnDiscuss = document.getElementById('btn-chat-discuss');
     const classicView = document.getElementById('chat-classic-view');
     const pollsView = document.getElementById('polls-view');
-    [btnAll, btnPriv, btnPolls].forEach(b => { b.style.background = '#fff'; b.style.color = ''; });
+    const discussView = document.getElementById('discuss-view');
+    [btnAll, btnPriv, btnPolls, btnDiscuss].forEach(b => { b.style.background = '#fff'; b.style.color = ''; });
+    classicView.classList.add('hidden'); pollsView.classList.add('hidden'); discussView.classList.add('hidden');
     if(chatSubView === 'polls'){
       btnPolls.style.background = 'var(--primary)'; btnPolls.style.color = '#fff';
-      classicView.classList.add('hidden'); pollsView.classList.remove('hidden');
+      pollsView.classList.remove('hidden');
+    } else if(chatSubView === 'discuss'){
+      btnDiscuss.style.background = 'var(--primary)'; btnDiscuss.style.color = '#fff';
+      discussView.classList.remove('hidden');
     } else {
-      classicView.classList.remove('hidden'); pollsView.classList.add('hidden');
+      classicView.classList.remove('hidden');
       if(activeChatTarget === 'ALL'){ btnAll.style.background = 'var(--primary)'; btnAll.style.color = '#fff'; }
       else { btnPriv.style.background = 'var(--primary)'; btnPriv.style.color = '#fff'; }
     }
@@ -2034,6 +2137,8 @@ function loadChat(){
     });
   };
 
+  renderRecentBarRef = renderRecentBar;
+
   document.getElementById('btn-chat-all').onclick = ()=>{ activeChatTarget = 'ALL'; renderLog(); };
   document.getElementById('btn-chat-priv').onclick = ()=>{
     activeChatTarget = lastPrivateTarget || 'NONE';
@@ -2043,7 +2148,20 @@ function loadChat(){
     chatSubView = 'polls';
     setTabStyles();
     renderPolls();
+    markNotifSeen('ch_poll_seen_ts', latestPollTs);
+    updateChatNavDots();
   };
+  document.getElementById('btn-chat-discuss').onclick = ()=>{
+    chatSubView = 'discuss';
+    setTabStyles();
+    renderDiscussList();
+    markNotifSeen('ch_discuss_seen_ts', latestApprovedDiscussionTs);
+    updateChatNavDots();
+  };
+  document.getElementById('btn-edit-friends').onclick = openEditFriendsModal;
+  if(profile.isAdmin){
+    document.getElementById('btn-discuss-requests').onclick = openApprovalModal;
+  }
 
   const sendMsg = async () => {
     const inp = document.getElementById('chat-in'); const text = inp.value.trim(); if(!text) return;
@@ -2062,7 +2180,329 @@ function loadChat(){
 
   document.getElementById('chat-send').onclick = sendMsg;
   document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
+
+  // --- Discussion Topics + notification dots (runs once, independent of which sub-view is open) ---
+
+  // Latest-poll tracker for the 🔔 dot on the Polls button — separate from renderPolls(),
+  // which only sets up its listeners once someone actually opens the Polls sub-view.
+  onSnapshot(query(collection(db,'classes',classCode,'polls'), orderBy('ts','desc'), limit(1)), (snap)=>{
+    latestPollTs = null;
+    snap.forEach(d=>{ const t = d.data().ts; latestPollTs = t ? t.toMillis() : Date.now(); });
+    updateChatNavDots();
+  });
+
+  // Shared discussions listener — powers the approved topic list, the admin approval
+  // panel, and everyone's own 2-per-24h raise-limit check. Filtered client-side, same
+  // trust model the rest of the app already uses (e.g. member docs / access control).
+  onSnapshot(collection(db,'classes',classCode,'discussions'), (snap)=>{
+    discussionsCache = [];
+    snap.forEach(d=>{
+      const data = d.data();
+      discussionsCache.push({
+        id: d.id, ...data,
+        tsMillis: data.ts ? data.ts.toMillis() : Date.now(),
+        approvedTsMillis: data.approvedTs ? data.approvedTs.toMillis() : null
+      });
+    });
+    const approved = discussionsCache.filter(d=>d.status==='approved');
+    latestApprovedDiscussionTs = approved.length ? Math.max(...approved.map(d=>d.approvedTsMillis || d.tsMillis || 0)) : null;
+    updateChatNavDots();
+    if(chatSubView === 'discuss') renderDiscussList();
+    if(profile.isAdmin) refreshApprovalBadge();
+  });
+
+  // Raise-a-topic popup
+  document.querySelectorAll('.raise-emoji-btn').forEach(btn=>{
+    btn.onclick = () => {
+      const inp = document.getElementById('raise-title-input');
+      inp.value = (inp.value + ' ' + btn.dataset.e).trim();
+      inp.focus();
+    };
+  });
+  document.getElementById('raise-topic-close').onclick = () => document.getElementById('raise-topic-modal').classList.add('hidden');
+  document.getElementById('raise-submit-btn').onclick = async () => {
+    if(myRecentRaiseCount() >= MAX_DISCUSS_RAISES){
+      document.getElementById('raise-status').textContent = "You've hit your 2-per-24-hour limit — try again later.";
+      return;
+    }
+    const title = document.getElementById('raise-title-input').value.trim();
+    const description = document.getElementById('raise-desc-input').value.trim();
+    if(!title){ document.getElementById('raise-status').textContent = 'Give your topic a name first!'; return; }
+    document.getElementById('raise-submit-btn').disabled = true;
+    try {
+      await addDoc(collection(db,'classes',classCode,'discussions'), {
+        title, description, status:'pending',
+        requestedBy: user.uid, requestedByName: getDisplayName(),
+        ts: serverTimestamp()
+      });
+      document.getElementById('raise-topic-modal').classList.add('hidden');
+      alert('🙋 Request sent! Your CR/Admin will review it shortly.');
+    } catch(e){
+      document.getElementById('raise-status').textContent = 'Error sending request: ' + e.message;
+    } finally {
+      document.getElementById('raise-submit-btn').disabled = false;
+    }
+  };
+
+  // Admin approval modal
+  document.getElementById('discuss-approval-close').onclick = () => document.getElementById('discuss-approval-modal').classList.add('hidden');
+
+  // Discussion thread modal
+  document.getElementById('discuss-thread-close').onclick = () => {
+    document.getElementById('discuss-thread-modal').classList.add('hidden');
+    if(discussionThreadUnsub){ discussionThreadUnsub(); discussionThreadUnsub = null; }
+    activeDiscussionId = null;
+  };
+  document.getElementById('discuss-thread-end-btn').onclick = () => { if(activeDiscussionId) endDiscussion(activeDiscussionId); };
+  const sendDiscussMsg = async () => {
+    const inp = document.getElementById('discuss-thread-input');
+    const text = inp.value.trim();
+    if(!text || !activeDiscussionId) return;
+    await addDoc(collection(db,'classes',classCode,'discussions',activeDiscussionId,'messages'), {
+      text, name:getDisplayName(), uid:user.uid, role:profile.role, vibeTag:profile.vibeTag||'', color:profile.chatColor||null, ts: serverTimestamp()
+    });
+    inp.value = '';
+  };
+  document.getElementById('discuss-thread-send').onclick = sendDiscussMsg;
+  document.getElementById('discuss-thread-input').onkeydown = e => { if(e.key==='Enter') sendDiscussMsg(); };
+
+  // Edit-friends-list modal
+  document.getElementById('edit-friends-close').onclick = () => document.getElementById('edit-friends-modal').classList.add('hidden');
+
   renderLog();
+}
+
+// --- Notification dot helpers (shared by the Polls button and the Discuss button) ---
+function dotStateFor(latestTs, seenKey){
+  if(!latestTs) return 'none';
+  let seen = localStorage.getItem(seenKey);
+  if(seen === null){
+    // First time this device has ever tracked this dot — don't flag pre-existing
+    // content as "new", just quietly mark it seen so only genuinely new stuff lights up.
+    localStorage.setItem(seenKey, String(latestTs));
+    return 'green';
+  }
+  return latestTs > Number(seen) ? 'red' : 'green';
+}
+function markNotifSeen(key, ts){ localStorage.setItem(key, String(ts || Date.now())); }
+function updateChatNavDots(){
+  const pollDot = document.getElementById('poll-nav-dot');
+  if(pollDot){
+    const st = dotStateFor(latestPollTs, 'ch_poll_seen_ts');
+    pollDot.classList.toggle('hidden', st === 'none');
+    pollDot.classList.toggle('dot-green', st === 'green');
+  }
+  const discussDot = document.getElementById('discuss-nav-dot');
+  if(discussDot){
+    const st = dotStateFor(latestApprovedDiscussionTs, 'ch_discuss_seen_ts');
+    discussDot.classList.toggle('hidden', st === 'none');
+    discussDot.classList.toggle('dot-green', st === 'green');
+  }
+}
+
+// --- Discussion Topics: raise / approve / view ---
+function myRecentRaiseCount(){
+  if(!user) return 0;
+  const cutoff = Date.now() - DISCUSS_RAISE_WINDOW_MS;
+  return discussionsCache.filter(d => d.requestedBy === user.uid && (d.tsMillis || 0) >= cutoff).length;
+}
+
+function openRaiseTopicModal(){
+  document.getElementById('raise-title-input').value = '';
+  document.getElementById('raise-desc-input').value = '';
+  document.getElementById('raise-status').textContent = '';
+  document.getElementById('raise-topic-modal').classList.remove('hidden');
+}
+
+function renderDiscussList(){
+  const view = document.getElementById('discuss-view');
+  if(!view) return;
+  const approved = discussionsCache.filter(d=>d.status==='approved')
+    .sort((a,b)=>(b.approvedTsMillis||b.tsMillis||0)-(a.approvedTsMillis||a.tsMillis||0));
+  const remaining = Math.max(0, MAX_DISCUSS_RAISES - myRecentRaiseCount());
+  const limitNote = remaining > 0
+    ? `🙋 You can raise ${remaining} more topic${remaining===1?'':'s'} today`
+    : `⏳ Daily raise limit reached — try again later`;
+
+  view.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+      <div style="font-size:11px; opacity:.7; font-weight:600;">${limitNote}</div>
+      <button class="add-btn" id="btn-raise-topic" style="font-size:12px; background:var(--accent2); ${remaining<=0?'opacity:.5;':''}" ${remaining<=0?'disabled':''}>🙋 Raise Topic</button>
+    </div>
+    <div id="discuss-list"></div>`;
+
+  const list = document.getElementById('discuss-list');
+  if(!approved.length){
+    list.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:16px;">No discussion topics yet — raise one above!</div>`;
+  } else {
+    list.innerHTML = approved.map(d => `
+      <div class="discuss-card">
+        <div style="font-size:20px;">🗣️</div>
+        <div style="flex:1; min-width:0; cursor:pointer;" class="discuss-open" data-id="${d.id}">
+          <b style="font-size:13px;">${d.title}</b>
+          <div style="font-size:11px; opacity:.7; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.description || ''}</div>
+        </div>
+        ${profile.isAdmin ? `<button class="del-btn discuss-end-btn" data-id="${d.id}" style="font-size:10px; padding:4px 8px; flex-shrink:0;">🗑️ End</button>` : ''}
+      </div>`).join('');
+  }
+
+  document.getElementById('btn-raise-topic').onclick = () => { if(remaining > 0) openRaiseTopicModal(); };
+  list.querySelectorAll('.discuss-open').forEach(elm=>{
+    elm.onclick = () => openDiscussionThread(elm.dataset.id);
+  });
+  if(profile.isAdmin){
+    list.querySelectorAll('.discuss-end-btn').forEach(btn=>{
+      btn.onclick = (e) => { e.stopPropagation(); endDiscussion(btn.dataset.id); };
+    });
+  }
+}
+
+function openDiscussionThread(id){
+  const d = discussionsCache.find(x=>x.id===id);
+  if(!d) return;
+  activeDiscussionId = id;
+  document.getElementById('discuss-thread-title').textContent = `🗣️ ${d.title}`;
+  document.getElementById('discuss-thread-desc').textContent = d.description || '';
+  document.getElementById('discuss-thread-end-btn').classList.toggle('hidden', !profile.isAdmin);
+  document.getElementById('discuss-thread-modal').classList.remove('hidden');
+
+  if(discussionThreadUnsub){ discussionThreadUnsub(); discussionThreadUnsub = null; }
+  const q = query(collection(db,'classes',classCode,'discussions',id,'messages'), orderBy('ts','asc'), limit(200));
+  discussionThreadUnsub = onSnapshot(q, (snap)=>{
+    const log = document.getElementById('discuss-thread-log');
+    if(!log) return;
+    log.innerHTML = '';
+    snap.forEach(md=>{
+      const m = md.data();
+      const hue = getUserHue(m.uid || m.name || 'x');
+      const bg = m.color ? m.color.bg : 'var(--chip)';
+      const borderCol = m.color ? m.color.text : `hsl(${hue},65%,45%)`;
+      const nameCol = m.color ? m.color.text : `hsl(${hue},70%,42%)`;
+      log.innerHTML += `
+        <div class="msg" style="background:${bg}; border-left:6px solid ${borderCol};">
+          <b style="color:${nameCol};">${m.name}</b>
+          <div>${m.text}</div>
+        </div>`;
+    });
+    log.scrollTop = log.scrollHeight;
+  });
+}
+
+async function endDiscussion(id){
+  if(!confirm('End this discussion for everyone? This deletes all its messages too. This cannot be undone.')) return;
+  try {
+    const msgsSnap = await getDocs(collection(db,'classes',classCode,'discussions',id,'messages'));
+    for(const d of msgsSnap.docs) await deleteDoc(d.ref);
+    await deleteDoc(doc(db,'classes',classCode,'discussions',id));
+    if(activeDiscussionId === id){
+      document.getElementById('discuss-thread-modal').classList.add('hidden');
+      if(discussionThreadUnsub){ discussionThreadUnsub(); discussionThreadUnsub = null; }
+      activeDiscussionId = null;
+    }
+  } catch(e){
+    alert('Error ending discussion: ' + e.message);
+  }
+}
+
+function openApprovalModal(){
+  document.getElementById('discuss-approval-modal').classList.remove('hidden');
+  renderApprovalList();
+}
+
+function renderApprovalList(){
+  const wrap = document.getElementById('discuss-approval-list');
+  if(!wrap) return;
+  const pending = discussionsCache.filter(d=>d.status==='pending').sort((a,b)=>(a.tsMillis||0)-(b.tsMillis||0));
+  if(!pending.length){
+    wrap.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:16px;">No pending requests right now.</div>`;
+    return;
+  }
+  wrap.innerHTML = pending.map(d => `
+    <div class="edit-item-box">
+      <b style="font-size:13px;">${d.title}</b>
+      <div style="font-size:11px; opacity:.75; margin:4px 0;">${d.description || '<i>No description</i>'}</div>
+      <div style="font-size:10px; opacity:.6; margin-bottom:8px;">raised by ${d.requestedByName || 'a member'}</div>
+      <div style="display:flex; gap:6px;">
+        <button class="add-btn approve-btn" data-id="${d.id}" style="flex:1; background:var(--good); color:#fff;">✅ Approve</button>
+        <button class="del-btn deny-btn" data-id="${d.id}" style="flex:1;">❌ Deny</button>
+      </div>
+    </div>`).join('');
+
+  wrap.querySelectorAll('.approve-btn').forEach(btn=>{
+    btn.onclick = async () => {
+      await updateDoc(doc(db,'classes',classCode,'discussions',btn.dataset.id), {
+        status: 'approved', approvedTs: serverTimestamp(), approvedBy: getDisplayName()
+      });
+      pushNotifyEveryone('🗣️ New Discussion Topic!', 'A new discussion topic just opened up — go check it out 👀');
+    };
+  });
+  wrap.querySelectorAll('.deny-btn').forEach(btn=>{
+    btn.onclick = async () => {
+      if(confirm('Deny and remove this request?')) await deleteDoc(doc(db,'classes',classCode,'discussions',btn.dataset.id));
+    };
+  });
+}
+
+function refreshApprovalBadge(){
+  const badge = document.getElementById('discuss-req-badge');
+  if(!badge) return;
+  const count = discussionsCache.filter(d=>d.status==='pending').length;
+  badge.textContent = count;
+  badge.classList.toggle('hidden', count === 0);
+  const modal = document.getElementById('discuss-approval-modal');
+  if(modal && !modal.classList.contains('hidden')) renderApprovalList();
+}
+
+// --- Private-chat friends list editor: remove & drag-reorder ---
+function openEditFriendsModal(){
+  renderEditFriendsList();
+  document.getElementById('edit-friends-modal').classList.remove('hidden');
+}
+
+function renderEditFriendsList(){
+  const wrap = document.getElementById('edit-friends-list');
+  if(!wrap) return;
+  if(!recentChatList.length){
+    wrap.innerHTML = `<div style="font-size:12px; opacity:.6; text-align:center; padding:16px;">No private chats yet.</div>`;
+    return;
+  }
+  wrap.innerHTML = recentChatList.map((r,i) => `
+    <div class="drag-row" draggable="true" data-uid="${r.uid}" data-idx="${i}">
+      <span style="font-size:16px; cursor:grab;">⋮⋮</span>
+      <span style="flex:1; font-weight:700; font-size:13px;">${r.name}</span>
+      <button class="del-btn remove-friend-btn" data-uid="${r.uid}" style="font-size:10px; padding:4px 8px;">✕ Remove</button>
+    </div>`).join('');
+
+  wrap.querySelectorAll('.remove-friend-btn').forEach(btn=>{
+    btn.onclick = () => {
+      recentChatList = recentChatList.filter(r => r.uid !== btn.dataset.uid);
+      localStorage.setItem('ch_recent_chats', JSON.stringify(recentChatList));
+      if(activeChatTarget === btn.dataset.uid){ activeChatTarget = 'NONE'; lastPrivateTarget = null; }
+      renderEditFriendsList();
+      if(renderRecentBarRef) renderRecentBarRef();
+    };
+  });
+
+  let dragSrcIdx = null;
+  wrap.querySelectorAll('.drag-row').forEach(row=>{
+    row.addEventListener('dragstart', ()=>{
+      dragSrcIdx = Number(row.dataset.idx);
+      row.classList.add('dragging');
+    });
+    row.addEventListener('dragend', ()=> row.classList.remove('dragging'));
+    row.addEventListener('dragover', (e)=> e.preventDefault());
+    row.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      const targetIdx = Number(row.dataset.idx);
+      if(dragSrcIdx === null || targetIdx === dragSrcIdx) return;
+      const moved = recentChatList.splice(dragSrcIdx, 1)[0];
+      recentChatList.splice(targetIdx, 0, moved);
+      localStorage.setItem('ch_recent_chats', JSON.stringify(recentChatList));
+      dragSrcIdx = null;
+      renderEditFriendsList();
+      if(renderRecentBarRef) renderRecentBarRef();
+    });
+  });
 }
 
 const pollThemes = [
