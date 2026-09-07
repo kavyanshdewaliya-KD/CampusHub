@@ -226,7 +226,7 @@
 
 <!-- Settings, Theme & Dual Role Key Modal -->
 <div id="settings-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0;">
+  <div class="modal-body" style="max-width:420px;">
     <div class="section-title">
       <h3 style="margin:0;">⚙️ App Settings</h3>
       <button id="settings-close" class="del-btn">✕</button>
@@ -265,18 +265,37 @@
     </div>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <label style="font-size:12px; font-weight:700;">🔒 Your Privacy &amp; Data:</label>
-      <p style="font-size:11px; opacity:.7; margin:4px 0 8px;">Under India's DPDP Act, you can download a copy of your data or permanently delete your account.</p>
-      <button class="add-btn" id="export-data-btn" style="width:100%; margin-bottom:8px;">⬇️ Export My Data (JSON)</button>
-      <button class="add-btn" id="delete-account-btn" style="width:100%; color:var(--danger); font-weight:700;">🗑️ Delete My Account &amp; Data</button>
-      <p id="privacy-action-status" style="font-size:11px; opacity:.7; margin-top:8px;"></p>
-    </div>
-
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
+      <button class="add-btn" id="open-account-menu-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Logout / Privacy &amp; Data</button>
     </div>
   </div>
 </div>
+
+<!-- Small popup behind the door icon: pick Logout, or dig into Privacy & Data -->
+<div id="account-menu-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0; max-width:320px;">
+    <div class="section-title">
+      <h3 style="margin:0; font-size:15px;">🚪 Account</h3>
+      <button id="account-menu-close" class="del-btn">✕</button>
+    </div>
+    <button class="add-btn" id="open-privacy-data-btn" style="width:100%; margin-bottom:8px;">🔒 Privacy &amp; Data</button>
+    <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
+  </div>
+</div>
+
+<!-- Export / Delete — tucked behind Account so the main Settings list stays short -->
+<div id="privacy-data-modal" class="modal-overlay hidden">
+  <div class="card" style="margin:0;">
+    <div class="section-title">
+      <h3 style="margin:0; font-size:15px;">🔒 Your Privacy &amp; Data</h3>
+      <button id="privacy-data-close" class="del-btn">✕</button>
+    </div>
+    <p style="font-size:11px; opacity:.7; margin:4px 0 8px;">Under India's DPDP Act, you can download a copy of your data or permanently delete your account.</p>
+    <button class="add-btn" id="export-data-btn" style="width:100%; margin-bottom:8px;">⬇️ Export My Data (JSON)</button>
+    <button class="add-btn" id="delete-account-btn" style="width:100%; color:var(--danger); font-weight:700;">🗑️ Delete My Account &amp; Data</button>
+    <p id="privacy-action-status" style="font-size:11px; opacity:.7; margin-top:8px;"></p>
+  </div>
+</div>
+
 
 <!-- Standalone admin-key modal, . -->
 <div id="admin-key-modal" class="modal-overlay hidden">
@@ -1029,6 +1048,17 @@ function renderChatColorSwatches(){
     };
   });
 }
+
+document.getElementById('open-account-menu-btn').onclick = () => {
+  document.getElementById('settings-modal').classList.add('hidden');
+  document.getElementById('account-menu-modal').classList.remove('hidden');
+};
+document.getElementById('account-menu-close').onclick = () => document.getElementById('account-menu-modal').classList.add('hidden');
+document.getElementById('open-privacy-data-btn').onclick = () => {
+  document.getElementById('account-menu-modal').classList.add('hidden');
+  document.getElementById('privacy-data-modal').classList.remove('hidden');
+};
+document.getElementById('privacy-data-close').onclick = () => document.getElementById('privacy-data-modal').classList.add('hidden');
 
 document.getElementById('logout-btn').onclick = ()=>{
   if(confirm("Log out of CampusHub?")) signOut(auth);
