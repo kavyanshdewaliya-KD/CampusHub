@@ -228,7 +228,7 @@
 <div id="settings-modal" class="modal-overlay hidden">
   <div class="modal-body" style="max-width:420px;">
     <div class="section-title">
-      <h3 style="margin:0;">⚙️ App Settings</h3>
+      <h3 style="margin:0;">✨ Personalize</h3>
       <button id="settings-close" class="del-btn">✕</button>
     </div>
     
@@ -257,42 +257,34 @@
       <label style="font-size:12px; font-weight:700;">💬 Chat Color:</label>
       <div id="chat-color-swatches" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
     </div>
+  </div>
+</div>
 
-    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+<!-- ⚙️ icon opens THIS: notifications, export, delete, logout — nothing else -->
+<div id="account-modal" class="modal-overlay hidden">
+  <div class="modal-body" style="max-width:420px;">
+    <div class="section-title">
+      <h3 style="margin:0;">⚙️ Account Settings</h3>
+      <button id="account-close" class="del-btn">✕</button>
+    </div>
+
+    <div>
       <label style="font-size:12px; font-weight:700;">🔔 Push Notifications:</label>
       <p id="notif-status" style="font-size:11px; opacity:.7; margin:4px 0 8px;">Not enabled on this device yet.</p>
       <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
     </div>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
-      <button class="add-btn" id="open-account-menu-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Logout / Privacy &amp; Data</button>
+      <label style="font-size:12px; font-weight:700;">🔒 Your Privacy &amp; Data:</label>
+      <p style="font-size:11px; opacity:.7; margin:4px 0 8px;">Under India's DPDP Act, you can download a copy of your data or permanently delete your account.</p>
+      <button class="add-btn" id="export-data-btn" style="width:100%; margin-bottom:8px;">⬇️ Export My Data (JSON)</button>
+      <button class="add-btn" id="delete-account-btn" style="width:100%; color:var(--danger); font-weight:700;">🗑️ Delete My Account &amp; Data</button>
+      <p id="privacy-action-status" style="font-size:11px; opacity:.7; margin-top:8px;"></p>
     </div>
-  </div>
-</div>
 
-<!-- Small popup behind the door icon: pick Logout, or dig into Privacy & Data -->
-<div id="account-menu-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0; max-width:320px;">
-    <div class="section-title">
-      <h3 style="margin:0; font-size:15px;">🚪 Account</h3>
-      <button id="account-menu-close" class="del-btn">✕</button>
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
     </div>
-    <button class="add-btn" id="open-privacy-data-btn" style="width:100%; margin-bottom:8px;">🔒 Privacy &amp; Data</button>
-    <button class="add-btn" id="logout-btn" style="width:100%; color:var(--danger); font-weight:700;">🚪 Log Out</button>
-  </div>
-</div>
-
-<!-- Export / Delete — tucked behind Account so the main Settings list stays short -->
-<div id="privacy-data-modal" class="modal-overlay hidden">
-  <div class="card" style="margin:0;">
-    <div class="section-title">
-      <h3 style="margin:0; font-size:15px;">🔒 Your Privacy &amp; Data</h3>
-      <button id="privacy-data-close" class="del-btn">✕</button>
-    </div>
-    <p style="font-size:11px; opacity:.7; margin:4px 0 8px;">Under India's DPDP Act, you can download a copy of your data or permanently delete your account.</p>
-    <button class="add-btn" id="export-data-btn" style="width:100%; margin-bottom:8px;">⬇️ Export My Data (JSON)</button>
-    <button class="add-btn" id="delete-account-btn" style="width:100%; color:var(--danger); font-weight:700;">🗑️ Delete My Account &amp; Data</button>
-    <p id="privacy-action-status" style="font-size:11px; opacity:.7; margin-top:8px;"></p>
   </div>
 </div>
 
@@ -938,17 +930,21 @@ function updateNameChangeStatusUI(){
   }
 }
 
-function openSettings(){
+function openPersonalize(){
   document.getElementById('vibe-tag-input').value = profile.vibeTag || '';
   renderChatColorSwatches();
-  updateNotifStatusUI();
   updateNameChangeStatusUI();
   document.getElementById('settings-modal').classList.remove('hidden');
 }
+function openAccountSettings(){
+  updateNotifStatusUI();
+  document.getElementById('account-modal').classList.remove('hidden');
+}
 
-document.getElementById('settings-btn').onclick = openSettings;
-document.getElementById('hdr-name').onclick = openSettings;
+document.getElementById('settings-btn').onclick = openAccountSettings;
+document.getElementById('hdr-name').onclick = openPersonalize;
 document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
+document.getElementById('account-close').onclick = ()=> document.getElementById('account-modal').classList.add('hidden');
 
 // --- DPDP Section 11 (Right to Access) & Section 12 (Right to Erasure) ---
 document.getElementById('export-data-btn').onclick = async () => {
@@ -1048,17 +1044,6 @@ function renderChatColorSwatches(){
     };
   });
 }
-
-document.getElementById('open-account-menu-btn').onclick = () => {
-  document.getElementById('settings-modal').classList.add('hidden');
-  document.getElementById('account-menu-modal').classList.remove('hidden');
-};
-document.getElementById('account-menu-close').onclick = () => document.getElementById('account-menu-modal').classList.add('hidden');
-document.getElementById('open-privacy-data-btn').onclick = () => {
-  document.getElementById('account-menu-modal').classList.add('hidden');
-  document.getElementById('privacy-data-modal').classList.remove('hidden');
-};
-document.getElementById('privacy-data-close').onclick = () => document.getElementById('privacy-data-modal').classList.add('hidden');
 
 document.getElementById('logout-btn').onclick = ()=>{
   if(confirm("Log out of CampusHub?")) signOut(auth);
