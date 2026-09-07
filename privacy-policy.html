@@ -5,123 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Notice — CampusHub</title>
 <style>
-  body{background:#F1EEFC; color:#241645; font-family:'Poppins',sans-serif; margin:0; padding:24px 16px 60px;}
-  .wrap{max-width:680px; margin:0 auto; background:#fff; border:3px solid #241645; border-radius:20px; padding:28px; box-shadow:6px 6px 0 #241645;}
-  h1,h2,h3{font-family:'Baloo 2','Fredoka',sans-serif;}
-  h1{font-size:24px;} h2{font-size:18px; margin-top:28px;} h3{font-size:15px;}
-  table{width:100%; border-collapse:collapse; font-size:13px; margin:12px 0;}
-  th,td{border:2px solid #241645; padding:8px; text-align:left; vertical-align:top;}
-  th{background:#E7E1FF;}
-  blockquote{background:#E7E1FF; border-left:5px solid #6C4CE0; margin:12px 0; padding:10px 14px; border-radius:8px; font-size:13px;}
-  a{color:#6C4CE0; font-weight:600;}
-  code{background:#E7E1FF; padding:2px 5px; border-radius:5px;}
-  .back{display:inline-block; margin-bottom:16px; font-size:13px; text-decoration:none; color:#6C4CE0; font-weight:700;}
+  :root{ --bg:#F4F2FC; --panel:#ffffff; --ink:#241645; --primary:#6C4CE0; --border:#241645; --chip:#E7E1FF; }
+  *{box-sizing:border-box;}
+  body{margin:0; padding:24px 16px 60px; background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; line-height:1.6;}
+  .wrap{max-width:760px; margin:0 auto; background:var(--panel); border:3px solid var(--border); border-radius:18px; padding:32px 28px; box-shadow:6px 6px 0 var(--border);}
+  h1{margin-top:0; font-size:26px;}
+  h2{font-size:18px; margin-top:34px; padding-top:14px; border-top:2px solid var(--chip);}
+  h3{font-size:15px; margin-bottom:6px;}
+  .meta{font-size:13px; opacity:.65; margin-bottom:24px;}
+  ul{padding-left:20px;}
+  li{margin-bottom:6px;}
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:12px 0;}
+  th,td{border:1px solid var(--chip); padding:8px 10px; text-align:left; vertical-align:top;}
+  th{background:var(--chip);}
+  .callout{background:var(--chip); border-radius:10px; padding:14px 16px; font-size:13.5px; margin:16px 0;}
+  .placeholder{background:#FFF3CD; padding:1px 5px; border-radius:4px; font-weight:600;}
+  a{color:var(--primary);}
+  code{background:var(--chip); padding:1px 5px; border-radius:4px; font-size:12.5px;}
+  .backlink{display:inline-block; margin-top:28px; font-size:13px;}
 </style>
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="/">&larr; Back to CampusHub</a>
-<h1>CampusHub — Privacy Notice</h1>
-<p><strong>Policy Version:</strong> v1.0-2026-09-07
-<strong>Last Updated:</strong> [DATE]</p>
-<p>This Privacy Notice explains how CampusHub ("<strong>we</strong>", "<strong>the app</strong>") collects, uses, stores, and protects your personal data, in accordance with the Digital Personal Data Protection Act, 2023 ("<strong>DPDP Act</strong>").</p>
-<p>CampusHub is a batch-management tool built for IET DAVV CSE-B. By using the app, you are a "Data Principal" under the DPDP Act, and we are the "Data Fiduciary" responsible for your personal data.</p>
-<hr />
-<h2>1. What Data We Collect, and Why</h2>
-<p>We only collect data needed to run the app for you and your batch. Nothing is sold, and nothing is used for advertising.</p>
-<table>
-<thead>
-<tr>
-<th>Data We Collect</th>
-<th>Where It Comes From</th>
-<th>Why We Collect It (Purpose)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Name, email address, profile photo</td>
-<td>Your Google Sign-In</td>
-<td>To identify you to your batchmates, show your name on chats/polls, and let CRs manage batch access</td>
-</tr>
-<tr>
-<td>Role (Student / CR / Admin)</td>
-<td>Set by a Class Representative</td>
-<td>To control who can post announcements, approve members, and moderate chat</td>
-</tr>
-<tr>
-<td>Attendance records you mark</td>
-<td>You, inside the Attendance tab</td>
-<td>To calculate your personal subject-wise attendance percentage — this data is private to your account</td>
-</tr>
-<tr>
-<td>Chat messages, discussion topics, poll votes</td>
-<td>You, when you use Chat / Discuss / Polls</td>
-<td>To power batch-wide and private conversations, and to run class polls</td>
-</tr>
-<tr>
-<td>Device push-notification token (FCM token)</td>
-<td>Your browser/device, if you allow notifications</td>
-<td>To send you notices about new announcements, approved discussions, etc.</td>
-</tr>
-<tr>
-<td>IP address, browser/device info</td>
-<td>Automatically, when you record consent to this notice</td>
-<td>To maintain a verifiable record that you consented to this notice (required under Section 6 of the DPDP Act)</td>
-</tr>
-<tr>
-<td>Online/offline status</td>
-<td>Automatically, while the app is open</td>
-<td>To show batchmates who's currently active (presence indicator)</td>
-</tr>
-</tbody>
-</table>
-<p>We do <strong>not</strong> knowingly collect any data from children under 18 without verifiable parental/guardian consent as required by the DPDP Act. If you believe a minor has used this app, please contact the Grievance Officer below.</p>
-<h2>2. How We Use Your Data</h2>
-<ul>
-<li>To operate core features: timetable, attendance tracking, assignments, announcements, resources, chat, polls, and discussion topics.</li>
-<li>To let Class Representatives/Admins manage batch membership and approve access requests.</li>
-<li>To send you notifications about updates relevant to you.</li>
-<li>To maintain a legally required record of your consent (see Section 6, DPDP Act).</li>
-</ul>
-<p>We do not use your data for any purpose beyond what's listed above without asking you again.</p>
-<h2>3. Who Can See Your Data</h2>
-<ul>
-<li><strong>Your name, role, and messages you post publicly</strong> (Class Chat, approved Discussion topics, Polls) are visible to other approved members of your batch.</li>
-<li><strong>Private chats</strong> are visible only to you and the specific person you're messaging.</li>
-<li><strong>Your attendance records</strong> are private to your account only — no other student can see them. CRs/Admins do not have access to individual attendance logs unless explicitly built into a feature and disclosed to you separately.</li>
-<li><strong>We do not sell, rent, or share your personal data with any third party</strong> for marketing or advertising purposes.</li>
-<li>Data may be processed by our infrastructure providers (Google Firebase, Vercel) strictly as service providers to run the app — they do not use your data for their own purposes.</li>
-</ul>
-<h2>4. How Long We Keep Your Data</h2>
-<ul>
-<li>We retain your data for as long as you have an active account.</li>
-<li>If you delete your account (see Section 6 below), we erase or anonymise your personal data within a reasonable period, except where we are legally required or permitted to retain limited records (for example, proof of consent) for audit and compliance purposes.</li>
-</ul>
-<h2>5. Your Rights as a Data Principal</h2>
-<p>Under the DPDP Act, you have the right to:</p>
-<ol>
-<li><strong>Right to Access (Section 11):</strong> Request a copy of all personal data we hold about you, in a clear, accessible format.</li>
-<li><strong>Right to Correction &amp; Erasure (Section 12):</strong> Ask us to correct inaccurate data, or delete your account and associated personal data entirely.</li>
-<li><strong>Right to Withdraw Consent (Section 6):</strong> Withdraw your consent to processing at any time. Withdrawing consent may mean you can no longer use parts (or all) of the app that depend on that data.</li>
-<li><strong>Right to Grievance Redressal (Section 13):</strong> Raise a complaint about how your data is handled — see below.</li>
-<li><strong>Right to Nominate:</strong> In the event of your death or incapacity, nominate another individual to exercise these rights on your behalf, by contacting the Grievance Officer.</li>
-</ol>
-<p><strong>To exercise these rights</strong>, use the "Export My Data" or "Delete My Account" options inside the app's Settings, or contact the Grievance Officer below directly.</p>
-<h2>6. Data Security</h2>
-<p>We use industry-standard safeguards including authenticated access (Google Sign-In), encrypted data transmission (HTTPS), and access-controlled cloud infrastructure (Google Firebase) to protect your data from unauthorised access, alteration, or loss.</p>
-<h2>7. Changes to This Notice</h2>
-<p>If we materially change what data we collect or how we use it, we will show you an updated consent prompt the next time you open the app, and you'll need to agree again before continuing.</p>
-<hr />
-<h2>8. Grievance Redressal (Section 13, DPDP Act)</h2>
-<p>If you have any concerns, questions, or complaints about how your personal data is collected or processed, please contact our Grievance Officer:</p>
-<blockquote>
-<p><strong>Grievance Officer:</strong> [YOUR NAME]
-<strong>Designation:</strong> Class Representative / Grievance Officer, CampusHub — IET DAVV CSE-B
-<strong>Email:</strong> [YOUR-EMAIL@example.com]
-<strong>Response Timeline:</strong> We aim to acknowledge and resolve all grievances within <strong>30 days</strong> of receipt.</p>
-</blockquote>
-<p><em>Note: The DPDP Rules, 2025 set a maximum response window (up to 90 days) for resolving Data Principal grievances once that provision comes into force. We have voluntarily committed to a faster, 30-day internal target.</em></p>
-<p>If you are not satisfied with our resolution, you may escalate your complaint to the <strong>Data Protection Board of India</strong>, once it is fully operational, via the process notified by the Ministry of Electronics and Information Technology (MeitY).</p>
+  <h1>🔐 Privacy Notice</h1>
+  <p class="meta">
+    App: <b>CampusHub / Campusmate</b> &nbsp;•&nbsp;
+    Policy Version: <b>1.0</b> &nbsp;•&nbsp;
+    Last Updated: <span class="placeholder">[DD Month YYYY]</span>
+  </p>
+
+  <p>This Privacy Notice explains what personal data CampusHub collects from you, why, how it's used, and the rights you have over it under India's <b>Digital Personal Data Protection Act, 2023 ("DPDP Act")</b>. By clicking "I Agree" on the consent screen, you confirm you've read and understood this notice.</p>
+
+  <h2>1. Who is responsible for your data</h2>
+  <p>
+    CampusHub is operated by <span class="placeholder">[Your Name / Organisation Name]</span>
+    (the "Data Fiduciary" under the DPDP Act), reachable at
+    <span class="placeholder">[your-contact-email@example.com]</span>.
+  </p>
+
+  <h2>2. What we collect, and why</h2>
+  <table>
+    <tr><th>Data</th><th>Source</th><th>Why we collect it</th></tr>
+    <tr><td>Name, email address, profile photo</td><td>Your Google account, via Google Sign-In</td><td>To identify you, secure your account, and personalize your dashboard</td></tr>
+    <tr><td>Class role, batch, display preferences</td><td>Entered by you in-app</td><td>To organize class-specific content correctly</td></tr>
+    <tr><td>Personal attendance records &amp; calendar plans</td><td>Entered by you in-app</td><td>To calculate your attendance percentage and show your personal schedule — kept private to your account</td></tr>
+    <tr><td>Class chat messages, private messages, poll votes, discussion topics you raise</td><td>Entered by you in-app</td><td>To power class communication features you choose to use</td></tr>
+    <tr><td>Device push-notification ID</td><td>Generated by your browser/device, only if you enable notifications</td><td>To send you class announcements and updates</td></tr>
+    <tr><td>Consent record (policy version, timestamp, IP address)</td><td>Automatically logged when you click "I Agree"</td><td>Legally required proof that you consented — DPDP Act, Section 6</td></tr>
+    <tr><td>Basic technical logs (IP address, browser type)</td><td>Automatically collected by our hosting provider (Vercel) and Firebase</td><td>Security, fraud prevention, and debugging</td></tr>
+  </table>
+
+  <h2>3. Legal basis for processing</h2>
+  <p>We process your personal data on the basis of your <b>explicit, informed consent</b>, given via the consent screen shown before sign-in (DPDP Act, Section 6). You may withdraw this consent at any time (see Section 6 below) — withdrawal doesn't affect processing already carried out before you withdrew it, and may mean you can no longer use parts of the app that need that data.</p>
+
+  <h2>4. Who we share data with</h2>
+  <p>We don't sell your data or share it with advertisers. Your data is processed by these service providers, strictly to run the app:</p>
+  <ul>
+    <li><b>Google Firebase</b> (Authentication, Cloud Firestore database, Realtime Database, Cloud Messaging) — our core infrastructure. Firebase may store and process data on servers located outside India.</li>
+    <li><b>Vercel</b> — hosts our web app and backend functions, and may process data on servers located outside India.</li>
+  </ul>
+  <div class="callout">
+    <b>Cross-border transfer note:</b> Under Section 16 of the DPDP Act, cross-border transfer of personal data is permitted by default unless the Central Government specifically restricts a country. We currently rely on Google Firebase and Vercel's global infrastructure, which may process data outside India as part of their standard service.
+  </div>
+  <p>Your class's CR/Admin users can see profile and content data needed to moderate the class space (e.g., chat messages, discussion requests) — never your private attendance records or calendar plans, which are visible only to you.</p>
+
+  <h2>5. How long we keep your data</h2>
+  <ul>
+    <li>Account &amp; profile data: for as long as your account is active.</li>
+    <li>Consent logs: retained for <span class="placeholder">[e.g., 3 years]</span> after account closure, solely as proof of consent, as required for legal accountability.</li>
+    <li>If you delete your account, personal data is deleted or anonymized as described in Section 7 below, typically within <span class="placeholder">[e.g., 30 days]</span>.</li>
+  </ul>
+
+  <h2>6. Your rights under the DPDP Act</h2>
+  <ul>
+    <li><b>Right to Access (Section 11):</b> Request a summary of the personal data we hold about you. In-app: <b>⚙️ Settings → Export My Data</b>.</li>
+    <li><b>Right to Correction &amp; Erasure (Section 12):</b> Correct inaccurate data, or request deletion of your account and personal data. In-app: <b>⚙️ Settings → Delete My Account &amp; Data</b>.</li>
+    <li><b>Right to Withdraw Consent (Section 6):</b> Withdraw consent at any time by deleting your account, or by emailing our Grievance Officer below.</li>
+    <li><b>Right to Grievance Redressal (Section 13):</b> Raise a complaint about how your data is handled — see Section 8 below.</li>
+    <li><b>Right to Nominate (Section 14):</b> Nominate another individual to exercise these rights on your behalf in the event of your death or incapacity, by emailing our Grievance Officer.</li>
+  </ul>
+
+  <h2>7. What happens when you delete your account</h2>
+  <p>When you request deletion, we permanently delete your Firebase Auth account, your private attendance and calendar data, your poll votes, and your private/discussion chat messages. Content you posted in shared class spaces (like chat or discussion topics) that others may still be relying on is anonymized (your name is replaced with "Deleted User") rather than removed outright, so ongoing class conversations aren't broken for other members.</p>
+
+  <h2>8. Grievance Redressal (DPDP Act, Section 13)</h2>
+  <p>If you have a complaint or question about how your personal data is collected or used, contact our Grievance Officer:</p>
+  <table>
+    <tr><th>Name</th><td class="placeholder">[Grievance Officer Full Name]</td></tr>
+    <tr><th>Designation</th><td class="placeholder">[e.g., Grievance Officer / Class Data Coordinator]</td></tr>
+    <tr><th>Email</th><td class="placeholder">[grievance@example.com]</td></tr>
+    <tr><th>Postal Address</th><td class="placeholder">[Optional — Address, City, State, PIN]</td></tr>
+    <tr><th>Response Timeline</th><td>We will acknowledge your complaint within <b>7 days</b> and aim to resolve it within <b>30 days</b>, as required under the DPDP Act.</td></tr>
+  </table>
+  <p>If you're not satisfied with our response, you may escalate your complaint to the <b>Data Protection Board of India</b>.</p>
+
+  <h2>9. Children's data</h2>
+  <p>CampusHub is intended for use by students aged 18 and above. We do not knowingly collect personal data from children under 18. If you believe a child's data has been collected, please contact our Grievance Officer immediately so it can be removed.</p>
+
+  <h2>10. Security</h2>
+  <p>We use industry-standard safeguards — including Google Firebase's authentication and access-control systems, encrypted connections (HTTPS), and role-based admin permissions — to protect your data as required under Section 8 of the DPDP Act. No system is 100% secure, and we encourage you to report any suspected vulnerability to our Grievance Officer.</p>
+
+  <h2>11. Changes to this notice</h2>
+  <p>If we make material changes to this notice, we'll update the Policy Version number above and show you the consent screen again the next time you sign in, so you can review and re-consent.</p>
+
+  <h2>12. Contact us</h2>
+  <p>For any privacy questions not covered above, email <span class="placeholder">[your-contact-email@example.com]</span>.</p>
+
+  <a class="backlink" href="/">← Back to CampusHub</a>
 </div>
 </body>
 </html>

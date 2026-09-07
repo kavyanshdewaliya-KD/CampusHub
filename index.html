@@ -118,15 +118,46 @@
   /* Drag-to-reorder rows used by the private-chat list editor */
   .drag-row{display:flex; align-items:center; gap:8px; border:2px solid var(--border); border-radius:10px; padding:8px 10px; margin-bottom:8px; background:#fff; color:#0F172A; box-shadow:2px 2px 0 var(--border);}
   .drag-row.dragging{opacity:0.4;}
+
+  /* DPDP consent banner */
+  #consent-banner{position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:999; display:flex; align-items:center; justify-content:center; padding:16px;}
+  #consent-banner .card{max-width:440px; margin:0;}
+  #consent-banner p{font-size:12.5px; line-height:1.55; opacity:.85;}
+  #consent-banner ul{font-size:12px; opacity:.85; padding-left:18px; margin:8px 0;}
+  #consent-banner a{color:var(--primary); font-weight:700;}
+  .consent-links{display:flex; gap:14px; margin:10px 0;}
+  #google-btn:disabled{opacity:.45; cursor:not-allowed;}
 </style>
 </head>
 <body data-theme="1">
+
+<!-- DPDP-compliant consent banner: shown before anything else, blocks sign-in until agreed -->
+<div id="consent-banner" class="hidden">
+  <div class="card">
+    <h3 style="margin-top:0;">🔐 Before you continue</h3>
+    <p>CampusHub needs your consent to collect and use a few things so the app can work for your class:</p>
+    <ul>
+      <li>Your Google account name, email &amp; photo (for sign-in)</li>
+      <li>Class details you enter (batch, role, chat messages)</li>
+      <li>Your personal attendance records (private to you)</li>
+      <li>A device push-notification ID, only if you enable notifications</li>
+    </ul>
+    <p>Read the full details before agreeing:</p>
+    <div class="consent-links">
+      <a href="/privacy-policy.html" target="_blank" rel="noopener">📄 Privacy Notice</a>
+      <a href="/terms-of-service.html" target="_blank" rel="noopener">📄 Terms of Service</a>
+    </div>
+    <button class="btn-primary" id="consent-agree-btn" style="padding:12px; font-size:14px;">✅ I Agree &amp; Continue</button>
+    <p style="font-size:11px; opacity:.6; margin-top:8px;">You can withdraw consent and delete your data anytime from ⚙️ Settings after signing in.</p>
+  </div>
+</div>
 
 <div id="login-screen">
   <div class="card" style="text-align:center;">
     <h1 style="margin-top:0;">CampusHub ⚡🎓</h1>
     <p style="font-size:13px; opacity:.8;">Sign in to access your IET DAVV CSE-B portal.</p>
-    <button class="btn-primary" id="google-btn">Continue with Google</button>
+    <button class="btn-primary" id="google-btn" disabled>Continue with Google</button>
+    <p style="font-size:11px; opacity:.6; margin-top:8px;">By continuing, you agree to our <a href="/privacy-policy.html" target="_blank" rel="noopener">Privacy Notice</a> and <a href="/terms-of-service.html" target="_blank" rel="noopener">Terms</a>.</p>
     <p id="login-status" style="font-size:12px; opacity:.7; margin-top:10px; margin-bottom:0;"></p>
   </div>
 </div>
@@ -231,6 +262,14 @@
       <label style="font-size:12px; font-weight:700;">🔔 Push Notifications:</label>
       <p id="notif-status" style="font-size:11px; opacity:.7; margin:4px 0 8px;">Not enabled on this device yet.</p>
       <button class="btn-primary" id="notif-enable-btn" style="padding:10px; font-size:13px;">Enable Notifications</button>
+    </div>
+
+    <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
+      <label style="font-size:12px; font-weight:700;">🔒 Your Privacy &amp; Data:</label>
+      <p style="font-size:11px; opacity:.7; margin:4px 0 8px;">Under India's DPDP Act, you can download a copy of your data or permanently delete your account.</p>
+      <button class="add-btn" id="export-data-btn" style="width:100%; margin-bottom:8px;">⬇️ Export My Data (JSON)</button>
+      <button class="add-btn" id="delete-account-btn" style="width:100%; color:var(--danger); font-weight:700;">🗑️ Delete My Account &amp; Data</button>
+      <p id="privacy-action-status" style="font-size:11px; opacity:.7; margin-top:8px;"></p>
     </div>
 
     <div style="border-top:2px solid var(--border); margin:12px 0; padding-top:10px;">
@@ -413,6 +452,7 @@ async function pushNotifyEveryone(title, body){
 }
 
 let user = null;
+const DPDP_POLICY_VERSION = '1.0'; // bump this whenever privacy.html / terms.html changes materially
 let classCode = 'CSE-B-2026';
 let activeChatTarget = 'ALL';
 let lastPrivateTarget = null;
@@ -681,6 +721,41 @@ function getBadgeClass(pct){
 document.getElementById('google-btn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider())
   .catch(err => document.getElementById('login-status').textContent = 'Sign-in failed: '+err.message);
 
+// --- DPDP consent gate: shown before sign-in, re-shown whenever DPDP_POLICY_VERSION changes ---
+(function initConsentGate(){
+  const agreedVersion = localStorage.getItem('ch_consent_version');
+  const banner = document.getElementById('consent-banner');
+  const googleBtn = document.getElementById('google-btn');
+  if(agreedVersion === DPDP_POLICY_VERSION){
+    googleBtn.disabled = false;
+  } else {
+    banner.classList.remove('hidden');
+    googleBtn.disabled = true;
+  }
+  document.getElementById('consent-agree-btn').onclick = () => {
+    localStorage.setItem('ch_consent_version', DPDP_POLICY_VERSION);
+    localStorage.setItem('ch_consent_agreed_at', String(Date.now()));
+    banner.classList.add('hidden');
+    googleBtn.disabled = false;
+  };
+})();
+
+// Logs the consent to the server (with real IP + verified uid) once the user is actually signed in —
+// this is the record that satisfies DPDP Section 6's burden-of-proof requirement.
+async function logConsentIfNeeded(){
+  try {
+    const loggedVersion = localStorage.getItem('ch_consent_logged_version');
+    if(loggedVersion === DPDP_POLICY_VERSION) return; // already logged this version for this device
+    const idToken = await user.getIdToken();
+    const res = await fetch('/api/consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({ policyVersion: DPDP_POLICY_VERSION, consentGiven: true })
+    });
+    if(res.ok) localStorage.setItem('ch_consent_logged_version', DPDP_POLICY_VERSION);
+  } catch(e){ console.error('Consent logging failed (non-fatal):', e); }
+}
+
 const waitingRoomJokes = [
   "Why do programmers prefer dark mode? Because light attracts bugs. 🐛",
   "Why did the student eat his homework? Because the teacher said it was a piece of cake. 🍰",
@@ -709,6 +784,7 @@ onAuthStateChanged(auth, async (u)=>{
   user = u;
   if(selfAccessUnsub){ selfAccessUnsub(); selfAccessUnsub = null; }
   if(!u){ showOnlyScreen('login-screen'); return; }
+  logConsentIfNeeded(); // fire-and-forget server-side consent log (Section 6 burden-of-proof)
 
   const memberRef = doc(db, 'classes', classCode, 'members', u.uid);
   const existing = await getDoc(memberRef).catch(()=>null);
@@ -854,6 +930,48 @@ function openSettings(){
 document.getElementById('settings-btn').onclick = openSettings;
 document.getElementById('hdr-name').onclick = openSettings;
 document.getElementById('settings-close').onclick = ()=> document.getElementById('settings-modal').classList.add('hidden');
+
+// --- DPDP Section 11 (Right to Access) & Section 12 (Right to Erasure) ---
+document.getElementById('export-data-btn').onclick = async () => {
+  const statusEl = document.getElementById('privacy-action-status');
+  statusEl.textContent = 'Preparing your export…';
+  try {
+    const idToken = await user.getIdToken();
+    const res = await fetch('/api/export-data', { headers: { 'Authorization': 'Bearer ' + idToken } });
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `campushub-my-data-${Date.now()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    statusEl.textContent = 'Download started ✅';
+  } catch(e){
+    statusEl.textContent = 'Export failed: ' + e.message;
+  }
+};
+
+document.getElementById('delete-account-btn').onclick = async () => {
+  const statusEl = document.getElementById('privacy-action-status');
+  if(!confirm('This permanently deletes your account, sign-in, private attendance data, and personal info from chats. This cannot be undone. Continue?')) return;
+  if(!confirm('Are you absolutely sure? Type OK in the next box only if you really want to proceed.')) return;
+  statusEl.textContent = 'Deleting your account…';
+  try {
+    const idToken = await user.getIdToken();
+    const res = await fetch('/api/delete-account', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + idToken }
+    });
+    if(!res.ok) throw new Error('Server returned ' + res.status);
+    statusEl.textContent = 'Account deleted. Signing you out…';
+    localStorage.clear();
+    await signOut(auth);
+    location.reload();
+  } catch(e){
+    statusEl.textContent = 'Deletion failed: ' + e.message;
+  }
+};
 
 document.getElementById('name-save-btn').onclick = async ()=>{
   if((profile.nameChangeCount || 0) >= 3){ alert("You've already used all 3 name changes."); return; }

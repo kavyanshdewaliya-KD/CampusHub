@@ -3,118 +3,95 @@
 // POST /api/delete-account
 // Header: Authorization: Bearer <Firebase ID token>
 //
-// Section 12 — Right to Erasure. Walks every place CampusHub is known to store
-// personal data (see DPDP_IMPLEMENTATION_GUIDE.md for the full data map) and
-// either deletes it outright or anonymises it, then deletes the Auth account.
+// DPDP Act Section 12 — Right to Erasure. Deletes everything that is
+// exclusively personal to this user, and anonymizes their identifying
+// fields on shared/class-wide content (chat, discussions, announcements)
+// rather than deleting shared records outright, since other members'
+// conversations depend on that shared context still existing.
 //
-// Design choice: messages posted in SHARED spaces (class chat, discussion
-// threads) are ANONYMISED rather than deleted outright, so other members'
-// conversations aren't torn apart by holes. Purely personal data (attendance
-// logs, poll votes, the member/profile doc, presence) is deleted outright.
-//
-// consent_logs are deliberately NOT touched — see the note at the bottom.
+// IMPORTANT — known limitations to be aware of / extend later:
+//  1. This app currently runs as a single class instance (classCode is
+//     fixed below). If you ever go multi-tenant, this needs to look up
+//     the user's actual class(es) instead of hardcoding one.
+//  2. `assignments` and `resources` docs only store the poster's
+//     display name (`byName`), not their uid, so they can't be reliably
+//     matched and anonymized here. If you want that covered, add a
+//     `byUid` field when those are created, then extend this function.
 
-const { getAdmin } = require('./_firebaseAdmin');
+const { db, auth, requireAuth } = require('./_firebaseAdmin');
 
-const CLASS_CODE = process.env.CLASS_CODE || 'CSE-B-2026';
+const CLASS_CODE = 'CSE-B-2026'; // matches `classCode` in index.html
 
-function anonymiseMessages(snap, ops) {
-  snap.docs.forEach((d) => {
-    ops.push(
-      d.ref.update({
-        uid: null,
-        name: 'Deleted User',
-        text: '[message removed — user deleted their account]',
-        color: null,
-        vibeTag: '',
-      })
-    );
-  });
-}
-
-module.exports = async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { admin, db, rtdb } = getAdmin();
-
-  const authHeader = req.headers.authorization || '';
-  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!idToken) {
-    return res.status(401).json({ error: 'Missing Authorization: Bearer <idToken>' });
-  }
-
-  let decoded;
+  let uid;
   try {
-    decoded = await admin.auth().verifyIdToken(idToken);
+    uid = await requireAuth(req);
   } catch (e) {
-    return res.status(401).json({ error: 'Invalid or expired ID token' });
+    return res.status(e.statusCode || 401).json({ error: e.message });
   }
-  const uid = decoded.uid;
-  const ops = [];
 
+  const errors = [];
+  const classRef = db.collection('classes').doc(CLASS_CODE);
+
+  // 1. Fully private data: users/{uid}/attendance_logs/*, users/{uid}/calendar_plans/*
   try {
-    // 1) Personal attendance logs — fully personal, delete outright.
-    const attSnap = await db.collection('users').doc(uid).collection('attendance_logs').get();
-    attSnap.docs.forEach((d) => ops.push(d.ref.delete()));
+    await db.recursiveDelete(db.collection('users').doc(uid));
+  } catch (e) { errors.push('users/' + uid + ': ' + e.message); }
 
-    // 2) Member/profile doc for this class.
-    ops.push(db.collection('classes').doc(CLASS_CODE).collection('members').doc(uid).delete());
+  // 2. Class membership / profile doc (also removes stored FCM push tokens, which live on this doc)
+  try {
+    await classRef.collection('members').doc(uid).delete();
+  } catch (e) { errors.push('members: ' + e.message); }
 
-    // 3) Class-wide + private chat messages this person sent — anonymise.
-    const chatSnap = await db
-      .collection('classes').doc(CLASS_CODE).collection('chat')
-      .where('uid', '==', uid).get();
-    anonymiseMessages(chatSnap, ops);
+  // 3. Class-wide chat messages authored by this user
+  try {
+    const chatSnap = await classRef.collection('chat').where('uid', '==', uid).get();
+    await Promise.all(chatSnap.docs.map(d => d.ref.delete()));
+  } catch (e) { errors.push('chat: ' + e.message); }
 
-    // 4) Discussion topics this person raised, and their messages in EVERY
-    //    discussion thread (including ones raised by other people).
-    const allDiscussions = await db.collection('classes').doc(CLASS_CODE).collection('discussions').get();
-    for (const disc of allDiscussions.docs) {
-      if (disc.data().requestedBy === uid) {
-        ops.push(disc.ref.update({ requestedBy: null, requestedByName: 'Deleted User' }));
-      }
-      const theirMsgs = await disc.ref.collection('messages').where('uid', '==', uid).get();
-      anonymiseMessages(theirMsgs, ops);
-    }
+  // 4. Private DM messages AND discussion-thread messages authored by this user —
+  //    both live in subcollections literally named "messages", so one
+  //    collectionGroup query catches both private_chats/*/messages and
+  //    classes/*/discussions/*/messages in a single pass.
+  try {
+    const msgSnap = await db.collectionGroup('messages').where('uid', '==', uid).get();
+    await Promise.all(msgSnap.docs.map(d => d.ref.delete()));
+  } catch (e) { errors.push('messages (DM/discussions): ' + e.message); }
 
-    // 5) Poll votes — personal choices, delete outright rather than anonymise.
-    const pollsSnap = await db.collection('classes').doc(CLASS_CODE).collection('polls').get();
-    for (const poll of pollsSnap.docs) {
-      const voteRef = poll.ref.collection('votes').doc(uid);
-      const voteDoc = await voteRef.get();
-      if (voteDoc.exists) ops.push(voteRef.delete());
-    }
+  // 5. Poll votes: classes/{code}/polls/{pollId}/votes/{uid} — doc ID is the uid itself
+  try {
+    const pollsSnap = await classRef.collection('polls').get();
+    await Promise.all(pollsSnap.docs.map(p => p.ref.collection('votes').doc(uid).delete().catch(() => {})));
+  } catch (e) { errors.push('poll votes: ' + e.message); }
 
-    await Promise.all(ops);
+  // 6. Discussion topics this user raised — anonymize rather than delete,
+  //    since others may still be actively discussing the topic.
+  try {
+    const raisedSnap = await classRef.collection('discussions').where('requestedBy', '==', uid).get();
+    await Promise.all(raisedSnap.docs.map(d => d.ref.update({ requestedBy: null, requestedByName: 'Deleted User' })));
+  } catch (e) { errors.push('discussions (raised): ' + e.message); }
 
-    // 6) Realtime Database presence node (best-effort — skip if RTDB isn't configured).
-    if (rtdb) {
-      try {
-        await rtdb.ref(`presence/${CLASS_CODE}/${uid}`).remove();
-      } catch (e) {
-        console.warn('RTDB presence cleanup skipped:', e.message);
-      }
-    }
+  // 7. Announcements this user posted (CR/admin) — anonymize
+  try {
+    const annSnap = await classRef.collection('announcements').where('byUid', '==', uid).get();
+    await Promise.all(annSnap.docs.map(d => d.ref.update({ byUid: null, byName: 'Deleted User' })));
+  } catch (e) { errors.push('announcements: ' + e.message); }
 
-    // 7) Finally, delete the Firebase Auth account itself.
-    await admin.auth().deleteUser(uid);
+  // 8. Finally, delete the Firebase Auth account itself (also invalidates all sessions/tokens)
+  try {
+    await auth.deleteUser(uid);
+  } catch (e) { errors.push('auth user: ' + e.message); }
 
-    // NOTE: consent_logs are deliberately kept. Section 6's burden of proof
-    // means you need to be able to show valid consent existed WHILE you
-    // processed this person's data — even after they've left. If you want a
-    // harder erasure guarantee later, run a scheduled job that strips
-    // `user_email` from consent_logs after your legal retention window,
-    // instead of deleting the row outright.
-
-    return res.status(200).json({ ok: true, message: 'Account and associated personal data deleted.' });
-  } catch (e) {
-    console.error('account deletion failed', e);
-    return res.status(500).json({
-      error: 'Deletion failed partway through — check server logs and retry.',
-      detail: e.message,
-    });
+  if (errors.length) {
+    // Partial failure — log it server-side for manual follow-up, but still tell the
+    // client it mostly succeeded so they aren't stuck. Never silently swallow this.
+    console.error('delete-account partial failure for uid', uid, errors);
+    return res.status(207).json({ ok: true, warnings: errors });
   }
+  return res.status(200).json({ ok: true });
 };

@@ -3,104 +3,109 @@
 // GET /api/export-data
 // Header: Authorization: Bearer <Firebase ID token>
 //
-// Section 11 — Right to Access. Gathers everything CampusHub has stored about
-// the requesting user across every known collection and returns it as one
-// downloadable JSON file.
+// DPDP Act Section 11 — Right to Access. Returns everything this app
+// holds that is tied to the requesting user, as one JSON document.
+//
+// Same coverage/limitations as delete-account.js — see the comments
+// there (single class instance hardcoded below; assignments/resources
+// aren't attributable per-user because they don't store a uid).
 
-const { getAdmin } = require('./_firebaseAdmin');
+const { db, auth, requireAuth } = require('./_firebaseAdmin');
 
-const CLASS_CODE = process.env.CLASS_CODE || 'CSE-B-2026';
+const CLASS_CODE = 'CSE-B-2026'; // matches `classCode` in index.html
 
-module.exports = async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { admin, db, rtdb } = getAdmin();
-
-  const authHeader = req.headers.authorization || '';
-  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!idToken) {
-    return res.status(401).json({ error: 'Missing Authorization: Bearer <idToken>' });
-  }
-
-  let decoded;
+  let uid;
   try {
-    decoded = await admin.auth().verifyIdToken(idToken);
+    uid = await requireAuth(req);
   } catch (e) {
-    return res.status(401).json({ error: 'Invalid or expired ID token' });
+    return res.status(e.statusCode || 401).json({ error: e.message });
   }
-  const uid = decoded.uid;
 
+  const classRef = db.collection('classes').doc(CLASS_CODE);
+  const out = {
+    generated_at: new Date().toISOString(),
+    note: "This export covers all personal data CampusHub holds for you. Class-wide content (chat, discussions) only includes messages YOU sent, not other members' messages.",
+  };
+
+  // Auth profile
   try {
-    const authRecord = await admin.auth().getUser(uid);
-
-    const memberDoc = await db.collection('classes').doc(CLASS_CODE).collection('members').doc(uid).get();
-
-    const attSnap = await db.collection('users').doc(uid).collection('attendance_logs').get();
-    const attendanceLogs = attSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    const chatSnap = await db
-      .collection('classes').doc(CLASS_CODE).collection('chat')
-      .where('uid', '==', uid).get();
-    const chatMessages = chatSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    const discussionsRaised = [];
-    const discussionMessages = [];
-    const allDiscussions = await db.collection('classes').doc(CLASS_CODE).collection('discussions').get();
-    for (const disc of allDiscussions.docs) {
-      const dData = disc.data();
-      if (dData.requestedBy === uid) discussionsRaised.push({ id: disc.id, ...dData });
-      const theirMsgs = await disc.ref.collection('messages').where('uid', '==', uid).get();
-      theirMsgs.docs.forEach((m) => discussionMessages.push({ discussionId: disc.id, id: m.id, ...m.data() }));
-    }
-
-    const pollVotes = [];
-    const pollsSnap = await db.collection('classes').doc(CLASS_CODE).collection('polls').get();
-    for (const poll of pollsSnap.docs) {
-      const voteDoc = await poll.ref.collection('votes').doc(uid).get();
-      if (voteDoc.exists) pollVotes.push({ pollId: poll.id, ...voteDoc.data() });
-    }
-
-    let presence = null;
-    if (rtdb) {
-      try {
-        const snap = await rtdb.ref(`presence/${CLASS_CODE}/${uid}`).get();
-        presence = snap.exists() ? snap.val() : null;
-      } catch (e) {
-        /* RTDB not reachable — skip, non-fatal */
-      }
-    }
-
-    const consentSnap = await db.collection('consent_logs').where('user_id', '==', uid).get();
-    const consentHistory = consentSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-    const exportPayload = {
-      exportedAt: new Date().toISOString(),
-      account: {
-        uid: authRecord.uid,
-        email: authRecord.email,
-        displayName: authRecord.displayName,
-        photoURL: authRecord.photoURL,
-        createdAt: authRecord.metadata.creationTime,
-        lastSignInAt: authRecord.metadata.lastSignInTime,
-      },
-      classMembership: memberDoc.exists ? { classCode: CLASS_CODE, ...memberDoc.data() } : null,
-      attendanceLogs,
-      chatMessages,
-      discussionsRaised,
-      discussionMessages,
-      pollVotes,
-      presence,
-      consentHistory,
+    const u = await auth.getUser(uid);
+    out.account = {
+      uid: u.uid,
+      email: u.email || null,
+      displayName: u.displayName || null,
+      photoURL: u.photoURL || null,
+      createdAt: u.metadata.creationTime,
+      lastSignInAt: u.metadata.lastSignInTime,
     };
-
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="campushub-my-data-${uid}.json"`);
-    return res.status(200).send(JSON.stringify(exportPayload, null, 2));
   } catch (e) {
-    console.error('data export failed', e);
-    return res.status(500).json({ error: 'Export failed — check server logs.', detail: e.message });
+    out.account = { error: 'Could not load auth profile: ' + e.message };
   }
+
+  // Class membership / profile doc
+  try {
+    const memberDoc = await classRef.collection('members').doc(uid).get();
+    out.class_profile = memberDoc.exists ? memberDoc.data() : null;
+  } catch (e) { out.class_profile = { error: e.message }; }
+
+  // Private data: attendance + calendar plans
+  try {
+    const attSnap = await db.collection('users').doc(uid).collection('attendance_logs').get();
+    out.attendance_logs = attSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { out.attendance_logs = { error: e.message }; }
+
+  try {
+    const planSnap = await db.collection('users').doc(uid).collection('calendar_plans').get();
+    out.calendar_plans = planSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { out.calendar_plans = { error: e.message }; }
+
+  // Class-wide chat messages authored by this user
+  try {
+    const chatSnap = await classRef.collection('chat').where('uid', '==', uid).get();
+    out.class_chat_messages = chatSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { out.class_chat_messages = { error: e.message }; }
+
+  // Private DM + discussion-thread messages (same collectionGroup trick as delete-account.js)
+  try {
+    const msgSnap = await db.collectionGroup('messages').where('uid', '==', uid).get();
+    out.private_and_discussion_messages = msgSnap.docs.map(d => ({ path: d.ref.path, ...d.data() }));
+  } catch (e) { out.private_and_discussion_messages = { error: e.message }; }
+
+  // Poll votes
+  try {
+    const pollsSnap = await classRef.collection('polls').get();
+    const votes = [];
+    for (const p of pollsSnap.docs) {
+      const voteDoc = await p.ref.collection('votes').doc(uid).get();
+      if (voteDoc.exists) votes.push({ pollId: p.id, pollQuestion: p.data().question || null, ...voteDoc.data() });
+    }
+    out.poll_votes = votes;
+  } catch (e) { out.poll_votes = { error: e.message }; }
+
+  // Discussion topics raised by this user
+  try {
+    const raisedSnap = await classRef.collection('discussions').where('requestedBy', '==', uid).get();
+    out.discussion_topics_raised = raisedSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { out.discussion_topics_raised = { error: e.message }; }
+
+  // Announcements posted by this user (CR/admin only)
+  try {
+    const annSnap = await classRef.collection('announcements').where('byUid', '==', uid).get();
+    out.announcements_posted = annSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (e) { out.announcements_posted = { error: e.message }; }
+
+  // Consent log history
+  try {
+    const consentSnap = await db.collection('consent_logs').where('user_id', '==', uid).get();
+    out.consent_history = consentSnap.docs.map(d => d.data());
+  } catch (e) { out.consent_history = { error: e.message }; }
+
+  res.setHeader('Content-Disposition', 'attachment; filename="campushub-my-data.json"');
+  return res.status(200).json(out);
 };
