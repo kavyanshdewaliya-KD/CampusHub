@@ -324,8 +324,7 @@
   </div>
 </div>
 
-<!-- Shared subject name suggestions — picking from this instead of free-typing keeps
-     one subject from splitting into multiple stat bars over a stray typo. -->
+<!-- Shared subject name suggestions — picking. -->
 <datalist id="subject-datalist"></datalist>
 
 <!-- CR/Admin-only: Manage Holidays & GT (Group Tadi) days -->
@@ -439,10 +438,10 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const rtdb = getDatabase(app);
 
-// Get this from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
+// web push
 const VAPID_KEY = "BAy4jJUxfxZDJ--vD2ARaHbvLosv1htM9cMVnk52_0fvfgEdw_veIkojFdNULqyQrQmuJRENKt2Icor7gXn2gNk";
 
-// Must exactly match the NOTIFY_SECRET environment variable set in Vercel
+// NOTIFY_SECRET 
 const NOTIFY_SECRET = "CampusHubsecrate.xyz";
 
 async function pushNotifyEveryone(title, body){
@@ -605,9 +604,7 @@ const defaultTimetable = {
   ]
 };
 
-// Canonical lists power the click-to-pick dropdowns in the timetable editor and the
-// extra-class form — picking from these instead of free-typing is what stops one real
-// subject from silently splitting into two attendance bars over a spelling variant.
+
 const canonicalSubjects = [
   'Applied Chem','Applied Math-I','Basic Electronics','Tech English','Gen Mech Engg','Design Thinking',
   'Workshop Practice (Batch B1)','Workshop Practice (Batch B2)',
@@ -617,8 +614,7 @@ const canonicalSubjects = [
 ];
 const canonicalTeachers = ['VF-SB','VF-1SM','VF-1SS','VF-SA','VF-VS','1SK','4JS','2AS','VF-1VV','Faculty'];
 
-// Display-order priority for the Subject-wise Attendance list — subjects not in this
-// list (e.g. the combined LAB slot names above) fall after, alphabetically.
+
 const subjectDisplayOrder = [
   'Applied Chem','Applied Math-I','Basic Electronics','Tech English','Gen Mech Engg','Design Thinking',
   'Workshop Practice (Batch B1)','Workshop Practice (Batch B2)'
@@ -627,21 +623,9 @@ const remedialDisplayOrder = [
   'Applied Chem (Remedial)','Applied Math-I (Remedial)','Tech English (Remedial)','Basic Electronics (Remedial)','Gen Mech Engg (Remedial)'
 ];
 
-// --- Subject name normalization -------------------------------------------------
-// The timetable editor lets an admin free-type a subject (the datalist is a
-// suggestion, not an enforced choice), so the SAME real subject can end up saved
-// under different spellings over time — "Applied Math-I", "Applied Math 1",
-// "Applied Maths-I", "Applied Mat I", etc. Because attendance totals used to be
-// keyed on the raw string, each spelling became its own separate bar with its own
-// (wrong) percentage, and a remedial class typed without literal "(Remedial)"
-// parentheses (e.g. "Applied Math I Remedial") fell through into the main list
-// instead of the remedial section. canonicalizeSubject() maps any reasonable
-// spelling of a known subject back to one exact display name before it's ever
-// used as a bucket key, so every variant of "Applied Math-I" folds into a single bar.
+
 const _ROMAN_TO_DIGIT = { i:'1', ii:'2', iii:'3', iv:'4', v:'5' };
-// Common shorthand/typo variants seen in a free-typed timetable, folded to one word
-// before comparison — e.g. "Applied Mat 1", "Applied Maths-I", and "Applied Math-I"
-// all reduce to the same token stream.
+
 const _WORD_ALIASES = {
   maths:'math', mathematic:'math', mathematics:'math', mat:'math',
   electronic:'electronics', elec:'electronics',
@@ -666,11 +650,7 @@ canonicalSubjects.forEach(name => {
   const slug = _subjectSlug(base);
   if(!_canonicalSlugMap[slug]) _canonicalSlugMap[slug] = base;
 });
-// Plain-old typos ("Elcectronics" instead of "Electronics") won't match any alias —
-// they need a fuzzy fallback. Levenshtein edit distance between the typed slug and
-// every canonical slug; if the closest one is within a tight, length-scaled tolerance
-// AND clearly the best match, treat it as the same subject rather than spinning up a
-// second bar for a single mistyped letter.
+
 function _editDistance(a, b){
   const m = a.length, n = b.length;
   const dp = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
@@ -826,8 +806,7 @@ onAuthStateChanged(auth, async (u)=>{
     }
   }
 
-  // Watch our own membership doc live — if an admin blocks us mid-session, kick out immediately.
-  // If someone was pending and just got approved, let them in without needing to refresh.
+  
   selfAccessUnsub = onSnapshot(memberRef, (snap)=>{
     if(!snap.exists()) return;
     const data = snap.data();
@@ -1082,8 +1061,7 @@ document.getElementById('notif-enable-btn').onclick = async ()=>{
     if(token){
       const oldToken = localStorage.getItem('ch_fcm_token');
       if(oldToken && oldToken !== token){
-        // Remove the stale token from a previous Enable Notifications click on this same device,
-        // so notifications don't get sent to it multiple times.
+        
         await setDoc(doc(db, 'classes', classCode, 'members', user.uid), { fcmTokens: { [oldToken]: deleteField() } }, { merge: true }).catch(()=>{});
       }
       localStorage.setItem('ch_fcm_token', token);
@@ -1231,10 +1209,7 @@ function loadTimetable(){
   });
 }
 
-// Collects every distinct subject name currently in use across the live timetable,
-// so subject-name inputs can suggest exact existing spellings instead of admins
-// free-typing a near-duplicate ("Basic Elcectronics" vs "Basic Electronics") that
-// silently splits one subject into two separate attendance bars.
+
 function populateSubjectDatalist(){
   const dl = document.getElementById('subject-datalist');
   if(!dl) return;
@@ -1300,8 +1275,7 @@ function renderOverrideList(){
   });
 }
 
-// Builds a <select> that fills a paired text input on choice — 'Custom / Other' just
-// leaves the text input free to type in, exactly like before.
+
 function pickerSelectHTML(cls, options, currentValue){
   const isKnown = options.includes(currentValue);
   const opts = options.map(o => `<option value="${o}" ${o===currentValue?'selected':''}>${o}</option>`).join('');
@@ -1604,22 +1578,14 @@ function wireExtraClassForm(dateStr){
   };
 }
 
-// Holds the live unsubscribe fns for the attendance-stats listener tree, so a fresh
-// call to renderAttendanceStats() (e.g. on every checkbox toggle) tears down the
-// PREVIOUS tree first instead of stacking a new one on top of it forever. Without this,
-// every checkbox click left an old listener alive that kept recomputing and re-writing
-// the container on every future Firestore change — wasted work, and a real risk of a
-// stale/late-arriving old listener overwriting the container with an outdated render.
+
 let _attStatsUnsub = [];
 function _clearAttStatsListeners(){
   _attStatsUnsub.forEach(fn => { try{ fn(); }catch(e){} });
   _attStatsUnsub = [];
 }
 
-// Semester bounds — attendance is only ever counted inside this window, cycling the
-// timetable week over week from the start date up to whichever is earlier: today, or
-// the semester end date. This stops the denominator from ever including days that
-// haven't happened yet, and stops it running past the semester once it's over.
+
 const ATTENDANCE_SEM_START = '2026-08-05';
 const ATTENDANCE_SEM_END = '2026-11-27';
 
@@ -1664,8 +1630,7 @@ async function renderAttendanceStats(){
         const attended = {};
         let curr = new Date(startDate);
         while(curr <= endDate){
-          // Build the key from local Y/M/D parts (matches _dateOnly) instead of
-          // toISOString(), which would re-introduce the UTC-vs-local mismatch this fix avoids.
+          
           const yStr = curr.getFullYear();
           const mStr = String(curr.getMonth()+1).padStart(2,'0');
           const dDay = String(curr.getDate()).padStart(2,'0');
@@ -1681,10 +1646,7 @@ async function renderAttendanceStats(){
               totals[subj] = (totals[subj] || 0) + 1; // the class still happened today, on leave or not — it always counts toward the total
 
               if(isLeaveDay){
-                // A day planned as leave means the student didn't attend — every period
-                // that day is automatically Absent, regardless of any stale Present mark
-                // from before the leave was planned. It still counts in the denominator
-                // above; it just never adds to "attended".
+                
                 return;
               }
 
@@ -2314,10 +2276,7 @@ function loadChat(){
   document.getElementById('chat-send').onclick = sendMsg;
   document.getElementById('chat-in').onkeydown = e => { if(e.key==='Enter') sendMsg(); };
 
-  // --- Discussion Topics + notification dots (runs once, independent of which sub-view is open) ---
-
-  // Latest-poll tracker for the 🔔 dot on the Polls button — separate from renderPolls(),
-  // which only sets up its listeners once someone actually opens the Polls sub-view.
+  
   onSnapshot(query(collection(db,'classes',classCode,'polls'), orderBy('ts','desc'), limit(1)), (snap)=>{
     latestPollTs = null;
     snap.forEach(d=>{ const t = d.data().ts; latestPollTs = t ? t.toMillis() : Date.now(); });
@@ -2405,13 +2364,12 @@ function loadChat(){
   renderLog();
 }
 
-// --- Notification dot helpers (shared by the Polls button and the Discuss button) ---
+
 function dotStateFor(latestTs, seenKey){
   if(!latestTs) return 'none';
   let seen = localStorage.getItem(seenKey);
   if(seen === null){
-    // First time this device has ever tracked this dot — don't flag pre-existing
-    // content as "new", just quietly mark it seen so only genuinely new stuff lights up.
+    
     localStorage.setItem(seenKey, String(latestTs));
     return 'green';
   }
